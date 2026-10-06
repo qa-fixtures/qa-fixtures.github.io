@@ -8,9 +8,9 @@ Everything here is either fictional (Halvorsen Silica Works AS, Nordvik, Sociét
 Lac Ténébreux, АО «Северный Глинозём») or a verbatim copy of a redistributable third-party file
 kept so that a test asserting its bytes does not depend on someone else's host.
 
-The coordinates, the publish procedure and the inventory of every external page the tests
-depend on are documented in the beSirius 2.0 repository, `architecture/development/qa-environments.md`,
-section "QA web fixture host".
+The coordinates and the publish procedure are documented in the beSirius 2.0 repository,
+`architecture/development/qa-environments.md`, section "QA web fixture host". The table below is
+the index of what is hosted and who uses it — add a row with every new file.
 
 | Path | What it is | Used by |
 |---|---|---|
