@@ -25,6 +25,7 @@ the index of what is hosted and who uses it — add a row with every new file.
 | `broken/random-2048-bytes.pdf` | 2048 random bytes (Python `random.seed(1)`) named `.pdf` | the same cases |
 | `third-party/ietf/rfc2119.txt` | RFC 2119, verbatim (IETF Trust permits full reproduction) | BugBug artifact `bb-legacy-txt-manifest.json` (C19070) |
 | `third-party/xlrd/*.xls` | Excel 97-2003 samples from python-excel/xlrd, verbatim, under its `LICENSE` | C17012, C17013 |
+| `fjordlys-pigments/index.html`, `fjordlys-pigments/sustainability/index.html`, `fjordlys-pigments/reports/fjordlys-pigments-sustainability-report-2025.pdf` | Company site of the fictional Fjordlys Pigments AS with one PDF sustainability report — the population scrape of a website added at assessment launch must settle `completed` with documents, not `empty` | TestRail C15120 (BES-5622) |
 
 ## Rules
 

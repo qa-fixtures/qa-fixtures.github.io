@@ -1,0 +1,43 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Catalog /Pages 2 0 R >>
+endobj
+2 0 obj
+<< /Type /Pages /Kids [3 0 R] /Count 1 >>
+endobj
+3 0 obj
+<< /Type /Page /Parent 2 0 R /MediaBox [0 0 612 792] /Contents 4 0 R /Resources << /Font << /F1 5 0 R >> >> >>
+endobj
+4 0 obj
+<< /Length 803 >>
+stream
+BT /F1 11 Tf 50 760 Td (Fjordlys Pigments AS - Sustainability Report 2025) Tj ET
+BT /F1 11 Tf 50 738 Td (Fictional company. QA test fixture for the beSirius platform.) Tj ET
+BT /F1 11 Tf 50 716 Td (Scope 1 emissions: 4,120 tCO2e. Scope 2 emissions (market-based): 1,310 tCO2e.) Tj ET
+BT /F1 11 Tf 50 694 Td (Energy use: 38 GWh, of which 71 percent from renewable sources.) Tj ET
+BT /F1 11 Tf 50 672 Td (Water withdrawal: 210,000 m3; all process water is treated before discharge.) Tj ET
+BT /F1 11 Tf 50 650 Td (Health and safety: lost-time injury frequency rate 1.8 per million hours worked.) Tj ET
+BT /F1 11 Tf 50 628 Td (Certifications: ISO 14001 and ISO 45001 at the Solvik works.) Tj ET
+BT /F1 11 Tf 50 606 Td (Responsible sourcing: all iron-ore suppliers signed the supplier code of conduct.) Tj ET
+endstream
+endobj
+5 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+6 0 obj
+<< /Title (Fjordlys Pigments AS Sustainability Report 2025) /Producer (beSirius QA fixture) >>
+endobj
+xref
+0 7
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000241 00000 n 
+0000001095 00000 n 
+0000001165 00000 n 
+trailer
+<< /Size 7 /Root 1 0 R /Info 6 0 R >>
+startxref
+1275
+%%EOF
