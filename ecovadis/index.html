@@ -1,0 +1,290 @@
+<!doctype html>
+<!--
+  EcoVadis-shaped test portal. Reproduces the DOM of the EcoVadis supplier
+  questionnaire (portal.ecovadis-survey.com) as captured in 2026: hash routes per
+  page, question sections with badges, checkbox and radio options, "Please
+  specify" boxes and per-option evidence documents, and the Save & previous /
+  Save / Save & next bar. Question and option wording is neutral placeholder
+  text; no client, person, answer or document of any real assessment is here.
+  The upload dialog and the Check & Submit step were not captured and are
+  reconstructed.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>EcoVadis (test portal)</title>
+<style>
+  body { font-family: "Noto Sans", Helvetica, Arial, sans-serif; margin: 0; color: #222; font-size: 14px; }
+  #topMenu_root { display: flex; justify-content: space-between; align-items: center; background: #3fa786; color: #fff; padding: 8px 16px; }
+  #topMenu_root a { color: #fff; }
+  #topMenu_languages ul { display: none; }
+  .layout { display: flex; max-width: 1100px; margin: 24px auto; gap: 16px; }
+  nav { width: 260px; background: #f4f5f6; padding: 12px; }
+  nav a { display: block; padding: 6px 4px; color: #2a5d4f; text-decoration: none; }
+  nav a[aria-current="page"] { font-weight: 700; }
+  main { flex: 1; background: #fff; box-shadow: 0 0 8px #0002; padding: 16px 24px; }
+  section[data-item="question"] { border-bottom: 1px solid #eee; padding: 16px 0; }
+  span[data-testid^="question_label_badge"] { border: 1px solid #bbb; border-radius: 10px; padding: 2px 8px; margin-right: 6px; font-size: 12px; }
+  div[data-testid^="option_"] { margin: 10px 0; }
+  div[data-testid="option_help_context_message"] { color: #777; font-size: 12px; margin-left: 22px; }
+  div[data-testid="please_specify_questionnaire"], div[data-testid="attachment_picker"], div[data-testid="attachment_wrapper"] { margin: 6px 0 6px 22px; }
+  textarea[data-testid="option_extra_value"] { width: 90%; min-height: 48px; }
+  .bar { display: flex; justify-content: space-between; margin-top: 16px; }
+  [role="dialog"] { position: fixed; inset: 15% 25%; background: #fff; border: 1px solid #999; padding: 16px; box-shadow: 0 4px 24px #0004; }
+  [role="dialog"] label { display: block; margin-top: 8px; }
+  #toast { position: fixed; bottom: 16px; right: 16px; background: #2a5d4f; color: #fff; padding: 8px 12px; display: none; }
+</style>
+</head>
+<body>
+<div id="root"><div id="question-locker"><div data-testid="layout_with_sidebar">
+  <div id="topMenu_root">
+    <div id="topMenu_logo" data-testid="topMenu_logo"><a href="#/questionnaire/0/GEN701">ecovadis</a></div>
+    <div id="topMenu_userWelcome"><div>Hello, Test User</div></div>
+    <div id="topMenu_rightMenu">
+      <div id="topMenu_languages"><div id="topMenu_currentLang" data-testid="top-bar-change-language">English</div></div>
+      <div id="topMenu_logout"><a id="topMenu_logoutLink" href="#/logged-out">Logout</a></div>
+    </div>
+  </div>
+  <div class="layout">
+    <nav aria-label="Questionnaire" id="sidebar"></nav>
+    <main>
+      <div data-testid="layout_upperbar">
+        <span>Deadline:</span> <span>11:59 PM GMT, 31 Dec 2030</span>
+        · <a data-testid="layout_upperbar_link_documents_library" href="#/documents-library"><span>Document Library</span></a>
+        · <button data-testid="layout_upperbar_link_download" type="button"><span>Download questionnaire</span></button>
+      </div>
+      <div data-testid="vadis_root" id="page"></div>
+    </main>
+  </div>
+</div></div></div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+// Placeholder questionnaire. Codes follow EcoVadis' pattern (theme + number);
+// wording is neutral test text.
+const LIBRARY = ['Sample policy document', 'Sample annual report'];
+const PAGES = [
+  { theme: 'General', codes: 'GEN701', questions: [
+    { id: 'q-gen701', code: 'GEN701', required: true, kind: 'checkbox', specify: true, evidence: true,
+      title: 'Which of the following certifications does the company hold?',
+      options: ['Environmental management certification (e.g. ISO 14001)', 'Occupational health and safety certification (e.g. ISO 45001)', 'Information security certification (e.g. ISO 27001)', 'None of the above'] },
+    { id: 'q-gen110', code: 'GEN110', required: true, kind: 'radio',
+      title: 'Is the company part of a larger group?',
+      options: ['Yes', 'No', "I don't know"] },
+  ]},
+  { theme: 'Labor & Human Rights', codes: 'LAB1007,LAB1003,LAB3501', questions: [
+    { id: 'q-lab1007', code: 'LAB1007', required: false, kind: 'radio', title: 'Does the company employ seasonal workers?', options: ['Yes', "I don't know", 'No'] },
+    { id: 'q-lab1003', code: 'LAB1003', required: true, kind: 'radio', title: 'Who covers hiring agency fees?', options: ['Company', 'Job applicant', 'Company and job applicant', 'Direct hiring (no fees apply)', "I don't know"] },
+    { id: 'q-lab3501', code: 'LAB3501', required: true, kind: 'checkbox', evidence: true,
+      title: 'Which actions has the company implemented on fair working conditions?',
+      options: ['Assessment of working conditions risks', 'Training of employees on working conditions', 'Grievance mechanism for employees', 'No actions yet/I don’t know'] },
+  ]},
+  { theme: 'Environment', codes: 'ENV310,ENV7011', questions: [
+    { id: 'q-env310', code: 'ENV310', required: true, kind: 'checkbox', evidence: true,
+      title: 'Which actions has the company implemented to reduce energy use and emissions?',
+      options: ['Training of employees on energy saving', 'Purchase or generation of renewable energy', 'Energy or carbon audit', 'Upgrade of equipment for energy efficiency', 'No actions yet/I don’t know'] },
+    { id: 'q-env7011', code: 'ENV7011', required: true, kind: 'checkbox', evidence: true,
+      title: 'Which actions has the company implemented to prepare for external environmental disruptions?',
+      options: ['Business continuity plan covering environmental disruptions', 'Emergency reserves for environmental disruptions', 'No actions yet/I don’t know'] },
+  ]},
+  { theme: 'Ethics', codes: 'ETH300', questions: [
+    { id: 'q-eth300', code: 'ETH300', required: true, kind: 'checkbox', evidence: true, specify: true,
+      title: 'Which actions has the company implemented to prevent corruption?',
+      options: ['Corruption risk assessment', 'Anti-corruption training for employees', 'Whistleblower procedure', 'No actions yet/I don’t know'] },
+  ]},
+  { theme: 'Sustainable Procurement', codes: 'SUP300', questions: [
+    { id: 'q-sup300', code: 'SUP300', required: false, kind: 'checkbox', evidence: true,
+      title: 'Which actions has the company implemented to assess its suppliers on sustainability?',
+      options: ['Supplier code of conduct', 'Sustainability assessment of key suppliers', 'No actions yet/I don’t know'] },
+  ]},
+];
+const state = {}; // `${questionId}:${optionIndex}` -> { checked, specify, documents: [] }
+let submitted = false;
+
+function el(tag, attrs, ...children) {
+  const node = document.createElement(tag);
+  for (const [key, value] of Object.entries(attrs || {})) {
+    if (value === false || value === null || value === undefined) continue;
+    if (key === 'text') node.textContent = value; else node.setAttribute(key, value === true ? '' : value);
+  }
+  for (const child of children) if (child) node.append(child);
+  return node;
+}
+function toast(message) {
+  const box = document.getElementById('toast');
+  box.textContent = message; box.style.display = 'block';
+  setTimeout(() => { box.style.display = 'none'; }, 1500);
+}
+function stateOf(questionId, index) {
+  const key = `${questionId}:${index}`;
+  return (state[key] ??= { checked: false, specify: '', documents: [] });
+}
+
+function renderSidebar(current) {
+  const nav = document.getElementById('sidebar');
+  nav.replaceChildren(el('div', { text: 'Questionnaire' }));
+  PAGES.forEach((page, index) => {
+    nav.append(el('a', { href: `#/questionnaire/${index}/${page.codes}`, 'aria-current': index === current ? 'page' : false, text: `${page.theme} (${page.questions.length})` }));
+  });
+  nav.append(el('a', { href: '#/check-and-submit', 'aria-current': current === 'submit' ? 'page' : false, text: 'Check & Submit' }));
+}
+
+function attachmentDetails(question, index, document, docIndex) {
+  const id = `${question.id}-${index}-${docIndex}`;
+  return el('div', { 'data-testid': 'attachment_wrapper' },
+    el('div', { 'data-testid': `AttachmentDetails_${id}` },
+      el('span', { text: 'Attached document' }),
+      el('div', { 'data-testid': 'document-name-wrapper' },
+        el('a', { href: '#', 'data-testid': `doc_preview_url_${id}`, text: document.name }),
+        el('div', { 'data-testid': `document-type-${id}`, text: document.type })),
+      el('a', { 'data-testid': `replace-document-btn-${id}`, href: '#', text: 'Replace document' }),
+      el('div', { 'data-testid': `attachment_pages_${id}` }, el('div', { text: 'Indicated pages:' }), el('div', { text: document.pages })),
+      el('div', { 'data-testid': `attachment_comment_${id}` }, el('div', { text: 'Comment:' }), el('div', { text: document.comment })),
+      el('div', { 'data-testid': `attachment_actions_${id}` },
+        el('button', { type: 'button', tabindex: '0', 'data-testid': 'attachment_actions_remove', 'data-action': 'detach', 'data-key': `${question.id}:${index}:${docIndex}`, text: 'Detach from question' }),
+        el('button', { type: 'button', tabindex: '0', 'data-testid': 'attachment_actions_edit', text: 'Edit details' }))));
+}
+
+function renderOption(question, index) {
+  const optionId = `${question.id}-o${index}`;
+  const current = stateOf(question.id, index);
+  const text = question.options[index];
+  const wrapper = el('div', { 'data-testid': `option_${optionId}` });
+  const tooltip = el('div', { tabindex: '0', 'data-testid': 'option-exclude-tooltip', 'aria-hidden': 'false' });
+  if (question.kind === 'checkbox') {
+    tooltip.append(el('label', { 'data-testid': `option_${optionId}_label`, for: `checkbox-${optionId}` },
+      el('input', { 'data-testid': `option_${optionId}_control`, type: 'checkbox', id: `checkbox-${optionId}`, value: '', checked: current.checked, 'data-q': question.id, 'data-i': index }),
+      text));
+  } else {
+    tooltip.append(el('div', {}, el('label', { 'aria-disabled': 'false' },
+      el('div', {}, el('span', { 'data-error': 'false', 'aria-disabled': 'false', 'data-testid': `option_${optionId}_input` },
+        el('input', { id: `radio-${optionId}`, type: 'radio', name: `radio-${question.id}`, 'aria-disabled': 'false', value: '', checked: current.checked, 'data-q': question.id, 'data-i': index }))),
+      el('span', {}, el('span', { tabindex: '0', 'aria-hidden': 'false', text })))));
+  }
+  wrapper.append(el('div', {}, tooltip,
+    question.evidence ? el('div', { 'data-testid': 'option_help_context_message' }, el('span', { text: 'Examples of documents to attach: a policy, a procedure or a report.' }), el('span', { 'data-testid': 'option_help_context_toggle_new', text: ' Show more' })) : null));
+  if (current.checked && question.specify) {
+    wrapper.append(el('div', { 'data-testid': 'please_specify_questionnaire' },
+      el('label', { title: 'Please specify', for: `input-${optionId}` , text: 'Please specify' }),
+      el('textarea', { 'data-testid': 'option_extra_value', title: 'Please specify', id: `input-${optionId}`, autocomplete: 'off', 'data-q': question.id, 'data-i': index })));
+    wrapper.querySelector('textarea').value = current.specify;
+  }
+  if (current.checked && question.evidence && !/I don.t know|None of the above/.test(text)) {
+    wrapper.append(el('div', { 'data-testid': 'attachment_picker' },
+      el('button', { 'data-testid': 'document-buttons-browse', type: 'button', 'data-action': 'browse', 'data-key': `${question.id}:${index}`, text: 'Attach from document library' }),
+      el('button', { 'data-testid': 'document-buttons-upload', type: 'button', 'data-action': 'upload', 'data-key': `${question.id}:${index}`, text: 'Upload new document' })));
+    current.documents.forEach((document, docIndex) => wrapper.append(attachmentDetails(question, index, document, docIndex)));
+    if (current.documents.length === 0) wrapper.append(el('div', { text: 'You didn’t provide any supporting documents. Without them your answer may not be taken into account.' }));
+  }
+  return wrapper;
+}
+
+function renderQuestion(question) {
+  const answered = question.options.some((_, index) => stateOf(question.id, index).checked);
+  return el('section', { 'data-item': 'question', 'data-testid': `question_${question.id}` },
+    el('div', {},
+      answered ? el('span', { 'data-testid': 'question_label_badge_question_completed', text: 'Complete' })
+               : question.required ? el('span', { 'data-testid': 'question_label_badge_question_required', text: 'Mandatory' }) : null,
+      el('span', { 'data-testid': 'question_label_badge_question_code', text: question.code }),
+      el('a', { 'data-testid': 'questionnaire-discover-how-we-score', href: '#', text: 'Discover how we score' })),
+    el('div', {}, el('h3', { 'data-testid': `question_title_wrapper_${question.id}` }, el('span', { 'data-testid': 'question_title_translated', text: question.title }))),
+    el('div', {}, ...question.options.map((_, index) => renderOption(question, index))));
+}
+
+function renderPage(index) {
+  const page = PAGES[index];
+  renderSidebar(index);
+  const root = document.getElementById('page');
+  root.replaceChildren(...page.questions.map(renderQuestion),
+    el('div', { class: 'bar' },
+      index > 0 ? el('button', { 'data-testid': 'questionnaire_previous_page', type: 'button', id: '', 'data-action': 'previous', text: 'Save & previous' }) : el('span'),
+      el('div', {},
+        el('button', { 'data-testid': 'questionaire_intro_button', type: 'button', id: '', 'data-action': 'save', text: 'Save' }),
+        el('button', { 'data-testid': 'questionnaire_next_page', type: 'button', id: '', 'data-action': 'next', text: 'Save & next' }))));
+}
+
+function renderSubmit() {
+  renderSidebar('submit');
+  const root = document.getElementById('page');
+  if (submitted) {
+    root.replaceChildren(el('h2', { text: 'Thank you, your questionnaire has been submitted' }), el('p', { text: 'Reference EV-TEST-0001' }));
+    return;
+  }
+  const missing = PAGES.flatMap((page) => page.questions).filter((question) => question.required && !question.options.some((_, index) => stateOf(question.id, index).checked));
+  root.replaceChildren(el('h2', { text: 'Check & Submit' }),
+    el('p', { text: missing.length === 0 ? 'All mandatory questions are answered.' : `${missing.length} mandatory questions are not answered yet.` }),
+    el('button', { type: 'button', 'data-testid': 'submit_questionnaire', 'data-action': 'submit', text: 'Submit questionnaire' }));
+}
+
+function route() {
+  const hash = location.hash || '#/questionnaire/0/GEN701';
+  if (hash === '#/check-and-submit') return renderSubmit();
+  if (hash === '#/documents-library') { renderSidebar(null); document.getElementById('page').replaceChildren(el('h2', { text: 'Document Library' }), el('ul', {}, ...LIBRARY.map((name) => el('li', { text: name })))); return; }
+  if (hash === '#/logged-out') { document.getElementById('page').replaceChildren(el('p', { text: 'You have been logged out.' })); return; }
+  const match = /^#\/questionnaire\/(\d+)\//.exec(hash);
+  renderPage(match ? Math.min(Number(match[1]), PAGES.length - 1) : 0);
+}
+
+function openDialog(title, body, onConfirm, confirmLabel) {
+  const dialog = el('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': title }, el('h3', { text: title }), body,
+    el('div', {},
+      el('button', { type: 'button', 'data-testid': 'dialog_cancel', text: 'Cancel' }),
+      el('button', { type: 'button', 'data-testid': 'dialog_confirm', text: confirmLabel })));
+  dialog.querySelector('[data-testid=dialog_cancel]').addEventListener('click', () => dialog.remove());
+  dialog.querySelector('[data-testid=dialog_confirm]').addEventListener('click', () => { if (onConfirm(dialog) !== false) { dialog.remove(); route(); } });
+  document.body.append(dialog);
+}
+
+document.addEventListener('change', (event) => {
+  const input = event.target;
+  if (!input.dataset.q) return;
+  const question = PAGES.flatMap((page) => page.questions).find((candidate) => candidate.id === input.dataset.q);
+  const index = Number(input.dataset.i);
+  if (input.matches('textarea')) { stateOf(question.id, index).specify = input.value; return; }
+  if (question.kind === 'radio') question.options.forEach((_, other) => { stateOf(question.id, other).checked = other === index; });
+  else stateOf(question.id, index).checked = input.checked;
+  route();
+});
+document.addEventListener('input', (event) => {
+  const input = event.target;
+  if (input.matches('textarea[data-q]')) stateOf(input.dataset.q, Number(input.dataset.i)).specify = input.value;
+});
+document.addEventListener('click', (event) => {
+  const button = event.target.closest('[data-action]');
+  if (!button) return;
+  event.preventDefault();
+  const action = button.dataset.action;
+  const match = /^#\/questionnaire\/(\d+)\//.exec(location.hash || '#/questionnaire/0/');
+  const index = match ? Number(match[1]) : 0;
+  if (action === 'save') toast('Your answers have been saved');
+  if (action === 'next') { toast('Your answers have been saved'); location.hash = index + 1 < PAGES.length ? `#/questionnaire/${index + 1}/${PAGES[index + 1].codes}` : '#/check-and-submit'; }
+  if (action === 'previous') { toast('Your answers have been saved'); location.hash = `#/questionnaire/${index - 1}/${PAGES[index - 1].codes}`; }
+  if (action === 'submit') { submitted = true; route(); }
+  if (action === 'detach') { const [q, i, d] = button.dataset.key.split(':'); stateOf(q, Number(i)).documents.splice(Number(d), 1); route(); }
+  if (action === 'upload') {
+    const [q, i] = button.dataset.key.split(':');
+    openDialog('Upload new document', el('div', {},
+      el('label', { for: 'upload_file', text: 'File' }), el('input', { type: 'file', id: 'upload_file', 'data-testid': 'upload_document_file' }),
+      el('label', { for: 'upload_type', text: 'Document type' }), el('select', { id: 'upload_type' }, ...['Other', 'Sustainability / Annual Report', 'Policy', 'Certificate'].map((type) => el('option', { text: type }))),
+      el('label', { for: 'upload_pages', text: 'Indicated pages' }), el('input', { type: 'text', id: 'upload_pages' }),
+      el('label', { for: 'upload_comment', text: 'Comment' }), el('textarea', { id: 'upload_comment' })), (dialog) => {
+        const file = dialog.querySelector('#upload_file').files[0];
+        if (!file) { toast('Choose a file to upload'); return false; }
+        stateOf(q, Number(i)).documents.push({ name: file.name, type: dialog.querySelector('#upload_type').value, pages: dialog.querySelector('#upload_pages').value, comment: dialog.querySelector('#upload_comment').value });
+      }, 'Attach document');
+  }
+  if (action === 'browse') {
+    const [q, i] = button.dataset.key.split(':');
+    openDialog('Attach from document library', el('div', {}, ...LIBRARY.map((name, docIndex) => el('label', {}, el('input', { type: 'radio', name: 'library_doc', value: String(docIndex) }), name))), (dialog) => {
+      const chosen = dialog.querySelector('input[name=library_doc]:checked');
+      if (!chosen) return false;
+      stateOf(q, Number(i)).documents.push({ name: LIBRARY[Number(chosen.value)], type: 'Other', pages: '', comment: '' });
+    }, 'Attach');
+  }
+});
+window.addEventListener('hashchange', route);
+route();
+</script>
+</body>
+</html>
