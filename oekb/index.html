@@ -246,6 +246,7 @@
   document.getElementById('next-mandatory').addEventListener('click', () => nextMandatory(1));
   document.getElementById('finalize').addEventListener('click', () => { document.getElementById('page-end').textContent = 'The questionnaire has been finalized.'; });
   document.addEventListener('click', closePanel);
+  document.addEventListener('keydown', (event) => { if (event.key === 'Escape') closePanel(); });
   window.addEventListener('hashchange', render);
   render();
 </script>
