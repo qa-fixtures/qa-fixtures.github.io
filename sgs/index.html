@@ -1,0 +1,119 @@
+<!doctype html>
+<!--
+  SGS supplier questionnaire-shaped test portal. Reproduces the DOM of the
+  SGS supplier self-assessment (a Laravel Livewire application) as captured
+  in 2025: a header with the questionnaire's name and "Submit", answered and
+  not-answered counts, a list of sections with their completion, question
+  cards numbered "1.", Yes / No radios inside labels with no `name` (the
+  framework binds them by model, not by name), a question already validated
+  whose answer can no longer be changed, an explanation box, "Clear Answer",
+  "Comments", "Attach file" and an "Assign User" panel with a user search
+  and a checkbox per colleague. Wording is neutral placeholder text; no
+  company, person, answer or document of any real questionnaire is here.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Supplier SAQ (test portal)</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 0; font-size: 14px; color: #222; }
+  header { display: flex; justify-content: space-between; align-items: center; padding: 12px 24px; border-bottom: 1px solid #ddd; }
+  .layout { display: flex; }
+  aside { width: 260px; padding: 12px; border-right: 1px solid #ddd; }
+  aside a { display: flex; justify-content: space-between; padding: 6px 0; }
+  aside a h2 { font-size: 14px; margin: 0; }
+  main { flex: 1; padding: 16px 24px; }
+  .question { border: 1px solid #ddd; padding: 12px; margin-bottom: 12px; }
+  .answers label { margin-right: 16px; }
+  .assign { display: none; }
+  textarea { width: 100%; }
+</style>
+</head>
+<body>
+<header>
+  <div><a href="#/">Questionnaire: Supplier SAQ (test)</a> <span>Example Supplier Ltd</span> <p>2026 (Yearly)</p></div>
+  <div><button type="button" id="submit"><span>Submit</span></button> <span>Total Answered</span> <span id="answered">0</span> <span>Not Answered</span> <span id="open">0</span></div>
+</header>
+<div class="layout">
+  <aside id="sections"></aside>
+  <main><span id="section-title"></span><div id="questions"></div><div id="notice"></div></main>
+</div>
+<script>
+  const SECTIONS = [
+    { title: 'Environment', questions: [
+      { id: 'env-1', text: 'Does the organisation comply with applicable environmental regulations?', validated: 'yes' },
+      { id: 'env-2', text: 'Does the organisation have an environmental policy?' },
+      { id: 'env-3', text: 'Does the organisation monitor its waste?' },
+    ] },
+    { title: 'Health and safety', questions: [
+      { id: 'hs-1', text: 'Does the organisation record workplace incidents?' },
+    ] },
+  ];
+  const answers = { 'env-1': 'yes' };
+  const notes = {};
+
+  function route() { const m = /#\/section\/(\d+)/.exec(location.hash); return m ? Math.min(Number(m[1]), SECTIONS.length - 1) : 0; }
+  function all() { return SECTIONS.flatMap((section) => section.questions); }
+
+  function card(q, index) {
+    const element = document.createElement('div'); element.className = 'question'; element.id = `question-${q.id}`;
+    const head = document.createElement('div');
+    const wording = document.createElement('p');
+    const number = document.createElement('span'); number.textContent = ` ${index + 1}. `;
+    const text = document.createElement('span'); text.textContent = ` ${q.text} `;
+    wording.append(number, text); head.append(wording);
+    if (q.validated) { const lock = document.createElement('p'); lock.textContent = "The answer to this question can't be changed, because it is already validated."; head.append(lock); }
+    const answersBlock = document.createElement('div'); answersBlock.className = 'answers';
+    for (const [value, label] of [['yes', 'Yes'], ['no', 'No']]) {
+      const holder = document.createElement('label');
+      const input = document.createElement('input'); input.type = 'radio'; input.value = value; input.setAttribute('wire:model', 'answer.value');
+      input.checked = answers[q.id] === value; input.disabled = !!q.validated;
+      // The framework binds the radios by model, not by name: each one is its own group as far as the browser knows.
+      input.addEventListener('change', () => { answers[q.id] = value; render(); });
+      holder.append(input, ` ${label} `);
+      answersBlock.append(holder);
+    }
+    const explanation = document.createElement('div');
+    const caption = document.createElement('label'); caption.textContent = 'Explanation'; caption.htmlFor = `note-${q.id}`;
+    const area = document.createElement('textarea'); area.id = `note-${q.id}`; area.rows = 3; area.value = notes[q.id] ?? ''; area.disabled = !!q.validated;
+    area.addEventListener('change', () => { notes[q.id] = area.value; });
+    explanation.append(caption, area);
+    const tools = document.createElement('div');
+    const clear = document.createElement('button'); clear.type = 'button'; clear.textContent = 'Clear Answer';
+    clear.addEventListener('click', () => { delete answers[q.id]; delete notes[q.id]; render(); });
+    const comments = document.createElement('button'); comments.type = 'button'; comments.innerHTML = '<span> 0 Comments </span>';
+    const attach = document.createElement('button'); attach.type = 'button'; attach.innerHTML = '<span> Attach file </span>';
+    const assignToggle = document.createElement('button'); assignToggle.type = 'button'; assignToggle.innerHTML = '<span>Assign User</span>';
+    const assign = document.createElement('div'); assign.className = 'assign';
+    const search = document.createElement('input'); search.type = 'text'; search.placeholder = 'Type here to search user.';
+    assign.append(search);
+    for (const person of ['Colleague A', 'Colleague B']) { const label = document.createElement('label'); const box = document.createElement('input'); box.type = 'checkbox'; label.append(box, ` ${person} `); assign.append(label); }
+    assignToggle.addEventListener('click', () => { assign.style.display = assign.style.display === 'block' ? 'none' : 'block'; });
+    tools.append(clear, comments, attach, assignToggle, assign);
+    element.append(head, answersBlock, explanation, tools);
+    return element;
+  }
+
+  function render() {
+    const current = route();
+    const aside = document.getElementById('sections'); aside.textContent = '';
+    SECTIONS.forEach((section, index) => {
+      const link = document.createElement('a'); link.href = `#/section/${index}`;
+      const title = document.createElement('h2'); title.textContent = section.title;
+      const done = document.createElement('h2'); done.textContent = `${Math.round((section.questions.filter((q) => answers[q.id]).length / section.questions.length) * 100)}%`;
+      link.append(title, done); aside.append(link);
+    });
+    document.getElementById('section-title').textContent = SECTIONS[current].title;
+    const root = document.getElementById('questions'); root.textContent = '';
+    SECTIONS[current].questions.forEach((q, index) => root.append(card(q, index)));
+    document.getElementById('answered').textContent = String(all().filter((q) => answers[q.id]).length);
+    document.getElementById('open').textContent = String(all().filter((q) => !answers[q.id]).length);
+  }
+
+  document.getElementById('submit').addEventListener('click', () => { document.getElementById('notice').textContent = 'The questionnaire has been submitted.'; });
+  window.addEventListener('hashchange', render);
+  render();
+</script>
+</body>
+</html>
