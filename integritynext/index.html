@@ -123,6 +123,9 @@ function route() {
 <div><button tabindex="0" type="button" data-testid="modal-cancel-button" data-nav="back">${index === 0 ? 'Cancel' : 'Back'}</button><button tabindex="0" type="${last ? 'submit' : 'button'}" data-testid="modal-save-button" data-nav="${last ? 'update' : 'next'}">${last ? 'Update' : 'Next'}</button></div>${saved[key] ? '<p data-testid="module-saved">Your answers were updated and shared.</p>' : ''}</form>`;
 }
 
+document.addEventListener('keydown', (event) => {
+  if (event.key === 'Escape') document.querySelectorAll('#modal [role=listbox]').forEach((list) => list.remove());
+});
 document.addEventListener('click', (event) => {
   const t = event.target.closest('button,[role=combobox],[role=option]');
   if (!t) return;
