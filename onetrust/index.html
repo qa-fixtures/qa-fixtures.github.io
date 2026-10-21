@@ -1,0 +1,172 @@
+<!doctype html>
+<!--
+  OneTrust-shaped test portal. Reproduces the DOM of a OneTrust assessment
+  (an Angular application) as captured in 2026: a header with search, help
+  and the user's menu, a section list with question counts, a progress bar,
+  question cards numbered "6.1", answers as Yes / No / Not sure / Not
+  applicable buttons with aria-pressed (each in its own block, with no group
+  around them), a "Please explain." rich-text editor per question (a
+  contenteditable textbox under a formatting toolbar, the same name on every
+  question), a text question with its own "Not sure" toggle labelled by the
+  question, attachment and comment buttons named for the question, "Create
+  info request" (asks someone else for the answer), section navigation with
+  Previous / Next, and "Submit". Wording is neutral placeholder text; no
+  company, person, answer or document of any real assessment is here.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Privacy Management (test portal)</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 0; font-size: 14px; color: #222; background: #f5f6f8; }
+  header { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 8px 16px; border-bottom: 1px solid #ddd; }
+  .layout { display: flex; }
+  nav { width: 240px; background: #fff; padding: 12px; min-height: 100vh; }
+  nav button { display: flex; justify-content: space-between; width: 100%; border: 0; background: none; padding: 6px; cursor: pointer; text-align: left; }
+  nav button[aria-current=true] { font-weight: 700; }
+  main { flex: 1; padding: 16px 24px; }
+  .card { background: #fff; border: 1px solid #ddd; padding: 16px; margin-bottom: 12px; }
+  .answers { display: flex; gap: 8px; margin: 8px 0; }
+  .answers button[aria-pressed=true] { background: #1f5fbf; color: #fff; }
+  .toolbar { display: flex; gap: 4px; }
+  .toolbar button { font-size: 11px; }
+  [contenteditable] { border: 1px solid #aaa; min-height: 60px; padding: 6px; background: #fff; }
+  .footer { display: flex; justify-content: space-between; margin-top: 16px; }
+</style>
+</head>
+<body>
+<header>
+  <p>Example Corp - Privacy Management</p>
+  <span>
+    <button type="button" aria-label="Global search"></button>
+    <button type="button" aria-label="Get help"></button>
+    <div role="button" tabindex="0" aria-label="User menu">U</div>
+  </span>
+</header>
+<div class="layout">
+  <nav aria-label="Sections" id="sections"></nav>
+  <main role="main">
+    <div><span>Supplier AI Impact Assessment (test)</span> <span id="count"></span>
+      <div role="progressbar" aria-label="progress bar" id="progress"></div></div>
+    <p id="section-of"></p>
+    <div id="questions"></div>
+    <div class="footer">
+      <button type="button" id="previous">Previous</button>
+      <button type="button" id="next">Next</button>
+      <button type="button" id="submit">Submit</button>
+    </div>
+    <div id="notice"></div>
+  </main>
+</div>
+<script>
+  const SECTIONS = [
+    { title: 'AI System', questions: [
+      { n: '1.1', kind: 'text', text: 'Please describe the AI system and how it operates.' },
+      { n: '1.2', kind: 'choice', text: 'Is the AI system developed in-house?', options: ['Yes', 'No', 'Not sure'] },
+    ] },
+    { title: 'Preliminary Risk Assessment', questions: [
+      { n: '2.1', kind: 'choice', text: 'Has the reliability of the AI system been evaluated and, if so, how?', options: ['Yes', 'No', 'Not sure'] },
+      { n: '2.2', kind: 'choice', text: 'Has the AI system been tested for unfair bias?', options: ['Yes', 'No', 'Not sure', 'Not applicable'] },
+    ] },
+  ];
+  const answers = {};
+  const notes = {};
+  let editorCount = 0;
+
+  function route() { const m = /#\/section\/(\d+)/.exec(location.hash); return m ? Math.min(Number(m[1]), SECTIONS.length - 1) : 0; }
+  function answeredCount() { return SECTIONS.flatMap((section) => section.questions).filter((q) => answers[q.n]).length; }
+
+  function editor(q, label) {
+    editorCount += 1;
+    const block = document.createElement('aa-rich-text-editor');
+    const field = document.createElement('div');
+    const caption = document.createElement('label'); caption.htmlFor = `form-element-${editorCount}`; caption.textContent = ` ${label} `;
+    const app = document.createElement('div'); app.setAttribute('role', 'application');
+    const toolbar = document.createElement('div'); toolbar.className = 'toolbar';
+    for (const tool of ['Bold', 'Italic', 'Underline', 'Ordered List', 'Help']) {
+      const button = document.createElement('button'); button.type = 'button'; button.setAttribute('role', 'button'); button.tabIndex = -1; button.title = tool;
+      const span = document.createElement('span'); span.textContent = tool; button.append(span);
+      toolbar.append(button);
+    }
+    const box = document.createElement('div'); box.setAttribute('dir', 'ltr');
+    const text = document.createElement('div'); text.contentEditable = 'true'; text.setAttribute('role', 'textbox'); text.setAttribute('aria-multiline', 'true');
+    text.setAttribute('aria-placeholder', 'Enter justification here.'); text.setAttribute('aria-label', label);
+    text.innerHTML = notes[q.n] ? `<p>${notes[q.n].replace(/[<&]/g, '')}</p>` : '<p><br></p>';
+    text.addEventListener('input', () => { notes[q.n] = text.innerText.trim(); if (q.kind === 'text') { answers[q.n] = notes[q.n]; refresh(); } });
+    const words = document.createElement('span'); words.textContent = 'Words : 0';
+    box.append(text);
+    app.append(toolbar, box, words);
+    field.append(caption, app); block.append(field);
+    return block;
+  }
+
+  function card(q) {
+    const element = document.createElement('aa-assessment-detail-question');
+    const body = document.createElement('div'); body.className = 'card';
+    const number = document.createElement('div'); number.innerHTML = '<div><span></span></div>'; number.querySelector('span').textContent = q.n;
+    const wording = document.createElement('p'); wording.textContent = ` ${q.text} `;
+    body.append(number, wording);
+    if (q.kind === 'choice') {
+      const row = document.createElement('div'); row.className = 'answers';
+      for (const option of q.options) {
+        const holder = document.createElement('div');
+        const button = document.createElement('button'); button.setAttribute('vtbutton', ''); button.setAttribute('aria-pressed', String(answers[q.n] === option));
+        const span = document.createElement('span'); span.textContent = ` ${option} `; button.append(span);
+        button.addEventListener('click', () => { answers[q.n] = option; render(); });
+        holder.append(button); row.append(holder);
+      }
+      body.append(row, editor(q, 'Please explain.'));
+    } else {
+      body.append(editor(q, 'Your answer'));
+      const unsure = document.createElement('button'); unsure.setAttribute('aria-pressed', String(answers[q.n] === 'Not sure'));
+      unsure.setAttribute('aria-label', `${q.n} ${q.text} Not Sure`); unsure.textContent = 'Not sure';
+      unsure.addEventListener('click', () => { answers[q.n] = answers[q.n] === 'Not sure' ? undefined : 'Not sure'; render(); });
+      body.append(unsure);
+    }
+    for (const kind of ['Attachment', 'Comments']) {
+      const button = document.createElement('button'); button.setAttribute('aria-label', `${kind} for ${q.text}. 0 ${kind === 'Attachment' ? 'attachments' : 'Comments'} available. Click to add more.`);
+      const span = document.createElement('span'); span.textContent = ' 0 '; button.append(span);
+      body.append(button);
+    }
+    element.append(body);
+    const request = document.createElement('button'); request.title = 'Create info request'; request.setAttribute('aria-label', 'Create info request');
+    request.addEventListener('click', () => { document.getElementById('notice').textContent = 'An info request was sent.'; });
+    element.append(request);
+    return element;
+  }
+
+  function refresh() {
+    const total = SECTIONS.flatMap((section) => section.questions).length;
+    document.getElementById('count').textContent = `${answeredCount()}/${total}`;
+    document.getElementById('progress').textContent = `${Math.round((answeredCount() / total) * 100)}%`;
+  }
+
+  function render() {
+    const current = route();
+    const nav = document.getElementById('sections'); nav.textContent = '';
+    SECTIONS.forEach((section, index) => {
+      const button = document.createElement('button'); button.type = 'button'; if (index === current) button.setAttribute('aria-current', 'true');
+      const title = document.createElement('span'); title.textContent = section.title;
+      const count = document.createElement('span'); count.textContent = String(section.questions.filter((q) => !answers[q.n]).length);
+      button.append(title, count);
+      button.addEventListener('click', () => { location.hash = `#/section/${index}`; });
+      nav.append(button);
+    });
+    document.getElementById('section-of').textContent = `SECTION ${current + 1} OF ${SECTIONS.length}`;
+    const root = document.getElementById('questions'); root.textContent = '';
+    editorCount = 0;
+    for (const q of SECTIONS[current].questions) root.append(card(q));
+    document.getElementById('previous').disabled = current === 0;
+    document.getElementById('next').disabled = current === SECTIONS.length - 1;
+    refresh();
+  }
+
+  document.getElementById('previous').addEventListener('click', () => { location.hash = `#/section/${Math.max(route() - 1, 0)}`; });
+  document.getElementById('next').addEventListener('click', () => { location.hash = `#/section/${Math.min(route() + 1, SECTIONS.length - 1)}`; });
+  document.getElementById('submit').addEventListener('click', () => { document.getElementById('notice').textContent = 'The assessment has been submitted.'; });
+  window.addEventListener('hashchange', render);
+  render();
+</script>
+</body>
+</html>
