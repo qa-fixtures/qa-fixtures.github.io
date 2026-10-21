@@ -1,0 +1,212 @@
+<!doctype html>
+<!--
+  OECD Due Diligence Checker-shaped test portal. Reproduces the DOM of the
+  OECD Due Diligence Checker (an Angular + PrimeNG self-assessment, anonymous,
+  kept in the browser) as captured in 2026: a stepper (Selection, Step 1 …,
+  Results), a selection page with a PrimeNG multiselect of steps (a readonly
+  role=listbox input with no placeholder, options in an overlay), scoping
+  checkboxes whose input is hidden with a `label for`, terms the user must
+  accept and "Start your self-check", step pages whose numbered questions
+  are PrimeNG select buttons (role=group of role=button with aria-pressed and
+  an aria-labelledby pointing at no element), a check-all-that-apply list,
+  "Previous questions" / "Next questions", "Start over" (erases every
+  answer) and a results page. Wording is neutral placeholder text.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Due Diligence Checker (test portal)</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 0; font-size: 14px; color: #222; }
+  header { display: flex; justify-content: space-between; padding: 12px 24px; background: #0b3b60; color: #fff; }
+  main { padding: 16px 24px; max-width: 900px; }
+  ol.steps { display: flex; gap: 16px; list-style: none; padding: 0; }
+  ol.steps li.active { font-weight: 700; }
+  .p-hidden-accessible { border: 0; clip: rect(0 0 0 0); height: 1px; margin: -1px; overflow: hidden; padding: 0; position: absolute; width: 1px; }
+  .p-checkbox { display: inline-flex; align-items: center; }
+  .box { width: 16px; height: 16px; border: 1px solid #666; cursor: pointer; }
+  .box.checked { background: #0b3b60; }
+  .choice { display: flex; gap: 8px; align-items: center; margin: 6px 0; }
+  [role=group] { display: flex; gap: 4px; }
+  [role=group] [role=button] { border: 1px solid #0b3b60; padding: 6px 14px; cursor: pointer; }
+  [role=group] [role=button][aria-pressed=true] { background: #0b3b60; color: #fff; }
+  .p-multiselect { position: relative; border: 1px solid #999; width: 520px; display: flex; }
+  .p-multiselect .label { flex: 1; padding: 6px; cursor: pointer; min-height: 18px; }
+  .panel { position: absolute; background: #fff; border: 1px solid #999; width: 520px; z-index: 10; }
+  .panel li { list-style: none; padding: 6px; cursor: pointer; }
+  .nav { display: flex; justify-content: space-between; margin-top: 24px; }
+</style>
+</head>
+<body>
+<app-root>
+<header><span>Due Diligence Checker (test)</span><button type="button" id="start-over">Start over</button></header>
+<main>
+  <p-steps><ol class="steps" id="steps"></ol></p-steps>
+  <div id="page"></div>
+  <div id="notice"></div>
+</main>
+</app-root>
+<script>
+  const STEPS = [
+    { id: 1, title: 'Establish management systems', questions: [
+      { id: '1.1', kind: 'pick', text: 'Does your enterprise have a written supply chain policy?' },
+      { id: '1.2', kind: 'pick', text: 'Is a senior person responsible for implementing the policy?' },
+      { id: '1.3', kind: 'all', text: 'Which of the following does your policy cover?', options: ['Own operations', 'Direct suppliers', 'Indirect suppliers', 'Business partners'] },
+    ] },
+    { id: 2, title: 'Identify and assess risks', questions: [
+      { id: '2.1', kind: 'pick', text: 'Does your enterprise map its supply chain?' },
+      { id: '2.2', kind: 'pick', text: 'Are identified risks reviewed at least once a year?' },
+    ] },
+    { id: 3, title: 'Provide for remediation', questions: [
+      { id: '3.1', kind: 'pick', text: 'When your enterprise has caused an adverse impact, does it provide for remediation?' },
+      { id: '3.2', kind: 'pick', text: 'Does your enterprise have a grievance mechanism open to affected stakeholders?' },
+    ] },
+  ];
+  const state = { steps: [], scope: [], terms: [false, false, false], started: false, answers: {} };
+  let panel = null;
+
+  function route() { const m = /#\/(selection|step\/(\d+)|results)/.exec(location.hash); if (!m || !state.started) return { page: 'selection' }; if (m[1] === 'results') return { page: 'results' }; if (m[2]) return { page: 'step', step: Number(m[2]) }; return { page: 'selection' }; }
+  function chosenSteps() { return STEPS.filter((step) => state.steps.includes(step.id)); }
+  function closePanel() { if (panel) { panel.remove(); panel = null; } }
+
+  function checkbox(id, labelText, checked, onToggle) {
+    const row = document.createElement('div'); row.className = 'choice';
+    const host = document.createElement('p-checkbox');
+    const outer = document.createElement('div'); outer.className = 'p-checkbox';
+    const hidden = document.createElement('div'); hidden.className = 'p-hidden-accessible';
+    const input = document.createElement('input'); input.type = 'checkbox'; input.id = id; input.value = 'undefined'; input.checked = checked; input.setAttribute('aria-checked', String(checked));
+    input.addEventListener('change', onToggle);
+    hidden.append(input);
+    const box = document.createElement('div'); box.className = `box${checked ? ' checked' : ''}`;
+    box.addEventListener('click', () => input.click());
+    outer.append(hidden, box); host.append(outer);
+    const label = document.createElement('label'); label.htmlFor = id;
+    const inner = document.createElement('div'); inner.textContent = labelText; label.append(inner);
+    row.append(host, label);
+    return row;
+  }
+
+  function renderSteps(current) {
+    const list = document.getElementById('steps'); list.textContent = '';
+    const items = [{ label: 'Selection', key: 'selection' }, ...chosenSteps().map((step) => ({ label: `Step ${step.id}`, key: `step/${step.id}` })), { label: 'Results', key: 'results' }];
+    items.forEach((item, position) => {
+      const li = document.createElement('li'); if (item.key === current) li.className = 'active';
+      const number = document.createElement('span'); number.textContent = String(position + 1);
+      const title = document.createElement('span'); title.textContent = item.label;
+      li.append(number, ' ', title); list.append(li);
+    });
+  }
+
+  function renderSelection(page) {
+    renderSteps('selection');
+    const heading = document.createElement('h3');
+    heading.append('Please select the steps for which you want to conduct the self-check. ');
+    const hint = document.createElement('span'); hint.textContent = 'The questionnaire only shows questions related to the selected steps.'; heading.append(hint);
+    const multi = document.createElement('p-multiselect');
+    const box = document.createElement('div'); box.className = 'p-multiselect';
+    const wrap = document.createElement('div'); wrap.className = 'p-hidden-accessible';
+    const input = document.createElement('input'); input.type = 'text'; input.readOnly = true; input.setAttribute('role', 'listbox'); input.setAttribute('aria-haspopup', 'listbox'); input.setAttribute('aria-expanded', 'false');
+    wrap.append(input);
+    const label = document.createElement('div'); label.className = 'label';
+    label.textContent = chosenSteps().map((step) => `Step ${step.id}: ${step.title}`).join(', ');
+    box.append(wrap, label); multi.append(box);
+    const open = (event) => {
+      event.stopPropagation(); closePanel();
+      panel = document.createElement('div'); panel.className = 'panel';
+      const list = document.createElement('ul'); list.setAttribute('role', 'listbox'); list.setAttribute('aria-multiselectable', 'true');
+      for (const step of STEPS) {
+        const item = document.createElement('li'); item.setAttribute('role', 'option'); item.setAttribute('aria-selected', String(state.steps.includes(step.id)));
+        item.textContent = `Step ${step.id}: ${step.title}`;
+        item.addEventListener('click', (clickEvent) => { clickEvent.stopPropagation(); state.steps = state.steps.includes(step.id) ? state.steps.filter((id) => id !== step.id) : [...state.steps, step.id].sort(); render(); input.click(); });
+        list.append(item);
+      }
+      panel.append(list);
+      const rect = box.getBoundingClientRect(); panel.style.left = `${rect.left + window.scrollX}px`; panel.style.top = `${rect.bottom + window.scrollY}px`;
+      document.body.append(panel);
+      input.setAttribute('aria-expanded', 'true');
+    };
+    input.addEventListener('click', open); label.addEventListener('click', open);
+    page.append(heading, multi);
+    const scopeHeading = document.createElement('h3'); scopeHeading.innerHTML = '<div>Which materials does your enterprise source? </div>';
+    page.append(scopeHeading);
+    for (const [index, option] of ['Precious metals', 'Industrial metals'].entries()) {
+      page.append(checkbox(`0.01.${index + 1}`, option, state.scope.includes(option), () => { state.scope = state.scope.includes(option) ? state.scope.filter((value) => value !== option) : [...state.scope, option]; render(); }));
+    }
+    const terms = document.createElement('h3'); terms.textContent = 'Terms and conditions'; page.append(terms);
+    const TERMS = ['I understand that this checker is a voluntary self-assessment tool and does not certify my organisation.', 'I confirm that my organisation will not claim endorsement on the basis of its results.', 'I acknowledge that the provider of this tool is not liable for any use of its results.'];
+    TERMS.forEach((term, index) => page.append(checkbox(`terms${index + 1}`, term, state.terms[index], () => { state.terms[index] = !state.terms[index]; render(); })));
+    const start = document.createElement('button'); start.type = 'button'; start.textContent = 'Start your self-check';
+    start.disabled = !(state.terms.every(Boolean) && state.steps.length > 0);
+    start.title = 'You need to accept all terms and conditions and select at least one step';
+    start.addEventListener('click', () => { state.started = true; location.hash = `#/step/${chosenSteps()[0].id}`; });
+    page.append(start);
+  }
+
+  function renderStep(page, stepId) {
+    const steps = chosenSteps();
+    const position = steps.findIndex((step) => step.id === stepId);
+    const step = steps[position];
+    if (!step) { location.hash = '#/selection'; return; }
+    renderSteps(`step/${step.id}`);
+    const title = document.createElement('h1'); const inner = document.createElement('div'); inner.textContent = step.title; title.append(inner); page.append(title);
+    step.questions.forEach((question, index) => {
+      const block = document.createElement('div');
+      const heading = document.createElement('h3'); const text = document.createElement('div'); text.textContent = ` ${index + 1}. ${question.text} `; heading.append(text); block.append(heading);
+      if (question.kind === 'pick') {
+        const select = document.createElement('p-selectbutton');
+        const group = document.createElement('div'); group.setAttribute('role', 'group');
+        for (const option of ['Yes', 'Partially', 'No']) {
+          const button = document.createElement('div'); button.setAttribute('role', 'button'); button.tabIndex = 0;
+          button.setAttribute('aria-pressed', String(state.answers[question.id] === option)); button.setAttribute('aria-label', option); button.setAttribute('aria-labelledby', option);
+          const span = document.createElement('span'); span.textContent = option; button.append(span);
+          button.addEventListener('click', () => { state.answers[question.id] = option; render(); });
+          group.append(button);
+        }
+        select.append(group); block.append(select);
+      } else {
+        const picked = state.answers[question.id] ?? [];
+        question.options.forEach((option, optionIndex) => block.append(checkbox(`${question.id}.${optionIndex + 1}`, option, picked.includes(option), () => {
+          const now = state.answers[question.id] ?? [];
+          state.answers[question.id] = now.includes(option) ? now.filter((value) => value !== option) : [...now, option];
+          render();
+        })));
+      }
+      page.append(block);
+    });
+    const nav = document.createElement('div'); nav.className = 'nav';
+    const previous = document.createElement('button'); previous.type = 'button'; previous.textContent = 'Previous questions';
+    previous.addEventListener('click', () => { location.hash = position === 0 ? '#/selection' : `#/step/${steps[position - 1].id}`; });
+    const next = document.createElement('button'); next.type = 'button'; next.textContent = 'Next questions';
+    next.addEventListener('click', () => { location.hash = position === steps.length - 1 ? '#/results' : `#/step/${steps[position + 1].id}`; });
+    nav.append(previous, next); page.append(nav);
+  }
+
+  function renderResults(page) {
+    renderSteps('results');
+    const title = document.createElement('h1'); title.textContent = 'Your results'; page.append(title);
+    const answered = Object.keys(state.answers).length;
+    const summary = document.createElement('p'); summary.textContent = `${answered} questions answered.`; page.append(summary);
+    const download = document.createElement('button'); download.type = 'button'; download.textContent = 'Download PDF of your results'; page.append(download);
+  }
+
+  function render() {
+    closePanel();
+    const page = document.getElementById('page'); page.textContent = '';
+    const where = route();
+    if (where.page === 'selection') renderSelection(page);
+    else if (where.page === 'step') renderStep(page, where.step);
+    else renderResults(page);
+  }
+
+  document.getElementById('start-over').addEventListener('click', () => {
+    state.steps = []; state.scope = []; state.terms = [false, false, false]; state.started = false; state.answers = {};
+    document.getElementById('notice').textContent = 'All answers were erased.';
+    location.hash = '#/selection'; render();
+  });
+  document.addEventListener('click', closePanel);
+  window.addEventListener('hashchange', render);
+  render();
+</script>
+</body>
+</html>

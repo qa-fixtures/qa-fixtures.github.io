@@ -32,7 +32,7 @@
   .p-checkbox .box { border-radius: 2px; }
   .box.checked { background: #00509e; }
   .p-dropdown { position: relative; display: inline-block; width: 260px; border: 1px solid #999; margin-right: 12px; }
-  .p-dropdown input { border: 0; width: 220px; padding: 6px; cursor: pointer; }
+  .p-dropdown-label { display: inline-block; width: 220px; padding: 6px; cursor: pointer; }
   .p-dropdown-panel { position: absolute; background: #fff; border: 1px solid #999; z-index: 10; width: 260px; }
   .p-dropdown-panel ul { list-style: none; margin: 0; padding: 0; }
   .p-dropdown-panel li { padding: 6px; cursor: pointer; }
@@ -100,11 +100,10 @@
   function dropdown(placeholder, options, current, onPick) {
     const host = document.createElement('p-dropdown');
     const box = document.createElement('div'); box.className = 'p-dropdown';
-    const wrap = document.createElement('div');
+    const wrap = document.createElement('div'); wrap.className = 'p-hidden-accessible';
     const input = document.createElement('input');
     input.type = 'text'; input.readOnly = true; input.setAttribute('role', 'listbox'); input.setAttribute('aria-haspopup', 'listbox'); input.placeholder = placeholder;
-    input.value = current ?? '';
-    const label = document.createElement('span'); label.textContent = current ?? placeholder; label.className = 'p-dropdown-label'; label.style.display = 'none';
+    const label = document.createElement('span'); label.textContent = current ?? placeholder; label.className = 'p-dropdown-label';
     const trigger = document.createElement('div'); trigger.setAttribute('role', 'button'); trigger.setAttribute('aria-haspopup', 'listbox'); trigger.append(document.createElement('span')); trigger.style.cssText = 'display:inline-block;width:24px;height:24px;cursor:pointer;vertical-align:middle';
     wrap.append(input); box.append(wrap, label, trigger); host.append(box);
     const open = (event) => {
@@ -124,7 +123,7 @@
       document.getElementById('overlay').append(panel);
       openPanel = panel;
     };
-    input.addEventListener('click', open); trigger.addEventListener('click', open);
+    input.addEventListener('click', open); label.addEventListener('click', open); trigger.addEventListener('click', open);
     return host;
   }
 
