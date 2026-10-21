@@ -1,0 +1,110 @@
+<!doctype html>
+<!--
+  Kodiak Hub-shaped test portal. Reproduces the DOM of a Kodiak Hub
+  supplier questionnaire (an Angular application) as captured in 2025: a
+  header with "Fullscreen" and "Log out", the supplier, respondent and
+  status, a row of section buttons with their completion, questions as
+  data-testid="attribute" blocks, Yes / No radios and multiple-choice
+  checkboxes with a `label for` and no `name`, a certificate's expiry date
+  revealed by Yes, "None of the above", and "Data check", which lists what
+  is missing and offers "Submit". Wording is neutral placeholder text; no
+  company, person or answer of any real questionnaire is here.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Supplier questionnaire (test portal)</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 0; font-size: 14px; color: #222; }
+  header { display: flex; justify-content: space-between; padding: 10px 20px; border-bottom: 1px solid #ddd; }
+  .sections { display: flex; gap: 8px; padding: 10px 20px; }
+  .sections button[aria-current=true] { font-weight: 700; }
+  main { padding: 10px 20px; }
+  [data-testid=attribute] { border-bottom: 1px solid #eee; padding: 10px 0; }
+  [data-testid=option] { margin: 4px 0; }
+</style>
+</head>
+<body>
+<header>
+  <p>Example Supplier Ltd</p>
+  <span><button type="button"><span>Fullscreen</span></button> <button type="button" id="logout"><span>Log out</span></button></span>
+</header>
+<div><span>Supplier Name:</span> <span>Example Supplier Ltd</span> <span>Status:</span> <span id="status">Not submitted</span></div>
+<div class="sections" id="sections"></div>
+<main id="main"></main>
+<script>
+  const SECTIONS = [
+    { title: 'Health & Safety Management', heading: 'Health & Safety', questions: [
+      { id: '306', kind: 'radio', text: 'Does your company have a certified health and safety management system? If yes, enter the certificate expiration date.', options: [['306714', 'Yes'], ['306715', 'No']], reveal: 'expiry' },
+      { id: '178', kind: 'multi', text: 'Which of the following health and safety measures are in place? You may select more than one answer.', options: [['1785', 'Documented health and safety policy'], ['1786', 'Records of incidents'], ['1787', 'Documented targets'], ['1793', 'None of the above']] },
+    ] },
+    { title: 'Environmental Management', heading: 'Environment', questions: [
+      { id: '262', kind: 'radio', text: 'Does your company have a certified environmental management system?', options: [['2627273119', 'Yes'], ['2627273120', 'No']] },
+    ] },
+  ];
+  const answers = {};
+  let current = 0;
+  let checking = false;
+
+  function percent(section) { return Math.round((section.questions.filter((q) => (Array.isArray(answers[q.id]) ? answers[q.id].length : answers[q.id])).length / section.questions.length) * 100); }
+
+  function attribute(q) {
+    const block = document.createElement('div'); block.setAttribute('data-testid', 'attribute');
+    const wording = document.createElement('div'); wording.textContent = q.text; block.append(wording);
+    for (const [id, label] of q.options) {
+      const option = document.createElement('div'); option.setAttribute('data-testid', 'option');
+      const input = document.createElement('input'); input.type = q.kind === 'radio' ? 'radio' : 'checkbox'; input.id = id;
+      input.checked = q.kind === 'radio' ? answers[q.id] === label : (answers[q.id] ?? []).includes(label);
+      input.addEventListener('change', () => {
+        if (q.kind === 'radio') answers[q.id] = label;
+        else { const now = answers[q.id] ?? []; answers[q.id] = input.checked ? (label === 'None of the above' ? [label] : [...now.filter((value) => value !== 'None of the above'), label]) : now.filter((value) => value !== label); }
+        render();
+      });
+      const caption = document.createElement('label'); caption.htmlFor = id; caption.textContent = label;
+      option.append(input, caption); block.append(option);
+    }
+    if (q.reveal && answers[q.id] === 'Yes') {
+      const caption = document.createElement('label'); caption.htmlFor = `${q.id}-expiry`; caption.textContent = 'Certificate expiration date';
+      const date = document.createElement('input'); date.type = 'date'; date.id = `${q.id}-expiry`; date.value = answers[`${q.id}-expiry`] ?? '';
+      date.addEventListener('change', () => { answers[`${q.id}-expiry`] = date.value; });
+      block.append(caption, date);
+    }
+    return block;
+  }
+
+  function render() {
+    const nav = document.getElementById('sections'); nav.textContent = '';
+    const check = document.createElement('button'); check.type = 'button'; check.innerHTML = '<span>Data check</span>';
+    check.addEventListener('click', () => { checking = true; render(); });
+    nav.append(check);
+    SECTIONS.forEach((section, index) => {
+      const button = document.createElement('button'); button.type = 'button'; if (!checking && index === current) button.setAttribute('aria-current', 'true');
+      const title = document.createElement('span'); title.textContent = section.title;
+      const done = document.createElement('span'); done.textContent = ` ${percent(section)}% `;
+      button.append(title, done);
+      button.addEventListener('click', () => { checking = false; current = index; render(); });
+      nav.append(button);
+    });
+    const main = document.getElementById('main'); main.textContent = '';
+    if (checking) {
+      const missing = SECTIONS.flatMap((section) => section.questions.filter((q) => !(Array.isArray(answers[q.id]) ? answers[q.id].length : answers[q.id])).map((q) => q.text));
+      const title = document.createElement('h2'); title.textContent = 'Data check'; main.append(title);
+      const list = document.createElement('ul'); for (const text of missing) { const item = document.createElement('li'); item.textContent = text; list.append(item); } main.append(list);
+      const submit = document.createElement('button'); submit.type = 'button'; submit.textContent = 'Submit'; submit.disabled = missing.length > 0;
+      submit.addEventListener('click', () => { document.getElementById('status').textContent = 'Submitted'; });
+      main.append(submit);
+      return;
+    }
+    const section = SECTIONS[current];
+    const app = document.createElement('app-questionnaire-section');
+    const heading = document.createElement('div'); heading.textContent = section.heading; app.append(heading);
+    for (const q of section.questions) app.append(attribute(q));
+    main.append(app);
+  }
+
+  document.getElementById('logout').addEventListener('click', () => { document.body.textContent = 'You have been logged out.'; });
+  render();
+</script>
+</body>
+</html>
