@@ -1,0 +1,254 @@
+<!doctype html>
+<!--
+  OeKB ESG Data Hub-shaped test portal. Reproduces the DOM of the ESG Data
+  Hub questionnaire (an Angular + PrimeNG application) as captured in 2024:
+  one question per page with "< previous question" / "next question >" and
+  "<< mandatory question" / "mandatory question >>", a section list with
+  progress on the right, PrimeNG radios and checkboxes whose input is hidden
+  for accessibility and whose label is a sibling element with no `for`, a
+  readonly PrimeNG dropdown (role=listbox input, options in an overlay panel
+  appended to the body), "Others" revealing a required text field with no
+  label, a collapsible "Comment field", per-question "Select certainty level",
+  "Do not answer question" and "Question assigned" dropdowns, automatic save,
+  a basic file upload, and "Finalize questionnaire". Question wording is
+  neutral placeholder text; no company, person, answer, figure or document of
+  any real questionnaire is here.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>ESG Data Hub (test portal)</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 0; font-size: 14px; color: #222; background: #f3f3f3; }
+  header { display: flex; justify-content: space-between; align-items: center; background: #fff; padding: 12px 24px; }
+  .crumbs { background: #00509e; color: #fff; padding: 12px 24px; }
+  .layout { display: flex; gap: 24px; padding: 16px 24px; }
+  main { flex: 1; background: #fff; padding: 16px 24px; }
+  aside { width: 300px; background: #dbe5f0; padding: 12px; }
+  .p-hidden-accessible { border: 0; clip: rect(0 0 0 0); height: 1px; margin: -1px; overflow: hidden; padding: 0; position: absolute; width: 1px; }
+  .p-radiobutton, .p-checkbox { display: flex; align-items: center; gap: 8px; margin: 10px 0; }
+  .box { width: 16px; height: 16px; border: 1px solid #666; border-radius: 50%; cursor: pointer; }
+  .p-checkbox .box { border-radius: 2px; }
+  .box.checked { background: #00509e; }
+  .p-dropdown { position: relative; display: inline-block; width: 260px; border: 1px solid #999; margin-right: 12px; }
+  .p-dropdown input { border: 0; width: 220px; padding: 6px; cursor: pointer; }
+  .p-dropdown-panel { position: absolute; background: #fff; border: 1px solid #999; z-index: 10; width: 260px; }
+  .p-dropdown-panel ul { list-style: none; margin: 0; padding: 0; }
+  .p-dropdown-panel li { padding: 6px; cursor: pointer; }
+  .nav { display: flex; justify-content: space-between; align-items: center; margin-top: 24px; border-top: 1px solid #ccc; padding-top: 12px; }
+  .p-dialog { position: fixed; top: 30%; left: 35%; background: #fff; border: 1px solid #666; padding: 16px; z-index: 20; }
+  textarea { width: 100%; }
+</style>
+</head>
+<body id="root-container">
+<app-root><div id="customer-portal">
+<header>
+  <span>ESG Data Hub</span>
+  <span>
+    <button type="button" class="link-style">Sample User - Example Ltd</button>
+    <button type="button" class="link-style">Deutsch</button>
+    <button type="button" class="link-style" id="logout">Logout</button>
+  </span>
+</header>
+<div class="crumbs">Home &gt; Questionnaire</div>
+<div class="layout">
+  <main>
+    <app-questionnaire>
+      <h1>ESG company questionnaire (test)</h1>
+      <div class="tabs"><span>All questions</span> <span>Assigned questions</span> <span>0</span></div>
+      <div class="toolbar" id="toolbar"></div>
+      <app-question id="question"></app-question>
+      <div class="nav">
+        <p-button><button type="button" id="prev-mandatory">&lt;&lt; mandatory question</button></p-button>
+        <p-button><button type="button" id="prev">&lt; previous question</button></p-button>
+        <span id="counter"></span>
+        <p-button><button type="button" id="next">next question &gt;</button></p-button>
+        <p-button><button type="button" id="next-mandatory">mandatory question &gt;&gt;</button></p-button>
+      </div>
+    </app-questionnaire>
+  </main>
+  <aside>
+    <div>Status: <span id="progress">0</span> %</div>
+    <ol id="sections"></ol>
+    <p-button><button type="button" id="finalize" disabled>Finalize questionnaire</button></p-button>
+    <div>Last automatically saved at: <span id="saved">—</span></div>
+  </aside>
+</div>
+<div id="overlay"></div>
+<div id="page-end"></div>
+</div></app-root>
+<script>
+  const QUESTIONS = [
+    { n: 1, section: 'Master data', title: 'Number of employees', text: 'How many people did the company employ at the end of the last financial year?', kind: 'text', mandatory: true },
+    { n: 2, section: 'Master data', title: 'Main sector of activity', text: 'Select the sector in which the company earns most of its revenue.', kind: 'dropdown', options: ['Manufacturing', 'Construction', 'Trade', 'Services', 'Other'], mandatory: true },
+    { n: 3, section: 'Environment', title: 'Energy use monitoring', text: 'Do you monitor the energy use of your sites?', kind: 'single', options: ['Yes', 'No', 'Not applicable'], mandatory: true },
+    { n: 4, section: 'Social', title: 'Engagement with neighbouring communities', text: 'Do you assess how your operations affect neighbouring communities?', kind: 'single', options: ['Yes', 'No', 'Not applicable'], mandatory: false },
+    { n: 5, section: 'Workers', title: 'Health and safety measures', text: 'Which health and safety measures are in place?', kind: 'multiple', options: ['Yes, applies to own staff', 'Yes, applies to contractors', 'Yes, through regular training', 'None of the above', 'Others'], mandatory: true },
+    { n: 6, section: 'File upload', title: 'Supporting documents', text: 'Please upload generally valid documents relevant to this questionnaire.', kind: 'file', mandatory: false },
+  ];
+  const answers = {};
+  const meta = {};
+  let openPanel = null;
+
+  function route() { const m = /#\/question\/(\d+)/.exec(location.hash); return m ? Math.min(Math.max(Number(m[1]), 1), QUESTIONS.length) : 1; }
+  function go(n) { location.hash = `#/question/${n}`; }
+  function answered(q) { const a = answers[q.n]; if (q.kind === 'multiple') return Array.isArray(a) && a.length > 0 && (!a.includes('Others') || !!(answers[`${q.n}-other`] || '').trim()); return a !== undefined && String(a).trim() !== ''; }
+  function autosave() { document.getElementById('saved').textContent = new Date().toISOString().slice(0, 19).replace('T', ' '); renderAside(); }
+  function closePanel() { if (openPanel) { openPanel.remove(); openPanel = null; } }
+
+  function dropdown(placeholder, options, current, onPick) {
+    const host = document.createElement('p-dropdown');
+    const box = document.createElement('div'); box.className = 'p-dropdown';
+    const wrap = document.createElement('div');
+    const input = document.createElement('input');
+    input.type = 'text'; input.readOnly = true; input.setAttribute('role', 'listbox'); input.setAttribute('aria-haspopup', 'listbox'); input.placeholder = placeholder;
+    input.value = current ?? '';
+    const label = document.createElement('span'); label.textContent = current ?? placeholder; label.className = 'p-dropdown-label'; label.style.display = 'none';
+    const trigger = document.createElement('div'); trigger.setAttribute('role', 'button'); trigger.setAttribute('aria-haspopup', 'listbox'); trigger.append(document.createElement('span')); trigger.style.cssText = 'display:inline-block;width:24px;height:24px;cursor:pointer;vertical-align:middle';
+    wrap.append(input); box.append(wrap, label, trigger); host.append(box);
+    const open = (event) => {
+      event.stopPropagation();
+      closePanel();
+      const panel = document.createElement('div'); panel.className = 'p-dropdown-panel';
+      const rect = box.getBoundingClientRect();
+      panel.style.left = `${rect.left + window.scrollX}px`; panel.style.top = `${rect.bottom + window.scrollY}px`;
+      const list = document.createElement('ul'); list.setAttribute('role', 'listbox');
+      for (const option of options) {
+        const item = document.createElement('li'); item.setAttribute('role', 'option'); item.textContent = option;
+        item.setAttribute('aria-selected', String(option === current));
+        item.addEventListener('click', (clickEvent) => { clickEvent.stopPropagation(); closePanel(); onPick(option); });
+        list.append(item);
+      }
+      panel.append(list);
+      document.getElementById('overlay').append(panel);
+      openPanel = panel;
+    };
+    input.addEventListener('click', open); trigger.addEventListener('click', open);
+    return host;
+  }
+
+  function choice(kind, name, option, checked, onToggle) {
+    const host = document.createElement(kind === 'radio' ? 'p-radiobutton' : 'p-checkbox');
+    const outer = document.createElement('div'); outer.className = kind === 'radio' ? 'p-radiobutton' : 'p-checkbox';
+    const hidden = document.createElement('div'); hidden.className = 'p-hidden-accessible';
+    const input = document.createElement('input'); input.type = kind; input.name = name; input.value = kind === 'radio' ? `question.${name}.${option}` : '[object Object]';
+    input.checked = checked; input.setAttribute('aria-checked', String(checked));
+    hidden.append(input);
+    const box = document.createElement('div'); box.className = `box${checked ? ' checked' : ''}`;
+    const label = document.createElement('label'); label.textContent = option;
+    outer.append(hidden, box); host.append(outer, label);
+    const toggle = (event) => { event.preventDefault(); onToggle(); };
+    box.addEventListener('click', toggle); label.addEventListener('click', toggle);
+    input.addEventListener('click', toggle);
+    return host;
+  }
+
+  function renderToolbar(q) {
+    const bar = document.getElementById('toolbar'); bar.textContent = '';
+    const m = meta[q.n] ?? {};
+    bar.append(
+      dropdown('Select certainty level', ['High', 'Medium', 'Low'], m.certainty, (value) => { meta[q.n] = { ...m, certainty: value }; render(); }),
+      dropdown('Do not answer question', ['Not relevant for our company', 'Information not available'], m.skip, (value) => { meta[q.n] = { ...m, skip: value }; delete answers[q.n]; autosave(); render(); }),
+      dropdown('Question assigned', ['Invite new person'], m.assigned, (value) => { meta[q.n] = { ...m, assigned: value }; render(); }),
+    );
+  }
+
+  function render() {
+    closePanel();
+    const n = route(); const q = QUESTIONS[n - 1];
+    renderToolbar(q);
+    const root = document.getElementById('question'); root.textContent = '';
+    const head = document.createElement('div');
+    head.innerHTML = `<h3></h3><div class="title"></div>`;
+    head.querySelector('h3').textContent = q.section;
+    head.querySelector('.title').textContent = `${q.n}. ${q.title}${q.mandatory ? ' *' : ''}`;
+    const text = document.createElement('p'); text.textContent = q.text;
+    root.append(head, text);
+    if (q.kind === 'text') {
+      const host = document.createElement('app-text');
+      const input = document.createElement('input'); input.setAttribute('pinputtext', ''); input.name = 'textFieldValue'; input.value = answers[q.n] ?? '';
+      input.addEventListener('input', () => { answers[q.n] = input.value; });
+      input.addEventListener('change', autosave);
+      host.append(input); root.append(host);
+    } else if (q.kind === 'dropdown') {
+      root.append(dropdown('Select', q.options, answers[q.n], (value) => { answers[q.n] = value; autosave(); render(); }));
+    } else if (q.kind === 'single') {
+      const host = document.createElement('app-single-choice');
+      for (const option of q.options) host.append(choice('radio', String(q.n), option, answers[q.n] === option, () => { answers[q.n] = option; autosave(); render(); }));
+      root.append(host);
+    } else if (q.kind === 'multiple') {
+      const host = document.createElement('app-multiple-choice-value');
+      const picked = answers[q.n] ?? [];
+      for (const option of q.options) {
+        host.append(choice('checkbox', 'multipleChoiceValue', option, picked.includes(option), () => {
+          const now = answers[q.n] ?? [];
+          answers[q.n] = now.includes(option) ? now.filter((value) => value !== option) : option === 'None of the above' ? [option] : [...now.filter((value) => value !== 'None of the above'), option];
+          autosave(); render();
+        }));
+        if (option === 'Others' && picked.includes('Others')) {
+          const other = document.createElement('app-text');
+          const input = document.createElement('input'); input.setAttribute('pinputtext', ''); input.name = 'textFieldValue'; input.required = true; input.placeholder = ''; input.value = answers[`${q.n}-other`] ?? '';
+          input.addEventListener('input', () => { answers[`${q.n}-other`] = input.value; });
+          input.addEventListener('change', autosave);
+          other.append(input); host.append(other);
+        }
+      }
+      root.append(host);
+    } else if (q.kind === 'file') {
+      const host = document.createElement('app-upload');
+      host.innerHTML = '<p-fileupload><span class="p-button">Select file <input type="file" multiple /></span></p-fileupload><h4>Uploaded documents</h4><ul id="uploaded"></ul>';
+      const input = host.querySelector('input');
+      const list = host.querySelector('#uploaded');
+      for (const file of answers[q.n] ?? []) { const item = document.createElement('li'); item.textContent = file; list.append(item); }
+      input.addEventListener('change', () => { answers[q.n] = [...(answers[q.n] ?? []), ...[...input.files].map((file) => file.name)]; autosave(); render(); });
+      root.append(host);
+    }
+    if (q.kind === 'single' || q.kind === 'multiple') {
+      const area = document.createElement('app-toggle-area');
+      const toggle = document.createElement('a'); toggle.href = 'javascript:void 0'; toggle.textContent = 'Comment field';
+      const body = document.createElement('app-question-comment');
+      const comment = document.createElement('textarea'); comment.rows = 4; comment.maxLength = 2000; comment.setAttribute('formcontrolname', 'comment'); comment.value = answers[`${q.n}-comment`] ?? '';
+      comment.addEventListener('input', () => { answers[`${q.n}-comment`] = comment.value; });
+      comment.addEventListener('change', autosave);
+      body.append(comment);
+      body.hidden = !answers[`${q.n}-comment`];
+      toggle.addEventListener('click', () => { body.hidden = !body.hidden; });
+      area.append(toggle, body); root.append(area);
+    }
+    document.getElementById('counter').textContent = `Question ${q.n} / ${QUESTIONS.length}`;
+    renderAside();
+  }
+
+  function renderAside() {
+    const list = document.getElementById('sections'); list.textContent = '';
+    for (const section of [...new Set(QUESTIONS.map((q) => q.section))]) {
+      const inSection = QUESTIONS.filter((q) => q.section === section);
+      const item = document.createElement('li');
+      const link = document.createElement('a'); link.href = `#/question/${inSection[0].n}`;
+      link.textContent = `${section} (${inSection.filter(answered).length}/${inSection.length})`;
+      item.append(link); list.append(item);
+    }
+    const mandatory = QUESTIONS.filter((q) => q.mandatory);
+    const done = mandatory.filter(answered).length;
+    document.getElementById('progress').textContent = String(Math.round((done / mandatory.length) * 100));
+    document.getElementById('finalize').disabled = done < mandatory.length;
+  }
+
+  function nextMandatory(direction) {
+    const n = route();
+    const order = direction > 0 ? QUESTIONS.filter((q) => q.n > n) : QUESTIONS.filter((q) => q.n < n).reverse();
+    const target = order.find((q) => q.mandatory && !answered(q));
+    if (target) go(target.n);
+  }
+  document.getElementById('prev').addEventListener('click', () => go(Math.max(route() - 1, 1)));
+  document.getElementById('next').addEventListener('click', () => go(Math.min(route() + 1, QUESTIONS.length)));
+  document.getElementById('prev-mandatory').addEventListener('click', () => nextMandatory(-1));
+  document.getElementById('next-mandatory').addEventListener('click', () => nextMandatory(1));
+  document.getElementById('finalize').addEventListener('click', () => { document.getElementById('page-end').textContent = 'The questionnaire has been finalized.'; });
+  document.addEventListener('click', closePanel);
+  window.addEventListener('hashchange', render);
+  render();
+</script>
+</body>
+</html>
