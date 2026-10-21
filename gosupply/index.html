@@ -1,0 +1,194 @@
+<!doctype html>
+<!--
+  GoSupply-shaped test portal. Reproduces the DOM of the GoSupply supplier
+  data package questionnaire (portal.mygosupply.com, an AngularJS
+  application) as captured in 2025: a side menu with "Close Session", tabs
+  per block of questions, questions as a text span above their control, Yes /
+  No radios each followed by a label with no `for` (several radios carry a
+  long help text in `title`), "Saved items:" showing the stored values, a
+  follow-up question shown only after Yes, a document upload with "Documents
+  pending validation", a territory checkbox list with an "All" link, a native
+  country select, "Required" after a required question, "Save questions"
+  and a "Submit" enabled once every required question is answered. Question
+  wording is neutral placeholder text; no company, person, answer, figure or
+  document of any real questionnaire is here.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Supplier data package (test portal)</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 0; font-size: 14px; color: #222; }
+  .layout { display: flex; }
+  aside { width: 200px; background: #263a4f; color: #fff; min-height: 100vh; padding: 12px; }
+  aside span { display: block; padding: 6px 0; cursor: pointer; }
+  article { flex: 1; padding: 16px 24px; }
+  .tabs a { margin-right: 12px; }
+  .tabs a.active { font-weight: 700; }
+  control-component { display: block; }
+  .question { border-bottom: 1px solid #ddd; padding: 10px 0; }
+  .option { display: inline-block; margin-right: 16px; }
+  .required { color: #b00; font-size: 12px; }
+  .saved { color: #666; font-size: 12px; }
+  .filter { display: none; }
+  .actions { margin-top: 20px; display: flex; gap: 12px; }
+</style>
+</head>
+<body ng-app="app">
+<ui-view><app><div class="layout">
+<aside>
+  <span>Hide Menu</span>
+  <span>Dashboard</span>
+  <span>User Guide</span>
+  <span id="close-session" role="button" tabindex="0">Close Session</span>
+</aside>
+<article>
+  <div class="info"><p>Name: <b>Example Supplier Ltd</b></p><p>Country: <b>Example</b></p></div>
+  <div class="tabs" id="tabs"></div>
+  <div id="questions"></div>
+  <div class="actions">
+    <button type="button" id="save">Save questions</button>
+    <button type="button" id="submit" disabled><span>Submit</span></button>
+  </div>
+  <div id="notice"></div>
+</article>
+</div></app></ui-view>
+<script>
+  const HINT = 'Please read the question carefully, as this answer is very important for your client. This information is usually contained in your human resources policies.';
+  const TABS = [
+    { title: 'General Information', blocks: [{ heading: 'Company', questions: [
+      { id: 'parent', kind: 'text', text: 'Parent company name', required: true },
+      { id: 'country', kind: 'select', text: 'Country of the registered office', options: ['Austria', 'France', 'Germany', 'Spain', 'United Kingdom'], required: true },
+      { id: 'relationship', kind: 'radio', text: 'Is the company part of a group?', title: 'Company Relationship', required: false },
+    ] }] },
+    { title: 'ESG_Social', blocks: [
+      { heading: 'Labour Practices', questions: [
+        { id: 'equality', kind: 'radio', text: 'Does the company have an equal opportunities plan?', title: HINT, required: true },
+        { id: 'equality-doc', kind: 'file', text: 'Attach the document certifying the equal opportunities plan', showIf: ['equality', 'Yes'], required: true },
+        { id: 'women', kind: 'text', text: 'What is the percentage of women employed?', required: true },
+        { id: 'training', kind: 'radio', text: 'Does the company provide health and safety training at least once a year?', title: '', required: true },
+      ] },
+      { heading: 'Locations', questions: [
+        { id: 'regions', kind: 'checkboxes', text: 'Please mark the regions where your company provides services', options: ['North', 'South', 'East', 'West', 'Central'], required: false },
+      ] },
+    ] },
+    { title: 'ESG_Environment', blocks: [{ heading: 'Environmental Management', questions: [
+      { id: 'ems', kind: 'radio', text: 'Does the company have a certified environmental management system?', title: '', required: true },
+      { id: 'ems-notes', kind: 'textarea', text: 'Describe the scope of the environmental management system', showIf: ['ems', 'Yes'], required: false },
+    ] }] },
+  ];
+  const answers = {};
+  const saved = {};
+  let index = 0;
+
+  function route() { const m = /#\/tab\/(\d+)/.exec(location.hash); return m ? Math.min(Number(m[1]), TABS.length - 1) : 0; }
+  function shown(q) { return !q.showIf || answers[q.showIf[0]] === q.showIf[1]; }
+  function filled(q) { const a = answers[q.id]; return Array.isArray(a) ? a.length > 0 : a !== undefined && String(a).trim() !== ''; }
+  function allRequired() { return TABS.flatMap((tab) => tab.blocks.flatMap((block) => block.questions)).filter((q) => q.required && shown(q)).every(filled); }
+  function refreshSubmit() { document.getElementById('submit').disabled = !allRequired(); }
+
+  function savedLine(q, values) {
+    const line = document.createElement('div');
+    const label = document.createElement('label'); label.textContent = 'Saved items:';
+    line.append(label);
+    for (const value of values) { const span = document.createElement('span'); span.textContent = `${value} `; line.append(span); }
+    line.className = 'saved';
+    return line;
+  }
+
+  function control(q) {
+    const holder = document.createElement('div');
+    if (q.kind === 'text') {
+      const input = document.createElement('input'); input.type = 'text'; input.id = `txt_${index}`; input.name = `txt_${index}`; input.required = q.required; input.value = answers[q.id] ?? '';
+      input.addEventListener('input', () => { answers[q.id] = input.value; refreshSubmit(); });
+      holder.append(input);
+    } else if (q.kind === 'textarea') {
+      const area = document.createElement('textarea'); area.name = `txta_${index}`; area.value = answers[q.id] ?? '';
+      area.addEventListener('blur', () => { answers[q.id] = area.value; refreshSubmit(); });
+      holder.append(area);
+    } else if (q.kind === 'select') {
+      const select = document.createElement('select'); select.name = `ddl_${index}`; select.required = q.required;
+      select.append(new Option('', '? object:1 ?'));
+      for (const option of q.options) select.append(new Option(` ${option} `, `string:${option.slice(0, 3).toUpperCase()}`, false, answers[q.id] === option));
+      select.addEventListener('change', () => { answers[q.id] = select.selectedOptions[0].textContent.trim() || undefined; refreshSubmit(); });
+      holder.append(select);
+    } else if (q.kind === 'radio') {
+      const filter = document.createElement('input'); filter.type = 'text'; filter.placeholder = 'Write here to filter'; filter.className = 'filter';
+      holder.append(filter, savedLine(q, saved[q.id] ? [saved[q.id]] : []));
+      const group = document.createElement('div');
+      for (const option of ['Yes', 'No']) {
+        const cell = document.createElement('div'); cell.className = 'option';
+        const input = document.createElement('input'); input.type = 'radio'; input.name = `cbl_${index}`; input.id = `cbl_${index}`; input.title = q.title ?? ''; input.value = 'item.valueField';
+        input.checked = answers[q.id] === option;
+        const label = document.createElement('label'); label.style.minWidth = '51px'; label.textContent = option;
+        // AngularJS binds the click on the label itself; the label has no `for`.
+        label.addEventListener('click', () => { input.click(); });
+        input.addEventListener('change', () => { answers[q.id] = option; render(); });
+        cell.append(input, label); group.append(cell);
+      }
+      holder.append(group);
+    } else if (q.kind === 'checkboxes') {
+      const all = document.createElement('a'); all.href = 'javascript:void 0'; all.textContent = 'All';
+      all.addEventListener('click', () => { answers[q.id] = [...q.options]; render(); });
+      holder.append(all, savedLine(q, (saved[q.id] ?? []).map((value) => `${value},`)));
+      for (const option of q.options) {
+        const cell = document.createElement('div'); cell.className = 'option';
+        const input = document.createElement('input'); input.type = 'checkbox'; input.id = `cbl_${option}`; input.title = '';
+        input.checked = (answers[q.id] ?? []).includes(option);
+        const label = document.createElement('label'); label.textContent = option;
+        label.addEventListener('click', () => { input.click(); });
+        input.addEventListener('change', () => { const now = answers[q.id] ?? []; answers[q.id] = input.checked ? [...now, option] : now.filter((value) => value !== option); refreshSubmit(); });
+        cell.append(input, label); holder.append(cell);
+      }
+    } else if (q.kind === 'file') {
+      const input = document.createElement('input'); input.type = 'file'; input.id = `dct_${index}`; input.name = `dct_${index}`;
+      const button = document.createElement('button'); button.type = 'button'; button.textContent = 'Select file';
+      button.addEventListener('click', () => input.click());
+      input.style.display = 'none';
+      const note = document.createElement('label'); note.textContent = 'Maximum attachment size 10 MB';
+      const table = document.createElement('table');
+      table.innerHTML = '<thead><tr><th>Documents pending validation</th></tr></thead><tbody></tbody>';
+      for (const name of answers[q.id] ?? []) { const row = document.createElement('tr'); const cell = document.createElement('td'); cell.textContent = name; row.append(cell); table.tBodies[0].append(row); }
+      input.addEventListener('change', () => { answers[q.id] = [...(answers[q.id] ?? []), ...[...input.files].map((file) => file.name)]; render(); });
+      holder.append(input, button, note, table);
+    }
+    return holder;
+  }
+
+  function render() {
+    const tab = route();
+    const tabs = document.getElementById('tabs'); tabs.textContent = '';
+    TABS.forEach((item, position) => { const link = document.createElement('a'); link.href = `#/tab/${position}`; link.textContent = item.title; if (position === tab) link.className = 'active'; tabs.append(link); });
+    const root = document.getElementById('questions'); root.textContent = '';
+    index = 0;
+    for (const block of TABS[tab].blocks) {
+      const heading = document.createElement('h3'); heading.textContent = block.heading; root.append(heading);
+      for (const q of block.questions) {
+        index += 1;
+        if (!shown(q)) continue;
+        const item = document.createElement('control-component'); item.className = 'question';
+        const head = document.createElement('div');
+        const empty = document.createElement('label'); empty.htmlFor = 'txt_';
+        const text = document.createElement('span'); text.textContent = q.text;
+        head.append(empty, text);
+        item.append(head, document.createElement('div'), control(q));
+        if (q.required) { const mark = document.createElement('span'); mark.className = 'required'; mark.textContent = 'Required'; item.append(mark); }
+        root.append(item);
+      }
+    }
+    refreshSubmit();
+  }
+
+  document.getElementById('save').addEventListener('click', () => {
+    for (const [key, value] of Object.entries(answers)) saved[key] = value;
+    document.getElementById('notice').textContent = 'Questions saved.';
+    render();
+  });
+  document.getElementById('submit').addEventListener('click', () => { document.getElementById('notice').textContent = 'The questionnaire has been sent to your client.'; });
+  document.getElementById('close-session').addEventListener('click', () => { document.body.textContent = 'Session closed.'; });
+  window.addEventListener('hashchange', render);
+  render();
+</script>
+</body>
+</html>
