@@ -1,0 +1,129 @@
+<!doctype html>
+<!--
+  Qualtrics-shaped test portal. Reproduces the DOM of a Qualtrics survey
+  (the classic runtime layout) as captured in 2025: a progress bar, a
+  language list, questions as fieldsets whose legend carries the number
+  label ("Q2.9.") and the wording, text entries labelled through the legend,
+  a native select, a multiple-answer question whose checkboxes each carry
+  their own name (QR~QID72~1, QR~QID72~4, ...) and are named by a label
+  through aria-labelledby, an "Other (specify below)" text entry, and page
+  navigation with " << " and " >> " buttons, where " >> " on the last page
+  sends the survey. Wording is neutral placeholder text; no company, person
+  or answer of any real survey is here.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Supplier survey (test portal)</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 0; font-size: 14px; color: #222; }
+  #Wrapper { max-width: 760px; margin: 0 auto; padding: 16px; }
+  .ProgressBar { display: flex; gap: 8px; align-items: center; }
+  fieldset { border: 0; border-bottom: 1px solid #ddd; padding: 12px 0; margin: 0; }
+  legend { font-weight: 700; }
+  ul { list-style: none; padding: 0; }
+  #Buttons { display: flex; justify-content: space-between; margin-top: 16px; }
+</style>
+</head>
+<body>
+<div id="Wrapper">
+  <div role="widget" class="ProgressBar"><span>0%</span><span id="progress">Current Progress 0%</span><span>100%</span></div>
+  <div role="main">
+    <div><label for="Q_lang">Language</label> <select name="Q_lang" id="Q_lang" aria-label="Language"><option>English</option><option>Deutsch</option></select></div>
+    <div id="Questions"></div>
+    <div id="Buttons" role="navigation">
+      <input id="PreviousButton" title=" &lt;&lt; " type="button" name="PreviousButton" value=" &lt;&lt; " aria-label=" &lt;&lt; " />
+      <input id="NextButton" title=" &gt;&gt; " type="button" name="NextButton" value=" &gt;&gt; " aria-label=" &gt;&gt; " />
+    </div>
+    <div id="EndOfSurvey"></div>
+  </div>
+</div>
+<script>
+  const PAGES = [
+    { title: 'Company Information', questions: [
+      { id: 'QID283', number: 'Q2.1.', kind: 'text', text: 'Supplier code.' },
+      { id: 'QID222', number: 'Q2.2.', kind: 'select', text: 'In which country is the facility located?', options: ['', 'Austria', 'Germany', 'Spain'] },
+    ] },
+    { title: 'Operations', questions: [
+      { id: 'QID72', number: 'Q2.9.', kind: 'multi', text: 'Which of the following best describes this facility? Select all that apply.', options: [['1', 'Raw materials processing'], ['4', 'Parts manufacturing'], ['5', 'Assembly'], ['11', 'Other (specify below)']] },
+      { id: 'QID153', number: 'Q2.10.', kind: 'multi', text: 'Which materials does the facility use? Select all that apply.', options: [['1', 'Aluminium'], ['4', 'Copper'], ['5', 'Cotton']] },
+    ] },
+    { title: 'Affirmation', questions: [
+      { id: 'QID900', number: 'Q8.1.', kind: 'radio', text: 'I confirm that the answers given are accurate to the best of my knowledge.', options: [['1', 'I confirm'], ['2', 'I do not confirm']] },
+    ] },
+  ];
+  const answers = {};
+  let page = 0;
+
+  function question(q) {
+    const outer = document.createElement('div'); outer.id = q.id; outer.setAttribute('questionid', q.id);
+    const fieldset = document.createElement('fieldset');
+    const legend = document.createElement('legend');
+    if (q.kind === 'text' || q.kind === 'select') {
+      const label = document.createElement('label'); label.htmlFor = `QR~${q.id}`;
+      const number = document.createElement('label'); number.tabIndex = -1; number.textContent = q.number;
+      label.append(number, ` ${q.text}`); legend.append(label);
+    } else {
+      const line = document.createElement('div'); const number = document.createElement('label'); number.textContent = q.number; line.append(number, ` ${q.text}`); legend.append(line);
+    }
+    fieldset.append(legend);
+    const body = document.createElement('div');
+    if (q.kind === 'text') {
+      const input = document.createElement('input'); input.type = 'TEXT'; input.id = `QR~${q.id}`; input.name = `QR~${q.id}~TEXT`; input.autocomplete = 'off'; input.value = answers[q.id] ?? '';
+      input.addEventListener('input', () => { answers[q.id] = input.value; });
+      body.append(input);
+    } else if (q.kind === 'select') {
+      const select = document.createElement('select'); select.id = `QR~${q.id}`; select.name = `QR~${q.id}`;
+      for (const option of q.options) select.append(new Option(option, option, false, answers[q.id] === option));
+      select.addEventListener('change', () => { answers[q.id] = select.value; });
+      body.append(select);
+    } else {
+      const list = document.createElement('ul');
+      for (const [choice, text] of q.options) {
+        const item = document.createElement('li');
+        const input = document.createElement('input'); input.setAttribute('choiceid', choice);
+        input.type = q.kind === 'multi' ? 'checkbox' : 'radio';
+        input.name = q.kind === 'multi' ? `QR~${q.id}~${choice}` : `QR~${q.id}`;
+        input.id = `QR~${q.id}~${choice}`; input.value = 'Selected'; input.setAttribute('aria-labelledby', `${q.id}-${choice}-label`);
+        const picked = answers[q.id] ?? [];
+        input.checked = q.kind === 'multi' ? picked.includes(choice) : answers[q.id] === choice;
+        input.addEventListener('change', () => {
+          if (q.kind === 'multi') { const now = answers[q.id] ?? []; answers[q.id] = input.checked ? [...now, choice] : now.filter((value) => value !== choice); render(); }
+          else { answers[q.id] = choice; }
+        });
+        const decoy = document.createElement('label'); decoy.htmlFor = input.id; decoy.setAttribute('aria-hidden', 'true');
+        const wrap = document.createElement('span');
+        const label = document.createElement('label'); label.htmlFor = input.id; label.id = `${q.id}-${choice}-label`;
+        const text_ = document.createElement('span'); text_.textContent = text; label.append(text_); wrap.append(label);
+        item.append(input, decoy, ' ', wrap);
+        if (text.startsWith('Other') && (answers[q.id] ?? []).includes(choice)) {
+          const other = document.createElement('input'); other.type = 'text'; other.name = `QR~${q.id}~${choice}~TEXT`; other.id = `QR~${q.id}~${choice}~TEXT`; other.setAttribute('aria-labelledby', `${q.id}-${choice}-label`);
+          other.value = answers[`${q.id}-other`] ?? '';
+          other.addEventListener('input', () => { answers[`${q.id}-other`] = other.value; });
+          item.append(other);
+        }
+        list.append(item);
+      }
+      body.append(list);
+    }
+    fieldset.append(body); outer.append(fieldset);
+    return outer;
+  }
+
+  function render() {
+    const root = document.getElementById('Questions'); root.textContent = '';
+    for (const q of PAGES[page].questions) root.append(question(q));
+    document.getElementById('progress').textContent = `Current Progress ${Math.round((page / PAGES.length) * 100)}%`;
+    document.getElementById('PreviousButton').style.visibility = page === 0 ? 'hidden' : 'visible';
+  }
+
+  document.getElementById('PreviousButton').addEventListener('click', () => { page = Math.max(page - 1, 0); render(); });
+  document.getElementById('NextButton').addEventListener('click', () => {
+    if (page === PAGES.length - 1) { document.getElementById('Questions').textContent = ''; document.getElementById('EndOfSurvey').textContent = 'We thank you for your time spent taking this survey. Your response has been recorded.'; return; }
+    page += 1; render();
+  });
+  render();
+</script>
+</body>
+</html>
