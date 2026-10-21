@@ -1,0 +1,166 @@
+<!doctype html>
+<!--
+  S&P Global CSA-shaped test portal. Reproduces the DOM of the Corporate
+  Sustainability Assessment response pages (portal.s1.spglobal.com/survey) as
+  captured in 2026: a question list on the left, one question per page, an
+  ordered list of radio options whose text sits in the following block (no
+  label element), sub-options disabled until their option is picked,
+  "Add Reference" attachments, a year grid of numeric fields with calculated
+  read-only cells, a rich-text comment box, and the Save / Cancel / Reset bar
+  as anchors. Question and option wording is neutral placeholder text; no
+  company, person, answer or figure of any real assessment is here. The final
+  submission step was not captured and is reconstructed.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>S&amp;P Global CSA (test portal)</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 0; font-size: 14px; color: #222; }
+  #topmenu { display: flex; gap: 16px; align-items: center; background: #1a1a1a; color: #fff; padding: 8px 16px; }
+  #topmenu a { color: #fff; }
+  .layout { display: flex; gap: 16px; padding: 16px; }
+  #questionnaire-container { width: 280px; background: #f3f3f3; padding: 8px; }
+  #questionnaire-container a { display: block; padding: 4px; cursor: pointer; color: #0b4f7a; }
+  #questionnaire-container a[aria-current="page"] { font-weight: 700; }
+  #page { flex: 1; }
+  ol { list-style: none; padding-left: 8px; }
+  ol li { display: flex; gap: 6px; margin: 6px 0; }
+  ol ol { margin-left: 24px; }
+  #question-button-bar a { margin-right: 12px; cursor: pointer; text-decoration: underline; color: #0b4f7a; }
+  table { border-collapse: collapse; } td, th { border: 1px solid #ccc; padding: 4px; }
+  [contenteditable="true"] { border: 1px solid #aaa; min-height: 80px; padding: 4px; }
+  aside { width: 240px; }
+  [role="dialog"] { position: fixed; inset: 20% 30%; background: #fff; border: 1px solid #999; padding: 16px; }
+  a.icon { display: inline-block; width: 18px; height: 18px; border: 1px solid #0b4f7a; border-radius: 3px; margin-right: 6px; cursor: pointer; }
+  #toast { position: fixed; bottom: 16px; right: 16px; background: #0b4f7a; color: #fff; padding: 8px; display: none; }
+</style>
+</head>
+<body>
+<div id="root">
+<section id="topmenu">
+  <div><a><img width="170" height="40" alt="S&amp;P Global Sustainable1 (test)" aria-label="S&amp;P Global Sustainable1 (test)" src="data:image/gif;base64,R0lGODlhAQABAAAAACw=" /></a></div>
+  <ul style="display:flex;gap:12px;list-style:none"><li><a href="#/dashboard"><span>Dashboard</span></a></li><li><a href="#/inbox"><span>Inbox</span></a></li><li><a href="#/help"><span>Help</span></a></li></ul>
+  <div><a aria-label="Example Company Ltd"><span>Example Company Ltd</span></a></div>
+  <h1 style="font-size:16px">Corporate Sustainability Assessment (CSA)</h1>
+  <div id="assessments-submenu"><ul style="display:flex;gap:12px;list-style:none"><li><a href="#/confirmation"><span>Confirmation</span></a></li><li><a href="#/q/0"><span>Questionnaires</span></a></li><li><a href="#/documents"><span>Documents</span></a></li></ul><span id="remaining-time">30 days left</span></div>
+</section>
+<div class="layout">
+  <section><div id="questionnaire-container"><div id="questionnaire-content"><ul id="question-list" style="list-style:none;padding:0"></ul></div></div></section>
+  <div id="page"></div>
+  <aside><dl><dt><a id="approval-form-url"><span>Approval Form</span></a></dt></dl><div id="submission"></div></aside>
+</div>
+<div id="toast"></div>
+</div>
+<script>
+const QUESTIONS = [
+  { code: 'GOV_Policy', name: 'Governance Policy', text: 'Has the organisation published a governance policy?',
+    options: [
+      { value: 'Applicable', text: 'Yes, the company has a policy. Please indicate where it is available.', subs: ['Board oversight is described', 'Responsibilities are assigned', 'The policy is reviewed every year'], refs: true },
+      { value: 'Not measured', text: 'No, the company does not have such a policy.' },
+      { value: 'Not applicable', text: 'The question is not applicable to the company.' },
+    ] },
+  { code: 'ENV_Revenues', name: 'Sustainable Income', text: 'Does the organisation measure the income from products it classes as sustainable?',
+    options: [
+      { value: 'Applicable', text: 'Yes, this income is measured. Please indicate where it is published.', grid: true, refs: true },
+      { value: 'Not measured', text: 'No, this income is not measured.' },
+      { value: 'Not applicable', text: 'The question is not applicable to the company.' },
+    ] },
+  { code: 'LAB_Programs', name: 'Working Conditions Programmes', text: 'Does the organisation run programmes on working conditions?',
+    options: [
+      { value: 'Applicable', text: 'Yes, such programmes are in place.', subs: ['Pay benchmarking', 'Hours tracking', 'Overtime compensation', 'Staff consultation'], refs: true },
+      { value: 'Not measured', text: 'No, no such programme is reported.' },
+      { value: 'Not applicable', text: 'The question is not applicable to the company.' },
+    ] },
+];
+const YEARS = ['FY 2022', 'FY 2023', 'FY 2024', 'FY 2025'];
+const state = {};
+let submitted = false;
+const stateOf = (code) => (state[code] ??= { option: -1, subs: {}, grid: {}, refs: [], comment: '', saved: false });
+const toast = (text) => { const t = document.getElementById('toast'); t.textContent = text; t.style.display = 'block'; setTimeout(() => (t.style.display = 'none'), 1500); };
+function h(html) { const t = document.createElement('template'); t.innerHTML = html.trim(); return t.content; }
+const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+
+function renderList(current) {
+  const list = document.getElementById('question-list');
+  list.innerHTML = '';
+  QUESTIONS.forEach((q, i) => {
+    list.append(h(`<li data-answerstatus="${stateOf(q.code).saved ? 2 : 1}"><span title="${stateOf(q.code).saved ? 'Completed' : 'In Progress'}"></span><a id="parent-${i}" data-aspectname="${esc(q.name)}" href="#/q/${i}" ${i === current ? 'aria-current="page"' : ''}><span>${i + 1} ${esc(q.name)}</span></a></li>`));
+  });
+}
+
+function renderQuestion(i) {
+  const q = QUESTIONS[i]; const st = stateOf(q.code);
+  const opts = q.options.map((o, oi) => {
+    const id = `st1sc1cc${oi + 1}`; const on = st.option === oi;
+    let inner = `<div><span><input id="${id}" data-dpd-name="${q.code}_Selection" data-dpd-type="List" data-dpd-value="${o.value}" type="radio" value="${id}" name="${q.code}_Selection" ${on ? 'checked' : ''} /></span></div><div><p>${esc(o.text)}</p>`;
+    if (o.refs) inner += `<div id="fileref-${q.code}" data-maxrefs="3"><div><table><tbody><tr><td colspan="3"><a title="Add Reference" data-action="add-ref" role="button" tabindex="0">Add Reference</a><span>${st.refs.length ? st.refs.map((r) => `<span data-testid="reference">${esc(r)}</span>`).join(' ') : 'No references attached'}</span></td></tr></tbody></table></div><span>max. 3 allowed, public URLs only</span></div>`;
+    if (o.subs) inner += `<ol id="${id}st1mc1">` + o.subs.map((s, si) => `<li><div><span><input id="${id}st1mc1cc${si + 1}" data-dpd-type="Yes_No" data-dpd-value="YES" type="checkbox" value="true" name="${id}st1mc1cc${si + 1}" data-sub="${si}" ${on ? '' : 'disabled'} ${st.subs[si] ? 'checked' : ''} /></span></div><div><p>${esc(s)}</p></div></li>`).join('') + '</ol>';
+    if (o.grid) {
+      inner += `<p>Currency:</p><div><input id="${id}st1tb1" data-dpd-type="Text" title="This field is not editable. The displayed value is calculated from data provided within the questionnaire." readonly type="text" value="EUR - Euro" /></div>`;
+      inner += `<div><table id="${id}st1ta1"><tbody><tr><th><div><p>Income from</p></div></th>${YEARS.map((y) => `<th><div><p>${y}</p></div></th>`).join('')}</tr>`;
+      inner += `<tr id="${id}st1ta1rw1"><td><div><p><strong>Sustainable income</strong></p></div></td>${YEARS.map((y, yi) => `<td><div><div style="width: 100px;"><input id="${id}st1ta1rw1cl${yi + 2}st1tb1" data-dpd-type="Float" data-grid="${yi}" data-hint="Monetary Units" type="text" value="${esc(st.grid[yi] ?? '')}" ${on ? '' : 'disabled'} /><span>Monetary Units</span></div></div></td>`).join('')}</tr>`;
+      inner += `<tr id="${id}st1ta1rw2"><td><div><p><strong>Total income</strong></p></div></td>${YEARS.map((y, yi) => `<td><div><div style="width: 100px;"><input id="${id}st1ta1rw2cl${yi + 2}st1tb1" data-dpd-type="Float" title="This field is not editable. The displayed value is calculated from data provided within the questionnaire." readonly type="text" value="1'000'000" /><span>Monetary Units</span></div></div></td>`).join('')}</tr></tbody></table></div>`;
+    }
+    return `<li>${inner}</div></li>`;
+  }).join('');
+  const page = document.getElementById('page');
+  page.innerHTML = '';
+  page.append(h(`<section><a id="prefill-question" aria-label="Prefill this question with last year's answer." data-action="prefill" role="button" tabindex="0" class="icon"></a><a id="complete" aria-label="Mark this question as 'Completed'." data-action="complete" role="button" tabindex="0" class="icon"></a></section>
+<section><div id="question-public-banner"><strong>Requirement: </strong>This question requires publicly available information</div></section>
+<section><h1 id="question-name">${esc(q.name)}</h1><article><form id="questionForm"><div id="question-content"><div><p>${esc(q.text)}</p><ol id="st1sc1" name="${q.code}_Selection">${opts}</ol></div>
+<p>Comment: please use this box to explain your answer.</p><div><div contenteditable="true" aria-disabled="false" data-comment="1" spellcheck="false">${esc(st.comment)}</div><textarea style="display: none;"></textarea></div><span>max. 5000 chars</span>
+<div id="question-button-bar"><a id="saveButton" data-action="save" role="button" tabindex="0"><span>Save</span></a><a id="cancelButton" data-action="cancel" role="button" tabindex="0"><span>Cancel</span></a><a id="resetButton" data-action="reset" role="button" tabindex="0"><span>Reset</span></a></div></div></form></article></section>`));
+}
+
+function renderSubmission() {
+  const box = document.getElementById('submission');
+  box.innerHTML = '';
+  box.append(h(`<p><label><input type="checkbox" id="submission-confirm" /> I confirm the statements made in this questionnaire.</label></p><button type="button" id="submit-questionnaire" data-action="submit">Submit questionnaire</button>${submitted ? '<p id="submitted">The questionnaire has been submitted.</p>' : ''}`));
+}
+
+function route() {
+  const m = /^#\/q\/(\d+)/.exec(location.hash || '#/q/0');
+  const i = m ? Math.min(Number(m[1]), QUESTIONS.length - 1) : 0;
+  renderList(i); renderQuestion(i); renderSubmission();
+}
+
+document.addEventListener('change', (event) => {
+  const input = event.target;
+  const i = Number((/^#\/q\/(\d+)/.exec(location.hash || '#/q/0') || [0, 0])[1]);
+  const st = stateOf(QUESTIONS[i].code);
+  if (input.type === 'radio') { st.option = QUESTIONS[i].options.findIndex((o, oi) => `st1sc1cc${oi + 1}` === input.value); route(); return; }
+  if (input.dataset.sub !== undefined) { st.subs[input.dataset.sub] = input.checked; return; }
+  if (input.dataset.grid !== undefined) { st.grid[input.dataset.grid] = input.value; }
+});
+document.addEventListener('input', (event) => {
+  const el = event.target;
+  const i = Number((/^#\/q\/(\d+)/.exec(location.hash || '#/q/0') || [0, 0])[1]);
+  if (el.dataset && el.dataset.comment) stateOf(QUESTIONS[i].code).comment = el.textContent;
+  if (el.dataset && el.dataset.grid !== undefined) stateOf(QUESTIONS[i].code).grid[el.dataset.grid] = el.value;
+});
+document.addEventListener('click', (event) => {
+  const button = event.target.closest('[data-action]');
+  if (!button) return;
+  event.preventDefault();
+  const i = Number((/^#\/q\/(\d+)/.exec(location.hash || '#/q/0') || [0, 0])[1]);
+  const st = stateOf(QUESTIONS[i].code);
+  const action = button.dataset.action;
+  if (action === 'save') { st.saved = true; toast('The answer has been saved'); route(); }
+  if (action === 'reset') { state[QUESTIONS[i].code] = undefined; route(); }
+  if (action === 'prefill') { st.option = 0; route(); }
+  if (action === 'complete') { st.saved = true; route(); }
+  if (action === 'submit') { submitted = true; route(); }
+  if (action === 'add-ref') {
+    const dialog = h(`<div role="dialog" aria-modal="true" aria-label="Add Reference"><h3>Add Reference</h3><label for="ref_url">Public URL</label><input id="ref_url" type="text" /><label for="ref_pages">Page numbers</label><input id="ref_pages" type="text" /><div><button type="button" data-ref="cancel">Cancel</button><button type="button" data-ref="add">Add</button></div></div>`).firstElementChild;
+    dialog.querySelector('[data-ref=cancel]').addEventListener('click', () => dialog.remove());
+    dialog.querySelector('[data-ref=add]').addEventListener('click', () => { const url = dialog.querySelector('#ref_url').value; if (url) st.refs.push(url); dialog.remove(); route(); });
+    document.body.append(dialog);
+  }
+});
+window.addEventListener('hashchange', route);
+route();
+</script>
+</body>
+</html>

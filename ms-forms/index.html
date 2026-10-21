@@ -1,0 +1,110 @@
+<!doctype html>
+<!--
+  Microsoft Forms-shaped test portal. Reproduces the DOM of a Microsoft Forms
+  response page (forms.office.com / forms.cloud.microsoft ResponsePage.aspx) as
+  captured in 2026: data-automation-id hooks, a form title and sections, each
+  question an item with an ordinal, a "Required to answer" note, single-choice
+  radios and multiple-choice checkboxes inside labels tied by aria-labelledby,
+  "Single line text" inputs and "Multi Line Text" areas named by their
+  question through aria-labelledby, and Back / Next / Submit buttons, with Next
+  refused while a required question of the section is empty. Wording is
+  neutral placeholder text; no company, person or answer of any real form is
+  here.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Microsoft Forms (test portal)</title>
+<style>
+  body { font-family: "Segoe UI", Arial, sans-serif; margin: 0; background: #f3f2f1; color: #222; font-size: 14px; }
+  #form-main-content1 { max-width: 760px; margin: 24px auto; background: #fff; padding: 24px; }
+  [data-automation-id="questionItem"] { margin: 20px 0; }
+  [data-automation-id="requiredStar"]::after { content: " *"; color: #a4262c; }
+  [data-automation-id="validationError"] { color: #a4262c; }
+  label { display: block; margin: 6px 0; }
+  textarea, input[type=text], input:not([type]) { width: 90%; }
+</style>
+</head>
+<body dir="ltr">
+<div id="content-root"><div id="RuntimeRoot" dir="ltr"><div id="form-main-content1"><div aria-labelledby="FormTitleId_titleAriaId" role="main">
+  <div id="FormTitleId_titleAriaId"><div aria-level="1" role="heading" data-automation-id="formTitle"><span><b><span>Supplier Engagement Survey (test)</span></b></span></div></div>
+  <div data-automation-id="noticeContainer"><span>Required</span></div>
+  <div role="region" id="question-list"></div>
+  <div id="nav-buttons"></div>
+</div></div></div></div>
+<script>
+const SECTIONS = [
+  { title: 'GENERAL', subtitle: 'About your organisation.', questions: [
+    { id: 'q1', kind: 'text', title: 'Company name', required: true },
+    { id: 'q2', kind: 'radio', title: 'Number of employees', required: true, options: ['Fewer than 50', '50 to 249', '250 or more'] },
+  ] },
+  { title: 'EMISSION MANAGEMENT', subtitle: 'How your organisation manages greenhouse gas emissions.', questions: [
+    { id: 'q3', kind: 'radio', title: 'Scope 1 and 2 emissions management', required: true, options: ['Not yet calculated', 'Estimated, not yet inventoried', 'Calculated annually'] },
+    { id: 'q4', kind: 'checkbox', title: 'How are these emissions used?', required: true, options: ['Internal tracking', 'External reporting', 'Reduction targets', 'Customer requests'] },
+    { id: 'q5', kind: 'textarea', title: 'Describe your reduction plan', required: false },
+  ] },
+  { title: 'CONTACT', subtitle: '', questions: [
+    { id: 'q6', kind: 'text', title: 'Contact email', required: true },
+    { id: 'q7', kind: 'checkbox', title: 'Topics you would like support on', required: false, options: ['Scope 3', 'Target setting', 'Reporting'] },
+  ] },
+];
+const answers = {};
+let submitted = false;
+let showErrors = false;
+const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+const current = () => { const m = /^#\/page\/(\d+)/.exec(location.hash || '#/page/0'); return m ? Math.min(Number(m[1]), SECTIONS.length - 1) : 0; };
+let ordinal = 0;
+const empty = (q) => { const v = answers[q.id]; return v === undefined || v === '' || (Array.isArray(v) && v.length === 0); };
+
+function question(q) {
+  const n = SECTIONS.flatMap((s) => s.questions).indexOf(q) + 1;
+  const info = q.kind === 'radio' ? 'Single choice. ' : q.kind === 'checkbox' ? 'Multiple choice. ' : '';
+  const err = showErrors && q.required && empty(q) ? `<div id="ErrorMsgId_${q.id}" data-automation-id="validationError">This question is required.</div>` : '';
+  const labelledby = `QuestionId_${q.id} QuestionInfo_${q.id}${err ? ` ErrorMsgId_${q.id}` : ''}`;
+  let body = '';
+  if (q.kind === 'text') body = `<input aria-label="Single line text" maxlength="4000" placeholder="Enter your answer" aria-labelledby="${labelledby}" spellcheck="true" data-automation-id="textInput" data-q="${q.id}" value="${esc(answers[q.id] ?? '')}" />`;
+  if (q.kind === 'textarea') body = `<textarea aria-label="Multi Line Text" maxlength="4000" placeholder="Enter your answer" aria-labelledby="${labelledby}" spellcheck="true" data-automation-id="textInput" data-q="${q.id}">${esc(answers[q.id] ?? '')}</textarea>`;
+  if (q.kind === 'radio' || q.kind === 'checkbox') {
+    const group = q.kind === 'radio' ? 'radiogroup' : 'group';
+    body = `<div role="${group}" aria-labelledby="QuestionId_${q.id} QuestionInfo_${q.id}">` + q.options.map((o, oi) => {
+      const on = q.kind === 'radio' ? answers[q.id] === o : (answers[q.id] ?? []).includes(o);
+      return `<div data-automation-id="choiceItem"><label><span data-automation-value="${esc(o)}" data-automation-id="${q.kind}"><input aria-posinset="${oi + 1}" aria-setsize="${q.options.length}" name="${q.id}" aria-labelledby="Option_${q.id}_${oi}" aria-checked="${on}" role="${q.kind}" type="${q.kind}" value="${esc(o)}" data-q="${q.id}" ${on ? 'checked' : ''} /><span aria-hidden="true"></span></span><span aria-label="${esc(o)}" id="Option_${q.id}_${oi}">${esc(o)}</span></label></div>`;
+    }).join('') + '</div>';
+  }
+  return `<div data-automation-id="questionItem"><div id="QuestionId_${q.id}"><span data-automation-id="questionTitle"><span aria-level="2" role="heading"><span data-automation-id="questionOrdinal">${n}.</span><span><b><span>${esc(q.title)}</span></b></span>${q.required ? '<span role="note" aria-label="Required to answer" data-automation-id="requiredStar"></span>' : ''}</span><span id="QuestionInfo_${q.id}" aria-hidden="true">${info}</span></span></div>${err}<div>${body}</div></div>`;
+}
+
+function route() {
+  const i = current(); const s = SECTIONS[i];
+  if (submitted) { document.getElementById('question-list').innerHTML = '<div data-automation-id="thankYouMessage">Your response was submitted.</div>'; document.getElementById('nav-buttons').innerHTML = ''; return; }
+  document.getElementById('question-list').innerHTML = `<div><div aria-level="2" role="heading" data-automation-id="sectionTitle"><span><b>${esc(s.title)}</b></span></div><div data-automation-id="sectionSubTitle"><span>${esc(s.subtitle)}</span></div></div>` + s.questions.map(question).join('');
+  const back = i > 0 ? '<button type="button" data-automation-id="backButton" data-nav="back">Back</button>' : '';
+  const fwd = i < SECTIONS.length - 1 ? '<button type="button" data-automation-id="nextButton" data-nav="next">Next</button>' : '<button type="button" data-automation-id="submitButton" data-nav="submit">Submit</button>';
+  document.getElementById('nav-buttons').innerHTML = back + fwd;
+}
+
+document.addEventListener('input', (event) => { const el = event.target; if (el.dataset.q && (el.tagName === 'TEXTAREA' || el.type === 'text' || !el.type || el.getAttribute('type') === null)) answers[el.dataset.q] = el.value; });
+document.addEventListener('change', (event) => {
+  const el = event.target; if (!el.dataset.q) return;
+  if (el.type === 'radio') answers[el.dataset.q] = el.value;
+  else if (el.type === 'checkbox') { const set = new Set(answers[el.dataset.q] ?? []); if (el.checked) set.add(el.value); else set.delete(el.value); answers[el.dataset.q] = [...set]; }
+  else answers[el.dataset.q] = el.value;
+  // Updated in place, as the real form does: the question list is not redrawn under the pointer.
+  document.querySelectorAll(`input[name="${el.name}"]`).forEach((input) => input.setAttribute('aria-checked', String(input.checked)));
+});
+document.addEventListener('click', (event) => {
+  const b = event.target.closest('[data-nav]'); if (!b) return;
+  const i = current();
+  if (b.dataset.nav === 'back') { showErrors = false; location.hash = `#/page/${i - 1}`; return; }
+  const missing = SECTIONS[i].questions.some((q) => q.required && empty(q));
+  if (missing) { showErrors = true; route(); return; }
+  showErrors = false;
+  if (b.dataset.nav === 'next') location.hash = `#/page/${i + 1}`;
+  if (b.dataset.nav === 'submit') { submitted = true; route(); }
+});
+window.addEventListener('hashchange', route);
+route();
+</script>
+</body>
+</html>

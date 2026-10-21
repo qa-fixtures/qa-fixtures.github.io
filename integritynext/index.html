@@ -1,0 +1,168 @@
+<!doctype html>
+<!--
+  IntegrityNext-shaped test portal. Reproduces the DOM of the IntegrityNext
+  supplier assessments (app.integritynext.com/questionnaire/<module>) as
+  captured in 2026: a left navigation with Logout, one assessment module per
+  page as a form, Yes / No / No Answer toggle-button groups (aria-pressed), a
+  top-level radio group, a drawn select (role=combobox over a hidden input,
+  options in a popover listbox), a year grid of numeric fields with no label
+  of their own, a range slider, a drop zone with "Select File", and a stepper
+  whose Back / Next end with "Update", which saves the module and shares it
+  with the customers. Question wording is neutral placeholder text; no
+  company, person, answer, figure or document of any real assessment is here.
+-->
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>IntegrityNext (test portal)</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 0; font-size: 14px; color: #222; }
+  .layout { display: flex; }
+  nav { width: 230px; background: #12304a; color: #fff; min-height: 100vh; padding: 12px; }
+  nav a { color: #fff; display: block; padding: 6px 0; }
+  main { flex: 1; padding: 16px 24px; }
+  [role="group"] button[aria-pressed="true"] { background: #12304a; color: #fff; }
+  [role="combobox"] { border: 1px solid #999; padding: 6px; width: 260px; cursor: pointer; }
+  [role="listbox"] { position: absolute; background: #fff; border: 1px solid #999; list-style: none; padding: 0; margin: 0; width: 260px; }
+  [role="option"] { padding: 6px; cursor: pointer; }
+  .q { margin: 16px 0; }
+  .grid { display: flex; gap: 16px; align-items: flex-end; }
+  ol[data-testid="responsive-stepper"] { display: flex; gap: 16px; list-style: none; padding: 0; }
+  ol[data-testid="responsive-stepper"] li[aria-current="step"] { font-weight: 700; }
+  .hidden-input { border: 0; clip: rect(0 0 0 0); height: 1px; overflow: hidden; position: absolute; width: 1px; }
+  #toast { position: fixed; bottom: 16px; right: 16px; background: #12304a; color: #fff; padding: 8px; display: none; }
+</style>
+</head>
+<body>
+<div id="root"><div class="layout">
+<nav>
+  <ul style="list-style:none;padding:0">
+    <li data-testid="navbar-dashboard"><a href="#/dashboard"><div><span>Dashboard</span></div></a></li>
+    <li data-testid="navbar-questionnaire-dive"><a href="#/dive/0"><div><span>Diversity, Equity &amp; Inclusion</span></div></a></li>
+    <li data-testid="navbar-questionnaire-abac"><a href="#/abac/0"><div><span>Anti-Bribery &amp; Anti-Corruption</span></div></a></li>
+    <li data-testid="navbar-questionnaire-cafo"><a href="#/cafo/0"><div><span>Corporate Carbon Footprint</span></div></a></li>
+  </ul>
+  <hr />
+  <ul style="list-style:none;padding:0"><li data-testid="help"><a href="#/help"><div><span>Help</span></div></a></li><li data-testid="navbar-logout"><a href="#/logout"><div><span>Logout</span></div></a></li></ul>
+</nav>
+<main id="page"></main>
+</div></div>
+<div id="modal"></div>
+<div id="toast"></div>
+<script>
+const MODULES = {
+  dive: { title: 'Diversity, Equity & Inclusion', steps: [
+    { heading: 'About diversity and inclusion', items: [
+      { kind: 'toggle', id: 'cultureProgram', label: '1. Does your organisation support an inclusive workplace?' },
+      { kind: 'toggle', id: 'diversityProgram', label: '2. Are diversity initiatives in place?', hint: 'e.g. awareness training' },
+      { kind: 'range', id: 'genderRatio', label: '3. What share of your workforce are women?', hint: 'gender balance ratio' },
+      { kind: 'files', id: 'additionalProofFiles', label: 'Additional documents as proof of evidence (if available):' },
+    ] } ] },
+  abac: { title: 'Anti-Bribery & Anti-Corruption', steps: [
+    { heading: 'Management system', items: [
+      { kind: 'radio', id: 'topLevel', label: 'Is your anti-corruption management system certified?', options: [['ISO37001', 'Yes, ISO 37001'], ['OTHER', 'Yes, other'], ['NO', 'No']] },
+      { kind: 'toggle', id: 'option205', label: '1. Is someone in management accountable for anti-corruption work?' },
+      { kind: 'toggle', id: 'option206', label: '2. Are anti-corruption rules written down?' },
+    ] } ] },
+  cafo: { title: 'Corporate Carbon Footprint', steps: [
+    { name: 'General Information', heading: 'General Information', items: [
+      { kind: 'select', id: 'reportingStandard', label: '1. Which method do you follow to account for emissions?', required: true, options: ['GHG Protocol', 'ISO 14064', 'Other'] },
+    ] },
+    { name: 'Greenhouse gas (GHG) emissions', heading: 'Greenhouse Gas (GHG) Emissions', items: [
+      { kind: 'select', id: 'scope2Method', label: '2. Which basis do you use for Scope 2 emissions?', required: true, options: ['Market-based', 'Location-based', 'Both'] },
+      { kind: 'grid', id: 'emissions', label: "3. What are your emissions in tonnes?", rows: [['direct', 'Direct emissions (Scope 1)'], ['indirect', 'Emissions from purchased energy (Scope 2)']], years: ['2023', '2024', '2025'] },
+    ] },
+    { name: 'Emission reduction targets', heading: 'Emission Reduction Targets', items: [
+      { kind: 'toggle', id: 'reductionTarget', label: '4. Is an emission reduction target set?' },
+    ] } ] },
+};
+const state = {};
+let saved = {};
+const st = (key, fallback) => (key in state ? state[key] : fallback);
+const esc = (s) => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/"/g, '&quot;');
+const toast = (text) => { const t = document.getElementById('toast'); t.textContent = text; t.style.display = 'block'; setTimeout(() => (t.style.display = 'none'), 1500); };
+const where = () => { const m = /^#\/(\w+)\/(\d+)/.exec(location.hash || '#/dive/0'); return m && MODULES[m[1]] ? [m[1], Math.min(Number(m[2]), MODULES[m[1]].steps.length - 1)] : ['dive', 0]; };
+
+function item(it) {
+  const req = it.required ? '<span aria-hidden="true"> *</span>' : '';
+  const hint = it.hint ? `<span>${esc(it.hint)}</span>` : '';
+  if (it.kind === 'toggle') {
+    const v = st(it.id, '');
+    return `<div class="q"><div><label id="${it.id}-label" for="${it.id}" data-testid="${it.id}-label">${esc(it.label)}${hint}</label></div><div><div role="group" aria-label="${esc(it.label.replace(/^\d+\.\s*/, ''))}" data-testid="${it.id}">${['Yes', 'No', 'No Answer'].map((o) => `<button tabindex="0" type="button" data-toggle="${it.id}" data-value="${o}" aria-pressed="${v === o}">${o}</button>`).join('')}</div></div></div>`;
+  }
+  if (it.kind === 'radio') {
+    const v = st(it.id, '');
+    return `<div class="q" role="group" aria-labelledby="${it.id}-label"><span id="${it.id}-label" data-testid="${it.id}-label">${esc(it.label)}</span><div role="radiogroup" aria-labelledby="${it.id}-label" aria-required="true">${it.options.map(([value, text]) => `<div><label data-testid="radio-${value}-label"><span><input type="radio" value="${value}" name="${it.id}" ${v === value ? 'checked' : ''} /><span></span></span><span>${esc(text)}</span></label></div>`).join('')}</div></div>`;
+  }
+  if (it.kind === 'select') {
+    const v = st(it.id, '');
+    return `<div class="q"><div><label id="${it.id}-label" for="${it.id}" data-testid="${it.id}-label">${esc(it.label)}${req}</label></div><div data-testid="${it.id}" style="position:relative"><div tabindex="0" role="combobox" aria-expanded="false" aria-haspopup="listbox" aria-labelledby="${it.id}-label" data-select="${it.id}" aria-invalid="${it.required && !v}"><div>${v ? esc(v) : 'Select'}</div></div><input aria-hidden="true" tabindex="-1" class="hidden-input" aria-labelledby="${it.id}-label" value="${esc(v)}" />${it.required && !v ? '<p>This value is required.</p>' : ''}</div></div>`;
+  }
+  if (it.kind === 'grid') {
+    return `<div class="q"><div><span>${esc(it.label)}</span></div>${it.rows.map(([key, rowLabel]) => `<div class="grid"><div><p>${esc(rowLabel)}</p></div>${it.years.map((y, yi) => `<div><p>${y}</p><div><input placeholder="0" data-testid="${it.id}.${key}[${yi + 1}].value" data-grid="${it.id}.${key}.${yi}" type="text" inputmode="numeric" value="${esc(st(`${it.id}.${key}.${yi}`, ''))}" /><div><p>tCO₂e</p></div></div></div>`).join('')}</div><hr />`).join('')}</div>`;
+  }
+  if (it.kind === 'range') {
+    const v = st(it.id, '50');
+    return `<div class="q"><div><label id="${it.id}-label" for="${it.id}" data-testid="${it.id}-label">${esc(it.label)}${hint}</label></div><div><div><p>${v}%</p>Women</div><span id="${it.id}"><input data-range="${it.id}" aria-label="${it.id}" aria-valuenow="${v}" aria-valuemax="100" aria-valuemin="0" min="0" max="100" step="1" type="range" value="${v}" name="${it.id}" /></span><div><p>${100 - Number(v)}%</p>Men</div></div></div>`;
+  }
+  if (it.kind === 'files') {
+    const files = st(it.id, []);
+    return `<div class="q"><div><label id="${it.id}-label" for="${it.id}" data-testid="${it.id}-label">${esc(it.label)}</label></div><div role="presentation"><input accept="image/jpeg,image/png,application/pdf" multiple tabindex="-1" data-testid="dropzone-input" data-files="${it.id}" type="file" class="hidden-input" /><p>Select files or drag and drop here</p><span>JPEG, PNG and PDF, file size no more than 10MB</span><button tabindex="0" type="button" data-testid="dropzone-select-file" data-pick="${it.id}">Select File</button></div><div><div>Attachments (${files.length})</div>${files.map((f, fi) => `<div data-testid="file-link"><p aria-label="${esc(f)}">${esc(f)}</p><button type="button" aria-label="download ${esc(f)}" data-testid="dropzone-download-file"></button><button type="button" aria-label="delete ${esc(f)}" data-testid="dropzone-delete-file" data-delete="${it.id}:${fi}"></button></div>`).join('')}</div></div>`;
+  }
+  return '';
+}
+
+function route() {
+  const [key, index] = where();
+  const mod = MODULES[key]; const step = mod.steps[index]; const last = index === mod.steps.length - 1;
+  const stepper = mod.steps.length > 1 ? `<ol data-testid="responsive-stepper">${mod.steps.map((s, si) => `<li ${si === index ? 'aria-current="step"' : ''}><span>${si + 1} ${esc(s.name)}</span></li>`).join('')}</ol>` : '';
+  document.getElementById('page').innerHTML = `<div><h2 data-testid="page-title">${esc(mod.title)}</h2><button type="button" data-testid="questionnaire-improve-button">How can I get better?</button></div>
+<div role="alert">Please note that your responses to this assessment will be shared with all customers who invited you.</div>
+<form id="${key}-assessment-form" data-testid="${key}-assessment-form">${stepper}<div data-step-content="true" data-testid="step-content"><h3>${esc(step.heading)}</h3>${step.items.map(item).join('')}</div>
+<div><button tabindex="0" type="button" data-testid="modal-cancel-button" data-nav="back">${index === 0 ? 'Cancel' : 'Back'}</button><button tabindex="0" type="${last ? 'submit' : 'button'}" data-testid="modal-save-button" data-nav="${last ? 'update' : 'next'}">${last ? 'Update' : 'Next'}</button></div>${saved[key] ? '<p data-testid="module-saved">Your answers were updated and shared.</p>' : ''}</form>`;
+}
+
+document.addEventListener('click', (event) => {
+  const t = event.target.closest('button,[role=combobox],[role=option]');
+  if (!t) return;
+  if (t.dataset.toggle) { state[t.dataset.toggle] = t.dataset.value; route(); return; }
+  if (t.dataset.select) {
+    document.querySelectorAll('[role=listbox]').forEach((l) => l.remove());
+    const [key, index] = where();
+    const it = MODULES[key].steps[index].items.find((i) => i.id === t.dataset.select);
+    t.setAttribute('aria-expanded', 'true');
+    const list = document.createElement('ul'); list.setAttribute('role', 'listbox'); list.setAttribute('aria-labelledby', `${it.id}-label`);
+    list.innerHTML = it.options.map((o) => `<li role="option" tabindex="-1" data-option="${it.id}" data-value="${esc(o)}" aria-selected="${st(it.id, '') === o}">${esc(o)}</li>`).join('');
+    const r = t.getBoundingClientRect(); list.style.left = `${r.left + scrollX}px`; list.style.top = `${r.bottom + scrollY}px`;
+    document.getElementById('modal').append(list);
+    return;
+  }
+  if (t.dataset.option) { state[t.dataset.option] = t.dataset.value; document.querySelectorAll('[role=listbox]').forEach((l) => l.remove()); route(); return; }
+  if (t.dataset.pick) { document.querySelector(`[data-files="${t.dataset.pick}"]`).click(); return; }
+  if (t.dataset.delete) { const [id, fi] = t.dataset.delete.split(':'); const files = [...st(id, [])]; files.splice(Number(fi), 1); state[id] = files; route(); return; }
+  if (t.dataset.nav) {
+    event.preventDefault();
+    const [key, index] = where();
+    if (t.dataset.nav === 'next') location.hash = `#/${key}/${index + 1}`;
+    if (t.dataset.nav === 'back' && index > 0) location.hash = `#/${key}/${index - 1}`;
+    if (t.dataset.nav === 'update') { saved[key] = true; toast('Saved'); route(); }
+  }
+});
+document.addEventListener('input', (event) => {
+  const el = event.target;
+  if (el.dataset.grid) state[el.dataset.grid] = el.value;
+  if (el.dataset.range) state[el.dataset.range] = el.value;
+});
+document.addEventListener('change', (event) => {
+  const el = event.target;
+  if (el.type === 'radio') { state[el.name] = el.value; route(); }
+  if (el.dataset.files) { state[el.dataset.files] = [...st(el.dataset.files, []), ...[...el.files].map((f) => f.name)]; route(); }
+  if (el.dataset.range) { state[el.dataset.range] = el.value; route(); }
+});
+document.addEventListener('submit', (event) => event.preventDefault());
+window.addEventListener('hashchange', route);
+route();
+</script>
+</body>
+</html>
