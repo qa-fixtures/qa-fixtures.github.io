@@ -208,7 +208,15 @@ function renderSubmit() {
   renderSidebar('submit');
   const root = document.getElementById('page');
   if (submitted) {
-    root.replaceChildren(el('h2', { text: 'Thank you, your questionnaire has been submitted' }), el('p', { text: 'Reference EV-TEST-0001' }));
+    // A read-only record of what was submitted, so a tester can compare it with the verified answers.
+    const rows = PAGES.flatMap((page) => page.questions).map((question) => {
+      const picked = question.options.map((option, index) => ({ option, entry: stateOf(question.id, index) })).filter(({ entry }) => entry.checked);
+      const text = picked.length === 0 ? 'No answer'
+        : picked.map(({ option, entry }) => [option, entry.specify && `specified: ${entry.specify}`, ...entry.documents.map((doc) => `document: ${doc.name}`)].filter(Boolean).join(' — ')).join('; ');
+      return el('li', { 'data-testid': `submitted_${question.code}`, text: `${question.code}: ${text}` });
+    });
+    root.replaceChildren(el('h2', { text: 'Thank you, your questionnaire has been submitted' }), el('p', { text: 'Reference EV-TEST-0001' }),
+      el('h3', { text: 'Submitted answers' }), el('ul', { 'data-testid': 'submitted_answers' }, ...rows));
     return;
   }
   const missing = PAGES.flatMap((page) => page.questions).filter((question) => question.required && !question.options.some((_, index) => stateOf(question.id, index).checked));
