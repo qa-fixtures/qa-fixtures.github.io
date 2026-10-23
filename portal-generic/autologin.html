@@ -1,0 +1,9 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Signing in…</title></head>
+<body><p>Signing in to the fixture portal…</p>
+<script>
+// Test-only entry: sets the same sign-in cookie login.html sets, so a hosted browser reaches q.html
+// without anyone typing a username or password. Sign-in cases keep using login.html.
+document.cookie='vd_auth=1; path=/; max-age=2592000';
+location.replace('q.html');
+</script></body></html>
