@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>React-select</title>
+<style>.select__control{border:1px solid #888;display:flex;min-width:240px}.select__menu{border:1px solid #888}</style></head>
+<body>
+<h1>Company profile</h1>
+<!-- Shaped like react-select v5: the input stays empty, the choice shows in a sibling div, and the menu is unmounted when it closes. -->
+<label id="currency-label" for="currency-input">Reporting currency</label>
+<div class="select__container" id="currency">
+  <div class="select__control">
+    <div class="select__value-container">
+      <div class="select__placeholder" id="currency-placeholder">Select...</div>
+      <div class="select__input-container"><input id="currency-input" class="select__input" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-haspopup="true" aria-labelledby="currency-label" autocomplete="off" value=""></div>
+    </div>
+    <div class="select__indicators"><span aria-hidden="true">▾</span></div>
+  </div>
+  <input type="hidden" name="currency" value="">
+</div>
+<p><label for="note">Note</label> <input id="note" name="note"></p>
+<script>
+  const options = ['EUR', 'GBP', 'USD', 'CHF'];
+  const container = document.getElementById('currency');
+  const control = container.querySelector('.select__control');
+  const input = document.getElementById('currency-input');
+  const hidden = container.querySelector('input[type=hidden]');
+  const valueContainer = container.querySelector('.select__value-container');
+  let menu = null;
+  const close = () => { menu?.remove(); menu = null; input.setAttribute('aria-expanded', 'false'); };
+  const open = () => {
+    close();
+    menu = document.createElement('div');
+    menu.className = 'select__menu';
+    menu.setAttribute('role', 'listbox');
+    menu.id = 'currency-listbox';
+    const query = input.value.toLowerCase();
+    for (const [index, value] of options.entries()) {
+      if (!value.toLowerCase().includes(query)) continue;
+      const option = document.createElement('div');
+      option.className = 'select__option';
+      option.id = `react-select-2-option-${index}`;
+      option.setAttribute('role', 'option');
+      option.setAttribute('aria-selected', String(hidden.value === value));
+      option.textContent = value;
+      option.addEventListener('mousedown', (event) => event.preventDefault());
+      option.addEventListener('click', () => {
+        hidden.value = value;
+        valueContainer.querySelector('.select__single-value')?.remove();
+        document.getElementById('currency-placeholder').hidden = true;
+        const single = document.createElement('div');
+        single.className = 'select__single-value';
+        single.textContent = value;
+        valueContainer.prepend(single);
+        input.value = '';
+        close();
+      });
+      menu.append(option);
+    }
+    container.append(menu);
+    input.setAttribute('aria-expanded', 'true');
+  };
+  control.addEventListener('mousedown', (event) => { if (event.target !== input) event.preventDefault(); input.focus(); open(); });
+  input.addEventListener('input', open);
+  input.addEventListener('blur', () => setTimeout(() => { close(); input.value = ''; }, 50));
+</script>
+</body></html>

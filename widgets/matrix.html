@@ -1,0 +1,33 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Matrix</title></head>
+<body>
+<h1>Practices</h1>
+<!-- A matrix question as survey tools render it: one radio per row and column, each named by the row and column headers. -->
+<table aria-label="How often does your company review the following?">
+  <thead><tr><td></td><th scope="col" id="col-never">Never</th><th scope="col" id="col-yearly">Yearly</th><th scope="col" id="col-quarterly">Quarterly</th></tr></thead>
+  <tbody>
+    <tr><th scope="row" id="row-energy">Energy use</th>
+      <td><input type="radio" name="m[energy]" value="never" aria-labelledby="row-energy col-never"></td>
+      <td><input type="radio" name="m[energy]" value="yearly" aria-labelledby="row-energy col-yearly"></td>
+      <td><input type="radio" name="m[energy]" value="quarterly" aria-labelledby="row-energy col-quarterly"></td></tr>
+    <tr><th scope="row" id="row-waste">Waste</th>
+      <td><input type="radio" name="m[waste]" value="never" aria-labelledby="row-waste col-never"></td>
+      <td><input type="radio" name="m[waste]" value="yearly" aria-labelledby="row-waste col-yearly"></td>
+      <td><input type="radio" name="m[waste]" value="quarterly" aria-labelledby="row-waste col-quarterly"></td></tr>
+  </tbody>
+</table>
+<!-- The same matrix with no labelling at all, which many form builders still ship. -->
+<table>
+  <thead><tr><td></td><th>Never</th><th>Yearly</th><th>Quarterly</th></tr></thead>
+  <tbody>
+    <tr><td>Water use</td>
+      <td><input type="radio" name="n[water]" value="never"></td>
+      <td><input type="radio" name="n[water]" value="yearly"></td>
+      <td><input type="radio" name="n[water]" value="quarterly"></td></tr>
+    <tr><td>Emissions</td>
+      <td><input type="radio" name="n[emissions]" value="never"></td>
+      <td><input type="radio" name="n[emissions]" value="yearly"></td>
+      <td><input type="radio" name="n[emissions]" value="quarterly"></td></tr>
+  </tbody>
+</table>
+</body></html>

@@ -1,0 +1,499 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Sustainability Questionnaire</title>
+<style>body { font: 14px sans-serif; margin: 16px; } .hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); } input[type=text], select { display: block; width: 320px; height: 28px; margin: 4px 0 12px; }</style>
+</head>
+<body>
+<!--
+  A public supplier questionnaire with no sign-in, cut from a real Sitefinity form: plain inputs, radio buttons with role=radio
+  but no radiogroup, a country select whose label is visually hidden and whose first options are placeholders, every
+  question marked required on the page, and question headings in content blocks no label points at.
+-->
+<h1>Sustainability Questionnaire</h1>
+<form action="#" method="POST" id="questionnaire">                <div id="C250_Col00" class="sf_colsIn container" data-sf-element="Container" data-placeholder-label="Container">
+<div class="sf-fieldWrp" role="heading">
+    <h2>Background info</h2>
+</div><div class="mb-30 flex-wrapper" data-sf-element="Row">
+    <div data-sf-element="space-30" data-placeholder-label="Vertical space 30px">
+    </div>
+</div>
+<div class="sitefinity-content-block" >
+    <div ><strong>Company name</strong></div>
+</div>
+<!-- InputCssClass class variable -->
+<div class="form-group" data-sf-role="text-field-container">
+    <input data-sf-role="violation-restrictions" type="hidden" value='{"maxLength":"255", "minLength": "0"}' />
+    <input data-sf-role="violation-messages" type="hidden" value='{"maxLength":"001. Company name field must be less than 255 characters", "required": "001. Company name field input is required", "invalid": "Entry is not valid!", "regularExpression": "001. Company name field input is invalid"}' />
+    <label class="label hidden" for='Textbox-1'>001. Company name</label>
+    <input id='Textbox-1'
+           type="text"
+           class="input"
+           name="TextFieldController_4"
+           placeholder="Company name"
+           value=""
+           aria-required="true"
+           data-sf-role="text-field-input"
+           required="required" pattern=".{0,255}" 
+  aria-describedby='TextboxErrorMessage-1'    />
+    <div id='TextboxErrorMessage-1' data-sf-role="error-message" role="alert" aria-live="assertive" class="text-danger" style="display: none;"></div>
+</div>
+<div class="mb-30 flex-wrapper" data-sf-element="Row">
+    <div data-sf-element="space-30" data-placeholder-label="Vertical space 30px">
+    </div>
+</div>
+<div class="sitefinity-content-block" >
+    <div ><strong>Category of goods/services sold to Northwind Steel</strong></div>
+</div>
+<div class="form-group radio" data-sf-role="multiple-choice-field-container">
+    <input type="hidden" data-sf-role="violation-messages" value='{ "required": "002. Category of goods/services sold to Northwind Steel field input is required"}' />
+            <div class="radio__item">
+                <input type="radio"  class="input" id="Materials/products288d32aee6eb40789293f401227522b3" name="MultipleChoiceFieldController_0" value="Materials/products" data-sf-role="multiple-choice-field-input"  required="required" pattern=".{0,255}"  role="radio" aria-required="true" />
+                <label class="label" for="Materials/products288d32aee6eb40789293f401227522b3">
+                    Materials/products
+                </label>
+            </div>
+            <div class="radio__item">
+                <input type="radio"  class="input" id="Logistics08b946608915401a94bf118282bacc9f" name="MultipleChoiceFieldController_0" value="Logistics" data-sf-role="multiple-choice-field-input"  required="required" pattern=".{0,255}"  role="radio" aria-required="true" />
+                <label class="label" for="Logistics08b946608915401a94bf118282bacc9f">
+                    Logistics
+                </label>
+            </div>
+            <div class="radio__item">
+                <input type="radio"  class="input" id="Services (other than logistics)189b5d1c13fa46459eafa3bcf5ef2e52" name="MultipleChoiceFieldController_0" value="Services (other than logistics)" data-sf-role="multiple-choice-field-input"  required="required" pattern=".{0,255}"  role="radio" aria-required="true" />
+                <label class="label" for="Services (other than logistics)189b5d1c13fa46459eafa3bcf5ef2e52">
+                    Services (other than logistics)
+                </label>
+            </div>
+            <div class="radio__item">
+                <input type="radio"  class="input" id="Other2b91f601c2a645adbc2d28e9cd26cb13" name="MultipleChoiceFieldController_0" value="Other" data-sf-role="multiple-choice-field-input"  required="required" pattern=".{0,255}"  role="radio" aria-required="true" />
+                <label class="label" for="Other2b91f601c2a645adbc2d28e9cd26cb13">
+                    Other
+                </label>
+            </div>
+                <div id='RadioGroupErrorMessage-1' data-sf-role="error-message" role="alert" aria-live="assertive" class="text-danger"></div>
+</div>
+<div class="mb-30 flex-wrapper" data-sf-element="Row">
+    <div data-sf-element="space-30" data-placeholder-label="Vertical space 30px">
+    </div>
+</div>
+<div class="sitefinity-content-block" >
+    <div ><strong>Country of the main production(/service) facility serving Northwind Steel</strong></div>
+</div>
+<div class="form-group" data-sf-role="dropdown-list-field-container">
+    <input type="hidden" data-sf-role="violation-messages" value='{ "required": "003. Country of the main production(/service) facility serving Northwind Steel field input is required"}' />
+    <label class="h6 hidden" for="Dropdown-1">
+        003. Country of the main production(/service) facility serving Northwind Steel
+    </label>
+    <select id="Dropdown-1"
+            data-sf-role="dropdown-list-field-select"
+            name="DropdownListFieldController"
+            required='required'
+            class="select form-control"
+            aria-required="true"
+  aria-describedby='DropdownErrorMessage-1'   >
+        <option></option>
+            <option  value="">Country of the main production(/service) facility serving Northwind Steel</option>
+            <option  value="Afghanistan (AF)">Afghanistan (AF)</option>
+            <option  value="&#197;land Islands (AX)">&#197;land Islands (AX)</option>
+            <option  value="Albania (AL)">Albania (AL)</option>
+            <option  value="Algeria (DZ)">Algeria (DZ)</option>
+            <option  value="American Samoa (AS)">American Samoa (AS)</option>
+            <option  value="Andorra (AD)">Andorra (AD)</option>
+            <option  value="Angola (AO)">Angola (AO)</option>
+            <option  value="Anguilla (AI)">Anguilla (AI)</option>
+            <option  value="Antarctica (AQ)">Antarctica (AQ)</option>
+            <option  value="Antigua and Barbuda (AG)">Antigua and Barbuda (AG)</option>
+            <option  value="Argentina (AR)">Argentina (AR)</option>
+            <option  value="Armenia (AM)">Armenia (AM)</option>
+            <option  value="Aruba (AW)">Aruba (AW)</option>
+            <option  value="Australia (AU)">Australia (AU)</option>
+            <option  value="Austria (AT)">Austria (AT)</option>
+            <option  value="Azerbaijan (AZ)">Azerbaijan (AZ)</option>
+            <option  value="Bahamas (BS)">Bahamas (BS)</option>
+            <option  value="Bahrain (BH)">Bahrain (BH)</option>
+            <option  value="Bangladesh (BD)">Bangladesh (BD)</option>
+            <option  value="Barbados (BB)">Barbados (BB)</option>
+            <option  value="Belarus (BY)">Belarus (BY)</option>
+            <option  value="Belgium (BE)">Belgium (BE)</option>
+            <option  value="Belize (BZ)">Belize (BZ)</option>
+            <option  value="Benin (BJ)">Benin (BJ)</option>
+            <option  value="Bermuda (BM)">Bermuda (BM)</option>
+            <option  value="Bhutan (BT)">Bhutan (BT)</option>
+            <option  value="Bolivia (BO)">Bolivia (BO)</option>
+            <option  value="Bonaire, Sint Eustatius and Saba (BQ)">Bonaire, Sint Eustatius and Saba (BQ)</option>
+            <option  value="Bosnia and Herzegovina (BA)">Bosnia and Herzegovina (BA)</option>
+            <option  value="Botswana (BW)">Botswana (BW)</option>
+            <option  value="Brazil (BR)">Brazil (BR)</option>
+            <option  value="British Indian Ocean Territory (IO)">British Indian Ocean Territory (IO)</option>
+            <option  value="Brunei Darussalam (BN)">Brunei Darussalam (BN)</option>
+            <option  value="Bulgaria (BG)">Bulgaria (BG)</option>
+            <option  value="Burkina Faso (BF)">Burkina Faso (BF)</option>
+            <option  value="Burundi (BI)">Burundi (BI)</option>
+            <option  value="Cambodia (KH)">Cambodia (KH)</option>
+            <option  value="Cameroon (CM)">Cameroon (CM)</option>
+            <option  value="Canada (CA)">Canada (CA)</option>
+            <option  value="Cape Verde (CV)">Cape Verde (CV)</option>
+            <option  value="Cayman Islands (KY)">Cayman Islands (KY)</option>
+            <option  value="Central African Republic (CF)">Central African Republic (CF)</option>
+            <option  value="Chad (TD)">Chad (TD)</option>
+            <option  value="Chile (CL)">Chile (CL)</option>
+            <option  value="China (CN)">China (CN)</option>
+            <option  value="Christmas Island (CX)">Christmas Island (CX)</option>
+            <option  value="Cocos (Keeling) Islands (CC)">Cocos (Keeling) Islands (CC)</option>
+            <option  value="Colombia (CO)">Colombia (CO)</option>
+            <option  value="Comoros (KM)">Comoros (KM)</option>
+            <option  value="Congo (CG)">Congo (CG)</option>
+            <option  value="Congo, The Democratic Republic of the (CD)">Congo, The Democratic Republic of the (CD)</option>
+            <option  value="Cook Islands (CK)">Cook Islands (CK)</option>
+            <option  value="Costa Rica (CR)">Costa Rica (CR)</option>
+            <option  value="C&#244;te d&#39;Ivoire (CI)">C&#244;te d&#39;Ivoire (CI)</option>
+            <option  value="Croatia (HR)">Croatia (HR)</option>
+            <option  value="Cuba (CU)">Cuba (CU)</option>
+            <option  value="Cura&#231;ao (CW)">Cura&#231;ao (CW)</option>
+            <option  value="Cyprus (CY)">Cyprus (CY)</option>
+            <option  value="Czech Republic (CZ)">Czech Republic (CZ)</option>
+            <option  value="Denmark (DK)">Denmark (DK)</option>
+            <option  value="Djibouti (DJ)">Djibouti (DJ)</option>
+            <option  value="Dominica (DM)">Dominica (DM)</option>
+            <option  value="Dominican Republic (DO)">Dominican Republic (DO)</option>
+            <option  value="Ecuador (EC)">Ecuador (EC)</option>
+            <option  value="Egypt (EG)">Egypt (EG)</option>
+            <option  value="El Salvador (SV)">El Salvador (SV)</option>
+            <option  value="Equatorial Guinea (GQ)">Equatorial Guinea (GQ)</option>
+            <option  value="Eritrea (ER)">Eritrea (ER)</option>
+            <option  value="Estonia (EE)">Estonia (EE)</option>
+            <option  value="Eswatini (SZ)">Eswatini (SZ)</option>
+            <option  value="Ethiopia (ET)">Ethiopia (ET)</option>
+            <option  value="Falkland Islands (Malvinas) (FK)">Falkland Islands (Malvinas) (FK)</option>
+            <option  value="Faroe Islands (FO)">Faroe Islands (FO)</option>
+            <option  value="Fiji (FJ)">Fiji (FJ)</option>
+            <option  value="Finland (FI)">Finland (FI)</option>
+            <option  value="France (FR)">France (FR)</option>
+            <option  value="French Guiana (GF)">French Guiana (GF)</option>
+            <option  value="French Polynesia (PF)">French Polynesia (PF)</option>
+            <option  value="French Southern Territories (TF)">French Southern Territories (TF)</option>
+            <option  value="Gabon (GA)">Gabon (GA)</option>
+            <option  value="Gambia (GM)">Gambia (GM)</option>
+            <option  value="Georgia (GE)">Georgia (GE)</option>
+            <option  value="Germany (DE)">Germany (DE)</option>
+            <option  value="Ghana (GH)">Ghana (GH)</option>
+            <option  value="Gibraltar (GI)">Gibraltar (GI)</option>
+            <option  value="Greece (GR)">Greece (GR)</option>
+            <option  value="Greenland (GL)">Greenland (GL)</option>
+            <option  value="Grenada (GD)">Grenada (GD)</option>
+            <option  value="Guadeloupe (GP)">Guadeloupe (GP)</option>
+            <option  value="Guam (GU)">Guam (GU)</option>
+            <option  value="Guatemala (GT)">Guatemala (GT)</option>
+            <option  value="Guernsey (GG)">Guernsey (GG)</option>
+            <option  value="Guinea (GN)">Guinea (GN)</option>
+            <option  value="Guinea-Bissau (GW)">Guinea-Bissau (GW)</option>
+            <option  value="Guyana (GY)">Guyana (GY)</option>
+            <option  value="Haiti (HT)">Haiti (HT)</option>
+            <option  value="Heard Island and McDonald Islands (HM)">Heard Island and McDonald Islands (HM)</option>
+            <option  value="Holy See (Vatican City State) (VA)">Holy See (Vatican City State) (VA)</option>
+            <option  value="Honduras (HN)">Honduras (HN)</option>
+            <option  value="Hong Kong (HK)">Hong Kong (HK)</option>
+            <option  value="Hungary (HU)">Hungary (HU)</option>
+            <option  value="Iceland (IS)">Iceland (IS)</option>
+            <option  value="India (IN)">India (IN)</option>
+            <option  value="Indonesia (ID)">Indonesia (ID)</option>
+            <option  value="Installations in International Waters (XZ)">Installations in International Waters (XZ)</option>
+            <option  value="Iran, Islamic Republic of (IR)">Iran, Islamic Republic of (IR)</option>
+            <option  value="Iraq (IQ)">Iraq (IQ)</option>
+            <option  value="Ireland (IE)">Ireland (IE)</option>
+            <option  value="Isle of Man (IM)">Isle of Man (IM)</option>
+            <option  value="Israel (IL)">Israel (IL)</option>
+            <option  value="Italy (IT)">Italy (IT)</option>
+            <option  value="Jamaica (JM)">Jamaica (JM)</option>
+            <option  value="Japan (JP)">Japan (JP)</option>
+            <option  value="Jersey (JE)">Jersey (JE)</option>
+            <option  value="Jordan (JO)">Jordan (JO)</option>
+            <option  value="Kazakhstan (KZ)">Kazakhstan (KZ)</option>
+            <option  value="Kenya (KE)">Kenya (KE)</option>
+            <option  value="Kiribati (KI)">Kiribati (KI)</option>
+            <option  value="Korea, Democratic People&#39;s Republic of (KP)">Korea, Democratic People&#39;s Republic of (KP)</option>
+            <option  value="Korea, Republic of (KR)">Korea, Republic of (KR)</option>
+            <option  value="Kuwait (KW)">Kuwait (KW)</option>
+            <option  value="Kyrgyzstan (KG)">Kyrgyzstan (KG)</option>
+            <option  value="Lao People&#39;s Democratic Republic (LA)">Lao People&#39;s Democratic Republic (LA)</option>
+            <option  value="Latvia (LV)">Latvia (LV)</option>
+            <option  value="Lebanon (LB)">Lebanon (LB)</option>
+            <option  value="Lesotho (LS)">Lesotho (LS)</option>
+            <option  value="Liberia (LR)">Liberia (LR)</option>
+            <option  value="Libya (LY)">Libya (LY)</option>
+            <option  value="Liechtenstein (LI)">Liechtenstein (LI)</option>
+            <option  value="Lithuania (LT)">Lithuania (LT)</option>
+            <option  value="Luxembourg (LU)">Luxembourg (LU)</option>
+            <option  value="Macao (MO)">Macao (MO)</option>
+            <option  value="Madagascar (MG)">Madagascar (MG)</option>
+            <option  value="Malawi (MW)">Malawi (MW)</option>
+            <option  value="Malaysia (MY)">Malaysia (MY)</option>
+            <option  value="Maldives (MV)">Maldives (MV)</option>
+            <option  value="Mali (ML)">Mali (ML)</option>
+            <option  value="Malta (MT)">Malta (MT)</option>
+            <option  value="Marshall Islands (MH)">Marshall Islands (MH)</option>
+            <option  value="Martinique (MQ)">Martinique (MQ)</option>
+            <option  value="Mauritania (MR)">Mauritania (MR)</option>
+            <option  value="Mauritius (MU)">Mauritius (MU)</option>
+            <option  value="Mayotte (YT)">Mayotte (YT)</option>
+            <option  value="Mexico (MX)">Mexico (MX)</option>
+            <option  value="Micronesia, Federated States of (FM)">Micronesia, Federated States of (FM)</option>
+            <option  value="Moldova, Republic of (MD)">Moldova, Republic of (MD)</option>
+            <option  value="Monaco (MC)">Monaco (MC)</option>
+            <option  value="Mongolia (MN)">Mongolia (MN)</option>
+            <option  value="Montenegro (ME)">Montenegro (ME)</option>
+            <option  value="Montserrat (MS)">Montserrat (MS)</option>
+            <option  value="Morocco (MA)">Morocco (MA)</option>
+            <option  value="Mozambique (MZ)">Mozambique (MZ)</option>
+            <option  value="Myanmar (MM)">Myanmar (MM)</option>
+            <option  value="Namibia (NA)">Namibia (NA)</option>
+            <option  value="Nauru (NR)">Nauru (NR)</option>
+            <option  value="Nepal (NP)">Nepal (NP)</option>
+            <option  value="Netherlands (NL)">Netherlands (NL)</option>
+            <option  value="New Caledonia (NC)">New Caledonia (NC)</option>
+            <option  value="New Zealand (NZ)">New Zealand (NZ)</option>
+            <option  value="Nicaragua (NI)">Nicaragua (NI)</option>
+            <option  value="Niger (NE)">Niger (NE)</option>
+            <option  value="Nigeria (NG)">Nigeria (NG)</option>
+            <option  value="Niue (NU)">Niue (NU)</option>
+            <option  value="Norfolk Island (NF)">Norfolk Island (NF)</option>
+            <option  value="North Macedonia (MK)">North Macedonia (MK)</option>
+            <option  value="Northern Mariana Islands (MP)v">Northern Mariana Islands (MP)v</option>
+            <option  value="Norway (NO)">Norway (NO)</option>
+            <option  value="Oman (OM)">Oman (OM)</option>
+            <option  value="Pakistan (PK)">Pakistan (PK)</option>
+            <option  value="Palau (PW)">Palau (PW)</option>
+            <option  value="Palestine, State of (PS)">Palestine, State of (PS)</option>
+            <option  value="Panama (PA)">Panama (PA)</option>
+            <option  value="Papua New Guinea (PG)">Papua New Guinea (PG)</option>
+            <option  value="Paraguay (PY)">Paraguay (PY)</option>
+            <option  value="Peru (PE)">Peru (PE)</option>
+            <option  value="Philippines (PH)">Philippines (PH)</option>
+            <option  value="Pitcairn (PN)">Pitcairn (PN)</option>
+            <option  value="Poland (PL)">Poland (PL)</option>
+            <option  value="Portugal (PT)">Portugal (PT)</option>
+            <option  value="Puerto Rico (PR)">Puerto Rico (PR)</option>
+            <option  value="Qatar (QA)">Qatar (QA)</option>
+            <option  value="Reunion (RE)">Reunion (RE)</option>
+            <option  value="Romania (RO)">Romania (RO)</option>
+            <option  value="Russian Federation (RU)">Russian Federation (RU)</option>
+            <option  value="Rwanda (RW)">Rwanda (RW)</option>
+            <option  value="Saint Barth&#233;lemy (BL)">Saint Barth&#233;lemy (BL)</option>
+            <option  value="Saint Helena, Ascension and Tristan Da Cunha (SH)">Saint Helena, Ascension and Tristan Da Cunha (SH)</option>
+            <option  value="Saint Kitts and Nevis (KN)">Saint Kitts and Nevis (KN)</option>
+            <option  value="Saint Lucia (LC)">Saint Lucia (LC)</option>
+            <option  value="Saint Martin (French Part) (MF)">Saint Martin (French Part) (MF)</option>
+            <option  value="Saint Pierre and Miquelon (PM)">Saint Pierre and Miquelon (PM)</option>
+            <option  value="Saint Vincent and the Grenadines (VC)">Saint Vincent and the Grenadines (VC)</option>
+            <option  value="Samoa (WS)">Samoa (WS)</option>
+            <option  value="San Marino (SM)">San Marino (SM)</option>
+            <option  value="Sao Tome and Principe (ST)">Sao Tome and Principe (ST)</option>
+            <option  value="Saudi Arabia (SA)">Saudi Arabia (SA)</option>
+            <option  value="Senegal (SN)">Senegal (SN)</option>
+            <option  value="Serbia (RS)">Serbia (RS)</option>
+            <option  value="Seychelles (SC)">Seychelles (SC)</option>
+            <option  value="Sierra Leone (SL)">Sierra Leone (SL)</option>
+            <option  value="Singapore (SG)">Singapore (SG)</option>
+            <option  value="Sint Maarten (Dutch Part) (SX)">Sint Maarten (Dutch Part) (SX)</option>
+            <option  value="Slovakia (SK)">Slovakia (SK)</option>
+            <option  value="Slovenia (SI)">Slovenia (SI)</option>
+            <option  value="Solomon Islands (SB)">Solomon Islands (SB)</option>
+            <option  value="Somalia (SO)">Somalia (SO)</option>
+            <option  value="South Africa (ZA)">South Africa (ZA)</option>
+            <option  value="South Georgia and the South Sandwich Islands (GS)">South Georgia and the South Sandwich Islands (GS)</option>
+            <option  value="South Sudan (SS)">South Sudan (SS)</option>
+            <option  value="Spain (ES)">Spain (ES)</option>
+            <option  value="Sri Lanka (LK)">Sri Lanka (LK)</option>
+            <option  value="Sudan (SD)">Sudan (SD)</option>
+            <option  value="Suriname (SR)">Suriname (SR)</option>
+            <option  value="Svalbard and Jan Mayen (SJ)">Svalbard and Jan Mayen (SJ)</option>
+            <option  value="Sweden (SE)">Sweden (SE)</option>
+            <option  value="Switzerland (CH)">Switzerland (CH)</option>
+            <option  value="Syrian Arab Republic (SY)">Syrian Arab Republic (SY)</option>
+            <option  value="Taiwan, Province of China (TW)">Taiwan, Province of China (TW)</option>
+            <option  value="Tajikistan (TJ)">Tajikistan (TJ)</option>
+            <option  value="Tanzania, United Republic of (TZ)">Tanzania, United Republic of (TZ)</option>
+            <option  value="Thailand (TH)">Thailand (TH)</option>
+            <option  value="Timor-Leste (TL)">Timor-Leste (TL)</option>
+            <option  value="Togo (TG)">Togo (TG)</option>
+            <option  value="Tokelau (TK)">Tokelau (TK)</option>
+            <option  value="Tonga (TO)">Tonga (TO)</option>
+            <option  value="Trinidad and Tobago (TT)">Trinidad and Tobago (TT)</option>
+            <option  value="Tunisia (TN)">Tunisia (TN)</option>
+            <option  value="T&#252;rkiye (TR)">T&#252;rkiye (TR)</option>
+            <option  value="Turkmenistan (TM)">Turkmenistan (TM)</option>
+            <option  value="Turks and Caicos Islands (TC)">Turks and Caicos Islands (TC)</option>
+            <option  value="Tuvalu (TV)">Tuvalu (TV)</option>
+            <option  value="Uganda (UG)">Uganda (UG)</option>
+            <option  value="Ukraine (UA)">Ukraine (UA)</option>
+            <option  value="United Arab Emirates (AE)">United Arab Emirates (AE)</option>
+            <option  value="United Kingdom (GB)">United Kingdom (GB)</option>
+            <option  value="United States (US)">United States (US)</option>
+            <option  value="United States Minor Outlying Islands (UM)">United States Minor Outlying Islands (UM)</option>
+            <option  value="Uruguay (UY)">Uruguay (UY)</option>
+            <option  value="Uzbekistan (UZ)">Uzbekistan (UZ)</option>
+            <option  value="Vanuatu (VU)">Vanuatu (VU)</option>
+            <option  value="Venezuela (VE)">Venezuela (VE)</option>
+            <option  value="Viet Nam (VN)">Viet Nam (VN)</option>
+            <option  value="Virgin Islands, British (VG)">Virgin Islands, British (VG)</option>
+            <option  value="Virgin Islands, U.S. (VI)">Virgin Islands, U.S. (VI)</option>
+            <option  value="Wallis and Futuna (WF)">Wallis and Futuna (WF)</option>
+            <option  value="Western Sahara (EH)">Western Sahara (EH)</option>
+            <option  value="Yemen (YE)">Yemen (YE)</option>
+            <option  value="Zambia (ZM)">Zambia (ZM)</option>
+            <option  value="Zimbabwe (ZW)">Zimbabwe (ZW)</option>
+    </select>
+    <div id="DropdownErrorMessage-1" data-sf-role="error-message" role="alert" aria-live="assertive" class="text-danger"></div>
+</div>
+<div class="mb-30 flex-wrapper" data-sf-element="Row">
+    <div data-sf-element="space-30" data-placeholder-label="Vertical space 30px">
+    </div>
+</div>
+<div class="sitefinity-content-block" >
+    <div ><strong>Size of the company - number of employees?</strong></div>
+</div>
+<div class="form-group radio" data-sf-role="multiple-choice-field-container">
+    <input type="hidden" data-sf-role="violation-messages" value='{ "required": "004. Size of the company - number of employees? field input is required"}' />
+            <div class="radio__item">
+                <input type="radio"  class="input" id="less than 1016a0c467de984980b1ff8872c3096ab9" name="MultipleChoiceFieldController_1" value="less than 10" data-sf-role="multiple-choice-field-input"  required="required" pattern=".{0,255}"  role="radio" aria-required="true" />
+                <label class="label" for="less than 1016a0c467de984980b1ff8872c3096ab9">
+                    less than 10
+                </label>
+            </div>
+            <div class="radio__item">
+                <input type="radio"  class="input" id="10-49e1447866d6ff40f0b6b45bcab65cc06d" name="MultipleChoiceFieldController_1" value="10-49" data-sf-role="multiple-choice-field-input"  required="required" pattern=".{0,255}"  role="radio" aria-required="true" />
+                <label class="label" for="10-49e1447866d6ff40f0b6b45bcab65cc06d">
+                    10-49
+                </label>
+            </div>
+            <div class="radio__item">
+                <input type="radio"  class="input" id="50-250a6ef55e987b94c5491cd427c83d95f8f" name="MultipleChoiceFieldController_1" value="50-250" data-sf-role="multiple-choice-field-input"  required="required" pattern=".{0,255}"  role="radio" aria-required="true" />
+                <label class="label" for="50-250a6ef55e987b94c5491cd427c83d95f8f">
+                    50-250
+                </label>
+            </div>
+            <div class="radio__item">
+                <input type="radio"  class="input" id="over 250d3e5e3d8645746e98778166ca0e318da" name="MultipleChoiceFieldController_1" value="over 250" data-sf-role="multiple-choice-field-input"  required="required" pattern=".{0,255}"  role="radio" aria-required="true" />
+                <label class="label" for="over 250d3e5e3d8645746e98778166ca0e318da">
+                    over 250
+                </label>
+            </div>
+                <div id='RadioGroupErrorMessage-2' data-sf-role="error-message" role="alert" aria-live="assertive" class="text-danger"></div>
+</div>
+</div>
+<div class="mb-30 flex-wrapper" data-sf-element="Row">
+    <div data-sf-element="space-30" data-placeholder-label="Vertical space 30px">
+    </div>
+</div>
+<div class="mb-30" data-sf-element="Row">
+    <div class="separator" data-sf-element="separator space-30" data-placeholder-label="Separator with vertical space 30px">
+    </div>
+</div>
+<div class="mb-30 flex-wrapper" data-sf-element="Row">
+    <div data-sf-element="space-30" data-placeholder-label="Vertical space 30px">
+    </div>
+</div>
+<div id="C243_Col00" class="sf_colsIn container" data-sf-element="Container" data-placeholder-label="Container">
+<div class="sf-fieldWrp" role="heading">
+    <h2>Environment</h2>
+</div><div class="mb-30 flex-wrapper" data-sf-element="Row">
+    <div data-sf-element="space-30" data-placeholder-label="Vertical space 30px">
+    </div>
+</div>
+<div class="sitefinity-content-block" >
+    <div ><p><strong>Do you have a sustainability/environmental/green policy statement?&nbsp;</strong></p></div>
+</div>
+<div class="form-group radio radio-inline" data-sf-role="multiple-choice-field-container">
+    <input type="hidden" data-sf-role="violation-messages" value='{ "required": "01. Do you have a sustainability/environmental/green policy statement? field input is required"}' />
+            <div class="radio__item">
+                <input type="radio"  class="input" id="Yes1c2658c2673044d5b280277b1801f5b3" name="MultipleChoiceFieldController_8" value="Yes" data-sf-role="multiple-choice-field-input"  required="required" pattern=".{0,255}"  role="radio" aria-required="true" />
+                <label class="label" for="Yes1c2658c2673044d5b280277b1801f5b3">
+                    Yes
+                </label>
+            </div>
+            <div class="radio__item">
+                <input type="radio"  class="input" id="Nof6cb1b10e3d342888e0004b1f1fd73d9" name="MultipleChoiceFieldController_8" value="No" data-sf-role="multiple-choice-field-input"  required="required" pattern=".{0,255}"  role="radio" aria-required="true" />
+                <label class="label" for="Nof6cb1b10e3d342888e0004b1f1fd73d9">
+                    No
+                </label>
+            </div>
+                <div id='RadioGroupErrorMessage-3' data-sf-role="error-message" role="alert" aria-live="assertive" class="text-danger"></div>
+</div>
+<!-- InputCssClass class variable -->
+<div class="form-group" data-sf-role="text-field-container">
+    <input data-sf-role="violation-restrictions" type="hidden" value='{"maxLength":"255", "minLength": "0"}' />
+    <input data-sf-role="violation-messages" type="hidden" value='{"maxLength":"01. Additional information field must be less than 255 characters", "required": "01. Additional information field input is required", "invalid": "Entry is not valid!", "regularExpression": "01. Additional information field input is invalid"}' />
+    <label class="label hidden" for='Textbox-2'>01. Additional information</label>
+    <input id='Textbox-2'
+           type="text"
+           class="input"
+           name="TextFieldController"
+           placeholder="Additional information"
+           value=""
+           aria-required="false"
+           data-sf-role="text-field-input"
+           pattern=".{0,255}" 
+  aria-describedby='TextboxErrorMessage-2'    />
+    <div id='TextboxErrorMessage-2' data-sf-role="error-message" role="alert" aria-live="assertive" class="text-danger" style="display: none;"></div>
+</div>
+<div class="sitefinity-content-block" >
+    <div ><p><strong>Do you publish a Corporate Social Responsibility (CSR)/Sustainability report?</strong></p></div>
+</div>
+<div class="form-group radio radio-inline" data-sf-role="multiple-choice-field-container">
+    <input type="hidden" data-sf-role="violation-messages" value='{ "required": "02. Do you publish a Corporate Social Responsibility (CSR)/Sustainability report? field input is required"}' />
+            <div class="radio__item">
+                <input type="radio"  class="input" id="Yes052ed3dd823a4010a63434f4ea9be7ee" name="MultipleChoiceFieldController_10_5" value="Yes" data-sf-role="multiple-choice-field-input"  required="required" pattern=".{0,255}"  role="radio" aria-required="true" />
+                <label class="label" for="Yes052ed3dd823a4010a63434f4ea9be7ee">
+                    Yes
+                </label>
+            </div>
+            <div class="radio__item">
+                <input type="radio"  class="input" id="Nof24108b71f624f52868913132c35bf06" name="MultipleChoiceFieldController_10_5" value="No" data-sf-role="multiple-choice-field-input"  required="required" pattern=".{0,255}"  role="radio" aria-required="true" />
+                <label class="label" for="Nof24108b71f624f52868913132c35bf06">
+                    No
+                </label>
+            </div>
+                <div id='RadioGroupErrorMessage-4' data-sf-role="error-message" role="alert" aria-live="assertive" class="text-danger"></div>
+</div>
+<!-- InputCssClass class variable -->
+<div class="form-group" data-sf-role="text-field-container">
+    <input data-sf-role="violation-restrictions" type="hidden" value='{"maxLength":"255", "minLength": "0"}' />
+    <input data-sf-role="violation-messages" type="hidden" value='{"maxLength":"02. Additional information field must be less than 255 characters", "required": "02. Additional information field input is required", "invalid": "Entry is not valid!", "regularExpression": "02. Additional information field input is invalid"}' />
+    <label class="label hidden" for='Textbox-3'>02. Additional information</label>
+    <input id='Textbox-3'
+           type="text"
+           class="input"
+           name="TextFieldController_1"
+           placeholder="Additional information"
+           value=""
+           aria-required="false"
+           data-sf-role="text-field-input"
+           pattern=".{0,255}" 
+  aria-describedby='TextboxErrorMessage-3'    />
+    <div id='TextboxErrorMessage-3' data-sf-role="error-message" role="alert" aria-live="assertive" class="text-danger" style="display: none;"></div>
+</div>
+<div class="sitefinity-content-block" >
+    <div ><p><strong>Do you monitor and track energy consumption at your facility(ies)?</strong></p></div>
+</div>
+<div class="form-group radio radio-inline" data-sf-role="multiple-choice-field-container">
+    <input type="hidden" data-sf-role="violation-messages" value='{ "required": "03. Do you monitor and track energy consumption at your facility(ies)? field input is required"}' />
+            <div class="radio__item">
+                <input type="radio"  class="input" id="Yesc116c4eb275f4125b6f185dd71b01fb7" name="MultipleChoiceFieldController_10_39" value="Yes" data-sf-role="multiple-choice-field-input"  required="required" pattern=".{0,255}"  role="radio" aria-required="true" />
+                <label class="label" for="Yesc116c4eb275f4125b6f185dd71b01fb7">
+                    Yes
+                </label>
+            </div>
+            <div class="radio__item">
+                <input type="radio"  class="input" id="No99ece2d58afa42208817d788666d068d" name="MultipleChoiceFieldController_10_39" value="No" data-sf-role="multiple-choice-field-input"  required="required" pattern=".{0,255}"  role="radio" aria-required="true" />
+                <label class="label" for="No99ece2d58afa42208817d788666d068d">
+                    No
+                </label>
+            </div>
+                <div id='RadioGroupErrorMessage-5' data-sf-role="error-message" role="alert" aria-live="assertive" class="text-danger"></div>
+</div>
+<!-- InputCssClass class variable -->
+
+<div class="form-group"><button type="submit" id="submit">Submit</button></div>
+</form>
+</body>
+</html>

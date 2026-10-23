@@ -1,0 +1,16 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Phone</title></head>
+<body>
+<h1>Contact</h1>
+<!-- A masked phone input: keeps "+44 20 7946 0000" whatever is typed into it. -->
+<label for="mobile">Mobile number</label>
+<input id="mobile" name="mobile" type="tel" placeholder="+44 00 0000 0000">
+<script>
+  const input = document.getElementById('mobile');
+  input.addEventListener('input', () => {
+    const digits = input.value.replace(/\D/g, '').slice(0, 12);
+    const groups = [digits.slice(0, 2), digits.slice(2, 4), digits.slice(4, 8), digits.slice(8, 12)].filter(Boolean);
+    input.value = groups.length ? `+${groups.join(' ')}` : '';
+  });
+</script>
+</body></html>

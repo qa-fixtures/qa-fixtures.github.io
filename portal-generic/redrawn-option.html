@@ -1,0 +1,44 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Redrawn option</title></head>
+<body>
+  <form>
+    <fieldset>
+      <legend>ENV310. Which environmental actions does your company take?</legend>
+      <div id="options"></div>
+    </fieldset>
+  </form>
+  <script>
+    // Like an Angular/React list, the options are rebuilt from state on every change: the checkbox a click lands on is
+    // replaced by a fresh node right after the click, as the EcoVadis questionnaire does when an option opens its
+    // "Please specify" and document area.
+    const state = { energy: false, waste: false };
+    const labels = { energy: 'Energy consumption reduction', waste: 'Waste reduction' };
+    function render() {
+      const host = document.getElementById('options');
+      host.replaceChildren();
+      for (const key of Object.keys(state)) {
+        const label = document.createElement('label');
+        const box = document.createElement('input');
+        box.type = 'checkbox';
+        box.name = 'env310';
+        box.value = key;
+        box.checked = state[key];
+        box.addEventListener('change', () => {
+          state[key] = box.checked;
+          render();
+        });
+        label.append(box, ' ' + labels[key]);
+        host.append(label);
+        if (state[key]) {
+          const specify = document.createElement('input');
+          specify.type = 'text';
+          specify.setAttribute('aria-label', 'Please specify ' + labels[key]);
+          host.append(specify);
+        }
+      }
+    }
+    render();
+  </script>
+</body>
+</html>

@@ -1,0 +1,51 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Typeahead</title>
+<style>[role=listbox][hidden]{display:none}[role=option][aria-selected=true]{background:#ddf}</style></head>
+<body>
+<h1>Company profile</h1>
+<!-- An ARIA 1.2 combobox: the input filters a listbox as you type; only a picked option is a value, and leaving without one clears the input. -->
+<label id="country-label" for="country">Country of incorporation</label>
+<input id="country" role="combobox" aria-autocomplete="list" aria-expanded="false" aria-controls="country-list" autocomplete="off">
+<ul id="country-list" role="listbox" aria-labelledby="country-label" hidden></ul>
+<input type="hidden" name="country_code" id="country-code">
+<p>Picked code: <span id="picked"></span></p>
+<p><label for="note">Note</label> <input id="note" name="note"></p>
+<script>
+  const countries = [['DE', 'Germany'], ['GB', 'United Kingdom'], ['GR', 'Greece'], ['FR', 'France'], ['US', 'United States']];
+  const input = document.getElementById('country');
+  const list = document.getElementById('country-list');
+  const code = document.getElementById('country-code');
+  let picked = '';
+  const render = () => {
+    const query = input.value.trim().toLowerCase();
+    list.replaceChildren(...countries.filter(([, name]) => name.toLowerCase().includes(query)).map(([iso, name]) => {
+      const option = document.createElement('li');
+      option.setAttribute('role', 'option');
+      option.id = `country-${iso}`;
+      option.textContent = name;
+      option.setAttribute('aria-selected', String(iso === code.value));
+      option.addEventListener('mousedown', (event) => event.preventDefault());
+      option.addEventListener('click', () => {
+        code.value = iso;
+        picked = name;
+        input.value = name;
+        document.getElementById('picked').textContent = iso;
+        list.hidden = true;
+        input.setAttribute('aria-expanded', 'false');
+      });
+      return option;
+    }));
+    list.hidden = false;
+    input.setAttribute('aria-expanded', 'true');
+  };
+  input.addEventListener('input', () => { code.value = ''; picked = ''; render(); });
+  input.addEventListener('focus', render);
+  input.addEventListener('blur', () => {
+    setTimeout(() => {
+      list.hidden = true;
+      input.setAttribute('aria-expanded', 'false');
+      if (!picked) input.value = '';
+    }, 100);
+  });
+</script>
+</body></html>

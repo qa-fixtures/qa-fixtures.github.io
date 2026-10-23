@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Review and submit</title>
+<style>
+  body { font: 14px sans-serif; margin: 16px; }
+  x-review-panel { display: block; width: 320px; margin: 12px 0; }
+</style>
+</head>
+<body>
+<!--
+  The page a navigation caused by the approved action opens. Its Submit lives in a closed shadow root declared in the HTML, so
+  attachShadow never runs for it and no in-page recorder can see it. The script after the panel is parser-blocking: a spec that
+  holds it keeps the document parsing, with the panel already on screen, for as long as it likes.
+-->
+<h1>Review and submit</h1>
+<x-review-panel id="panel" role="group" aria-label="Review panel">
+  <template shadowrootmode="closed">
+    <style>#submit { display: block; width: 320px; height: 60px; }</style>
+    <form id="form"><button id="submit" type="submit">Submit</button></form>
+  </template>
+</x-review-panel>
+<script>
+  // Defined after the panel is parsed, so the upgrade finds the declared root already attached and reaches it through ElementInternals.
+  window.reviewFixture = { ready: false, root: null, clicks: 0, submits: 0 };
+  customElements.define('x-review-panel', class extends HTMLElement {
+    constructor() {
+      super();
+      const root = this.attachInternals().shadowRoot;
+      window.reviewFixture.root = root;
+      root.getElementById('form').addEventListener('submit', (event) => { event.preventDefault(); window.reviewFixture.submits += 1; });
+      root.getElementById('submit').addEventListener('click', () => { window.reviewFixture.clicks += 1; });
+    }
+  });
+</script>
+<script src="armed-window-hold.js"></script>
+<script>window.reviewFixture.ready = true;</script>
+</body>
+</html>

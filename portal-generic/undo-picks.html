@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Undo fixture</title></head>
+<body>
+<form id="supplier">
+  <fieldset>
+    <legend>Do you hold ISO 14001?</legend>
+    <label><input type="radio" name="iso" value="yes" checked> Yes</label>
+    <label><input type="radio" name="iso" value="no"> No</label>
+  </fieldset>
+  <fieldset>
+    <legend>Do you report scope 3?</legend>
+    <label><input type="radio" name="scope3" value="yes"> Yes</label>
+    <label><input type="radio" name="scope3" value="no"> No</label>
+  </fieldset>
+  <div role="radiogroup" aria-label="Company size">
+    <div role="radio" aria-checked="true" aria-label="Small" tabindex="0" onclick="pick(this)">Small</div>
+    <div role="radio" aria-checked="false" aria-label="Large" tabindex="-1" onclick="pick(this)">Large</div>
+  </div>
+  <label><input type="checkbox" name="publish" checked> Publish our answers</label>
+  <fieldset>
+    <legend>Which topics?</legend>
+    <label><input type="checkbox" name="topics" value="climate" checked> Climate</label>
+    <label><input type="checkbox" name="topics" value="water"> Water</label>
+    <label><input type="checkbox" name="topics" value="waste"> Waste</label>
+  </fieldset>
+  <label for="currency">Reporting currency</label>
+  <select id="currency"><option value="">Select…</option><option selected>EUR</option><option>USD</option></select>
+
+  <div class="upload-block">
+    <label for="policy">Environmental policy</label>
+    <input type="file" id="policy">
+    <span class="file-name" id="policy-name"></span>
+    <button type="button" id="policy-remove" hidden onclick="clearFile('policy')">Remove</button>
+  </div>
+  <div class="upload-block">
+    <label for="certificate">Certificate</label>
+    <input type="file" id="certificate">
+  </div>
+  <div class="upload-block">
+    <label for="report">Annual report</label>
+    <input type="file" id="report">
+    <button type="button">Remove</button>
+    <button type="button">Delete</button>
+  </div>
+</form>
+<script>
+  function pick(radio) {
+    for (const member of radio.parentElement.querySelectorAll('[role=radio]')) member.setAttribute('aria-checked', member === radio ? 'true' : 'false');
+  }
+  function clearFile(id) {
+    const input = document.getElementById(id);
+    input.value = '';
+    document.getElementById(id + '-name').textContent = '';
+    document.getElementById(id + '-remove').hidden = true;
+  }
+  document.getElementById('policy').addEventListener('change', (event) => {
+    const file = event.target.files[0];
+    document.getElementById('policy-name').textContent = file ? file.name : '';
+    document.getElementById('policy-remove').hidden = !file;
+  });
+</script>
+</body>
+</html>

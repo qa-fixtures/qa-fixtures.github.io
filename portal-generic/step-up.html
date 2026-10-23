@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Section 2 — Environment</title>
+<style>
+  body { font: 14px sans-serif; margin: 16px; }
+  textarea { display: block; width: 420px; height: 80px; margin: 0 0 8px; }
+  #save { display: block; width: 200px; height: 40px; }
+</style>
+</head>
+<body>
+<!--
+  A questionnaire section whose portal asks for the password again at a step-up: "Save draft" opens a re-authentication
+  dialog instead of saving. The dialog's password field is what the credential-surface detector must catch after an approved
+  write, before any screenshot of it leaves the process.
+-->
+<h1>Section 2 — Environment</h1>
+<label>Environmental measures <textarea id="measures">STEPUP-PAGE-TEXT</textarea></label>
+<button type="button" id="save">Save draft</button>
+<dialog id="reauth" aria-label="Confirm it is you">
+  <form method="dialog">
+    <p>For your security, confirm your password to continue.</p>
+    <label>Password <input id="reauth-pw" type="password" autocomplete="current-password"></label>
+    <button>Confirm</button>
+  </form>
+</dialog>
+<script>
+  document.getElementById('save').addEventListener('click', () => document.getElementById('reauth').showModal());
+</script>
+</body>
+</html>

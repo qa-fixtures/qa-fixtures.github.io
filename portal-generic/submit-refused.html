@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Supplier questionnaire</title>
+<style>
+  body { font: 14px sans-serif; margin: 16px; }
+  label { display: block; margin: 0 0 8px; }
+  .error { color: #b00020; }
+</style>
+</head>
+<body>
+<!--
+  The page the portal shows when the client presses its own Submit with a required answer missing: the form again, with a
+  validation message naming the field. The submit check must read this as refused, never as a confirmation.
+-->
+<h1>Northwind Alloys supplier questionnaire</h1>
+<p class="error" role="alert">The form contains errors. Company registration number is required.</p>
+<label>Company registration number <input id="registration_number" type="text"></label>
+<button type="button" id="submit">Submit</button>
+</body>
+</html>

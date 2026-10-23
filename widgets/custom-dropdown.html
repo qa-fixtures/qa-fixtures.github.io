@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Custom dropdown</title>
+<style>[role=listbox][hidden]{display:none}</style></head>
+<body>
+<h1>Company profile</h1>
+<!-- A div-based select: a button with aria-haspopup opens a listbox of options; the button then shows the choice. -->
+<span id="sector-label">Industry sector</span>
+<button type="button" id="sector" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="sector-label sector">Choose…</button>
+<ul role="listbox" id="sector-list" aria-labelledby="sector-label" tabindex="-1" hidden>
+  <li role="option" id="sector-energy" aria-selected="false">Energy</li>
+  <li role="option" id="sector-shipping" aria-selected="false">Shipping</li>
+  <li role="option" id="sector-finance" aria-selected="false">Finance</li>
+</ul>
+<script>
+  const button = document.getElementById('sector');
+  const list = document.getElementById('sector-list');
+  button.addEventListener('click', () => { list.hidden = !list.hidden; button.setAttribute('aria-expanded', String(!list.hidden)); });
+  for (const option of list.querySelectorAll('[role=option]')) {
+    option.addEventListener('click', () => {
+      for (const other of list.querySelectorAll('[role=option]')) other.setAttribute('aria-selected', 'false');
+      option.setAttribute('aria-selected', 'true');
+      button.textContent = option.textContent;
+      list.hidden = true;
+      button.setAttribute('aria-expanded', 'false');
+    });
+  }
+</script>
+</body></html>

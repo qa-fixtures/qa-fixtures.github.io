@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Email</title>
+<style>body { font: 14px sans-serif; margin: 0; } input { width: 240px; height: 32px; } .code { display: none; } .code.open { display: block; margin-top: 6px; }</style>
+</head>
+<body>
+<!--
+  Jotform's email validator as the Baltic Exchange form embeds it: the address and a "Verify Email" button in a form of
+  their own; pressing it sends a code to the address and opens a code field. `?verified` is the widget once the code was
+  entered: the button is gone and the address is marked verified.
+-->
+<form id="form" onsubmit="return false">
+  <input type="email" id="mail" aria-label="Private work email address" placeholder="example@example.com">
+  <button type="button" id="verify">Verify Email</button>
+  <span id="verified" hidden>Verified</span>
+  <div class="code" id="code-step"><label>Verification code <input type="text" id="code" autocomplete="one-time-code"></label> <button type="button">Confirm</button></div>
+</form>
+<script>
+  if (new URLSearchParams(location.search).has('verified')) {
+    document.getElementById('verify').remove();
+    document.getElementById('verified').hidden = false;
+  }
+  document.getElementById('verify').addEventListener('click', () => document.getElementById('code-step').classList.add('open'));
+</script>
+</body>
+</html>

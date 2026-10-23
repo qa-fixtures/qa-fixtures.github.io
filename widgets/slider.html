@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Slider</title>
+<style>.track{position:relative;width:300px;height:8px;background:#ccc;margin:20px 0}.thumb{position:absolute;top:-6px;width:20px;height:20px;border-radius:10px;background:#36c}</style></head>
+<body>
+<h1>Workforce</h1>
+<label for="share">Share of renewable electricity (%)</label>
+<input id="share" name="share" type="range" min="0" max="100" step="5" value="0">
+<!-- A div slider like rc-slider: a focusable thumb with role=slider, moved by arrow keys. -->
+<span id="women-label">Share of women in management (%)</span>
+<div class="track"><div class="thumb" id="women" role="slider" tabindex="0" aria-labelledby="women-label" aria-valuemin="0" aria-valuemax="100" aria-valuenow="0" style="left:0"></div></div>
+<script>
+  const thumb = document.getElementById('women');
+  thumb.addEventListener('keydown', (event) => {
+    let now = Number(thumb.getAttribute('aria-valuenow'));
+    if (event.key === 'ArrowRight' || event.key === 'ArrowUp') now = Math.min(100, now + 10);
+    else if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') now = Math.max(0, now - 10);
+    else if (event.key === 'Home') now = 0;
+    else if (event.key === 'End') now = 100;
+    else return;
+    event.preventDefault();
+    thumb.setAttribute('aria-valuenow', String(now));
+    thumb.setAttribute('aria-valuetext', `${now} percent`);
+    thumb.style.left = `${now * 2.8}px`;
+  });
+</script>
+</body></html>

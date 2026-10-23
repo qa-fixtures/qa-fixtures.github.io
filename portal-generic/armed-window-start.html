@@ -1,0 +1,21 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Supplier questionnaire</title>
+<style>
+  body { font: 14px sans-serif; margin: 16px; }
+  .field { display: block; width: 320px; height: 30px; margin: 0 0 8px; box-sizing: border-box; }
+</style>
+</head>
+<body>
+<!--
+  The page an approved action starts on. "Continue" leads, within the portal, to a page whose Submit sits in a closed root declared
+  in its HTML; #slot is where the spec's portal script inserts a bot-check frame after the action began.
+-->
+<h1>Supplier questionnaire</h1>
+<label>Note <input id="note" class="field" type="text"></label>
+<a id="continue" class="field" href="armed-window-declared.html">Continue</a>
+<div id="slot" role="group" aria-label="Verification"></div>
+</body>
+</html>

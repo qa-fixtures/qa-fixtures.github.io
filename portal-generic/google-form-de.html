@@ -1,0 +1,36 @@
+<!doctype html>
+<html lang="de">
+<head>
+<meta charset="utf-8">
+<title>ESG google form</title>
+<style>
+  body { font-family: sans-serif; max-width: 640px; margin: 24px auto; }
+  .q { border: 1px solid #ddd; border-radius: 8px; padding: 16px; margin-bottom: 12px; }
+  [role=button] { display: inline-block; padding: 8px 16px; margin-right: 8px; border-radius: 4px; background: #673ab7; color: #fff; cursor: pointer; }
+  [role=button].plain { background: none; color: #673ab7; }
+</style>
+</head>
+<body>
+<!-- A Google Form page as the hosted browser shows it from Frankfurt: the form's own text in English, Google's controls in German. -->
+<h1>ESG google form</h1>
+<div role="listitem" class="q">
+  <div role="heading" aria-level="3" id="q1-title">Company name</div>
+  <input type="text" aria-label="Meine Antwort" aria-labelledby="q1-title" id="q1">
+</div>
+<div role="listitem" class="q">
+  <div role="heading" aria-level="3" id="q2-title">Number of employees</div>
+  <input type="text" aria-label="Meine Antwort" aria-labelledby="q2-title" id="q2">
+</div>
+<div>
+  <div role="button" tabindex="0" id="next">Weiter</div>
+  <div role="button" tabindex="0" id="submit">Senden</div>
+  <div role="button" tabindex="0" class="plain" id="clear">Formular leeren</div>
+</div>
+<p id="outcome"></p>
+<script>
+  for (const [id, text] of [['next', 'next pressed'], ['submit', 'SUBMITTED'], ['clear', 'CLEARED']]) {
+    document.getElementById(id).addEventListener('click', () => { document.getElementById('outcome').textContent = text; });
+  }
+</script>
+</body>
+</html>

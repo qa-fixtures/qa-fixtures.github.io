@@ -1,0 +1,31 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Date picker</title>
+<style>.cal{position:absolute;border:1px solid #888;background:#fff;padding:4px}.cal[hidden]{display:none}.cal button{width:32px}</style></head>
+<body>
+<h1>Company profile</h1>
+<!-- A flatpickr-like picker: the input is read-only and the date is chosen from a popup grid of day buttons. -->
+<label for="incorporated">Date of incorporation</label>
+<input id="incorporated" name="incorporated" readonly placeholder="Select a date">
+<div class="cal" id="cal" hidden role="dialog" aria-label="March 2025">
+  <div class="month">March 2025</div>
+  <div class="days"></div>
+</div>
+<script>
+  const input = document.getElementById('incorporated');
+  const cal = document.getElementById('cal');
+  const days = cal.querySelector('.days');
+  for (let day = 1; day <= 31; day++) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.textContent = String(day);
+    button.setAttribute('aria-label', `March ${day}, 2025`);
+    button.addEventListener('click', () => {
+      input.value = `2025-03-${String(day).padStart(2, '0')}`;
+      cal.hidden = true;
+      input.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    days.append(button);
+  }
+  input.addEventListener('click', () => { cal.hidden = false; });
+</script>
+</body></html>

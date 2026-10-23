@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<title>Questionnaire fournisseur</title>
+<style>
+  body { font-family: sans-serif; max-width: 640px; margin: 24px auto; }
+  button { margin-right: 8px; }
+</style>
+</head>
+<body>
+<!-- A supplier questionnaire in French on a portal no playbook knows. -->
+<h1>Questionnaire fournisseur</h1>
+<label for="q1">Nom de l'entreprise</label>
+<input type="text" id="q1">
+<div>
+  <button type="button" id="next">Suivant</button>
+  <button type="button" id="upload">Joindre un fichier</button>
+  <button type="button" id="submit">Envoyer</button>
+  <button type="button" id="validate">Valider</button>
+  <button type="button" id="delete">Supprimer</button>
+</div>
+<p id="outcome"></p>
+<script>
+  for (const [id, text] of [['next', 'next pressed'], ['upload', 'upload opened'], ['submit', 'SUBMITTED'], ['validate', 'VALIDATED'], ['delete', 'DELETED']]) {
+    document.getElementById(id).addEventListener('click', () => { document.getElementById('outcome').textContent = text; });
+  }
+</script>
+</body>
+</html>

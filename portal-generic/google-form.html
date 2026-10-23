@@ -1,0 +1,121 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>ESG google form</title>
+    <style>
+      .hidden { display: none; }
+      .popup { position: absolute; background: #fff; border: 1px solid #999; z-index: 10; }
+      [role='option'] { padding: 4px; cursor: pointer; }
+      [role='radio'], [role='checkbox'] { display: inline-block; width: 16px; height: 16px; border: 1px solid #333; }
+    </style>
+  </head>
+  <body>
+    <!--
+      The markup of a Google Form, cut to the shapes the portal assistant must
+      handle: every text box carries the same aria-label, "Your answer", and is
+      named by its question through aria-labelledby (or by no name at all);
+      radios and checkboxes are ARIA roles without inputs; the dropdown is an
+      ARIA listbox whose prompt option has an empty data-value and whose open
+      list is drawn as a copy beside it; two questions offer checkboxes that
+      read the same.
+    -->
+    <form>
+      <div role="heading" aria-level="1">ESG google form</div>
+      <div role="list">
+        <div role="listitem" class="question">
+          <div id="q1h" role="heading" aria-level="3">Which of the following reporting options has your company selected?</div>
+          <div role="radiogroup" aria-labelledby="q1h">
+            <label><div role="radio" aria-label="Option A (Basic Module)" data-value="Option A (Basic Module)" aria-checked="false" tabindex="0"></div> Option A (Basic Module)</label>
+            <label><div role="radio" aria-label="Option B (Comprehensive)" data-value="Option B (Comprehensive)" aria-checked="false" tabindex="0"></div> Option B (Comprehensive)</label>
+          </div>
+        </div>
+        <div role="listitem" class="question">
+          <div id="q2h" role="heading" aria-level="3">Has your company omitted any disclosure deemed as classified or sensitive information?</div>
+          <textarea aria-label="Your answer" aria-labelledby="q2h"></textarea>
+        </div>
+        <div role="listitem" class="question">
+          <div id="q3h" role="heading" aria-level="3">Disclose your company's NACE sector classification code.</div>
+          <input type="text" aria-labelledby="q3h" />
+        </div>
+        <div role="listitem" class="question">
+          <div role="heading" aria-level="3">Describe your climate targets.</div>
+          <textarea id="unlabelled-a" aria-label="Your answer"></textarea>
+        </div>
+        <div role="listitem" class="question">
+          <div role="heading" aria-level="3">Describe your water policy.</div>
+          <textarea id="unlabelled-b" aria-label="Your answer"></textarea>
+        </div>
+        <div role="listitem" class="question">
+          <div id="q4h" role="heading" aria-level="3">State your company's legal form.</div>
+          <div class="dropdown">
+            <div role="listbox" aria-expanded="false" aria-labelledby="q4h" tabindex="0" id="legal-form">
+              <div role="presentation">
+                <div role="option" data-value="" aria-selected="true">Choose</div>
+                <div role="option" class="hidden" data-value="private limited liability undertaking" aria-selected="false">private limited liability undertaking</div>
+                <div role="option" class="hidden" data-value="sole proprietorship" aria-selected="false">sole proprietorship</div>
+                <div role="option" class="hidden" data-value="partnership" aria-selected="false">partnership</div>
+                <div role="option" class="hidden" data-value="cooperative" aria-selected="false">cooperative</div>
+              </div>
+            </div>
+            <div class="popup hidden" role="presentation" id="legal-form-popup"></div>
+          </div>
+        </div>
+        <div role="listitem" class="question">
+          <div id="q5h" role="heading" aria-level="3">Which sustainability issues does your company address?</div>
+          <div role="list" aria-labelledby="q5h">
+            <div role="listitem"><label><div role="checkbox" aria-label="- Climate Change" aria-checked="false" tabindex="0"></div> - Climate Change</label></div>
+            <div role="listitem"><label><div role="checkbox" aria-label="- Pollution" aria-checked="false" tabindex="0"></div> - Pollution</label></div>
+          </div>
+        </div>
+        <div role="listitem" class="question">
+          <div id="q6h" role="heading" aria-level="3">Which sustainability issues are material to your company?</div>
+          <div role="list" aria-labelledby="q6h">
+            <div role="listitem"><label><div role="checkbox" aria-label="- Climate Change" aria-checked="false" tabindex="0"></div> - Climate Change</label></div>
+            <div role="listitem"><label><div role="checkbox" aria-label="- Pollution" aria-checked="false" tabindex="0"></div> - Pollution</label></div>
+          </div>
+        </div>
+      </div>
+    </form>
+    <script>
+      for (const radio of document.querySelectorAll('[role=radio]')) {
+        radio.addEventListener('click', (event) => {
+          event.preventDefault();
+          for (const other of radio.closest('[role=radiogroup]').querySelectorAll('[role=radio]')) other.setAttribute('aria-checked', 'false');
+          radio.setAttribute('aria-checked', 'true');
+        });
+      }
+      for (const box of document.querySelectorAll('[role=checkbox]')) {
+        box.addEventListener('click', (event) => {
+          event.preventDefault();
+          box.setAttribute('aria-checked', box.getAttribute('aria-checked') === 'true' ? 'false' : 'true');
+        });
+      }
+      // The dropdown: a click opens a popup drawn as a copy of the options; a click on a copy picks it and closes the list.
+      const listbox = document.getElementById('legal-form');
+      const popup = document.getElementById('legal-form-popup');
+      listbox.addEventListener('click', () => {
+        if (listbox.getAttribute('aria-expanded') === 'true') return;
+        listbox.setAttribute('aria-expanded', 'true');
+        popup.replaceChildren();
+        for (const option of listbox.querySelectorAll('[role=option]')) {
+          const copy = option.cloneNode(true);
+          copy.classList.remove('hidden');
+          copy.addEventListener('click', (event) => {
+            event.stopPropagation();
+            for (const original of listbox.querySelectorAll('[role=option]')) {
+              const chosen = original.getAttribute('data-value') === copy.getAttribute('data-value');
+              original.setAttribute('aria-selected', chosen ? 'true' : 'false');
+              original.classList.toggle('hidden', !chosen);
+            }
+            popup.replaceChildren();
+            popup.classList.add('hidden');
+            listbox.setAttribute('aria-expanded', 'false');
+          });
+          popup.appendChild(copy);
+        }
+        popup.classList.remove('hidden');
+      });
+    </script>
+  </body>
+</html>

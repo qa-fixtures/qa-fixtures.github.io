@@ -1,0 +1,30 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Date in parts</title></head>
+<body>
+<h1>Company profile</h1>
+<fieldset><legend>Date of incorporation</legend>
+  <label for="doi-day">Day</label>
+  <select id="doi-day" name="doi[day]"><option value="">--</option></select>
+  <label for="doi-month">Month</label>
+  <select id="doi-month" name="doi[month]"><option value="">--</option></select>
+  <label for="doi-year">Year</label>
+  <select id="doi-year" name="doi[year]"><option value="">--</option></select>
+</fieldset>
+<!-- A masked text input that keeps dd/mm/yyyy whatever is typed into it. -->
+<label for="fy-end">Financial year end (dd/mm/yyyy)</label>
+<input id="fy-end" name="fy_end" inputmode="numeric" placeholder="dd/mm/yyyy" maxlength="10">
+<label for="native-date">Last audit date</label>
+<input id="native-date" name="last_audit" type="date">
+<script>
+  const fill = (id, values) => { const select = document.getElementById(id); for (const [value, label] of values) select.add(new Option(label, value)); };
+  fill('doi-day', Array.from({ length: 31 }, (_, i) => [String(i + 1), String(i + 1)]));
+  fill('doi-month', ['January','February','March','April','May','June','July','August','September','October','November','December'].map((name, i) => [String(i + 1), name]));
+  fill('doi-year', Array.from({ length: 40 }, (_, i) => [String(2026 - i), String(2026 - i)]));
+  const masked = document.getElementById('fy-end');
+  masked.addEventListener('input', () => {
+    const digits = masked.value.replace(/\D/g, '').slice(0, 8);
+    const parts = [digits.slice(0, 2), digits.slice(2, 4), digits.slice(4, 8)].filter(Boolean);
+    masked.value = parts.join('/');
+  });
+</script>
+</body></html>

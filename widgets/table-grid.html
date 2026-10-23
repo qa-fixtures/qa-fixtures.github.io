@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Table grid</title></head>
+<body>
+<h1>Emissions</h1>
+<!-- A table question as a grid of text fields, each named by its row and column headers. -->
+<table aria-label="Emissions by scope">
+  <thead><tr><td></td><th scope="col" id="col-tonnes">Emissions (t)</th><th scope="col" id="col-year">Reporting year</th></tr></thead>
+  <tbody>
+    <tr><th scope="row" id="row-s1">Scope 1</th>
+      <td><input type="text" name="e[s1][tonnes]" aria-labelledby="row-s1 col-tonnes"></td>
+      <td><input type="text" name="e[s1][year]" aria-labelledby="row-s1 col-year"></td></tr>
+    <tr><th scope="row" id="row-s2">Scope 2</th>
+      <td><input type="text" name="e[s2][tonnes]" aria-labelledby="row-s2 col-tonnes"></td>
+      <td><input type="text" name="e[s2][year]" aria-labelledby="row-s2 col-year"></td></tr>
+  </tbody>
+</table>
+<!-- The same grid with no labelling at all, as many form builders ship it. -->
+<table>
+  <thead><tr><td></td><th>Headcount</th><th>Turnover (%)</th></tr></thead>
+  <tbody>
+    <tr><td>Office</td><td><input type="text" name="h[office][count]"></td><td><input type="text" name="h[office][turnover]"></td></tr>
+    <tr><td>Plant</td><td><input type="text" name="h[plant][count]"></td><td><input type="text" name="h[plant][turnover]"></td></tr>
+  </tbody>
+</table>
+<!-- A grid of choices: one select per cell. -->
+<table aria-label="Data sources">
+  <thead><tr><td></td><th scope="col" id="col-method">Method</th></tr></thead>
+  <tbody>
+    <tr><th scope="row" id="row-energy">Energy</th>
+      <td><select name="d[energy]" aria-labelledby="row-energy col-method"><option value="">Choose</option><option>Measured</option><option>Estimated</option></select></td></tr>
+    <tr><th scope="row" id="row-water">Water</th>
+      <td><select name="d[water]" aria-labelledby="row-water col-method"><option value="">Choose</option><option>Measured</option><option>Estimated</option></select></td></tr>
+  </tbody>
+</table>
+<!-- A grid of choices: one radio per row and column, unlabelled. -->
+<table>
+  <thead><tr><td></td><th>Measured</th><th>Estimated</th></tr></thead>
+  <tbody>
+    <tr><td>Waste</td><td><input type="radio" name="r[waste]" value="measured"></td><td><input type="radio" name="r[waste]" value="estimated"></td></tr>
+  </tbody>
+</table>
+</body></html>

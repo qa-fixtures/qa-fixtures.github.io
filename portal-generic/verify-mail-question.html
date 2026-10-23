@@ -1,0 +1,42 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Primary Contact Details</title>
+<style>body { font: 14px sans-serif; margin: 16px; } input { display: block; margin: 4px 0; } iframe { display: block; width: 420px; height: 90px; border: 0; } .question { display: block; margin: 8px 0; }</style>
+</head>
+<body>
+<!--
+  A questionnaire page whose email question must be confirmed with a code the portal sends, the way Jotform's email
+  validator asks it. By default the widget sits in a frame of its own (`?cross` loads it from another origin); `?inline`
+  builds the same question into the page itself. The framed widget sits in its question as Jotform places it: under a
+  label that names no control, so the page snapshot shows the label and not the frame. `?verified` shows it after the code was entered.
+-->
+<h1>Primary Contact Details</h1>
+<form id="contact" onsubmit="return false">
+  <label class="question">First name <input type="text" name="q18_fullName[first]"></label>
+  <label class="question">Last name <input type="text" name="q18_fullName[last]"></label>
+  <div class="question" id="inline-mail">
+    <label for="inline-address">Work email</label>
+    <input type="email" id="inline-address">
+    <button type="button" id="inline-verify">Verify Email</button>
+  </div>
+  <div class="question" id="mail-question">
+    <label class="question-label">Private work email address</label>
+    <iframe id="mail-widget" title="Email"></iframe>
+  </div>
+  <label class="question">Mobile number <input type="tel" name="q19_mobileNumber[phone]"></label>
+  <button type="button">Next</button>
+</form>
+<script>
+  const params = new URLSearchParams(location.search);
+  const frame = document.getElementById('mail-widget');
+  if (params.has('inline')) {
+    document.getElementById('mail-question').remove();
+    if (params.has('verified')) document.getElementById('inline-verify').remove();
+  } else {
+    document.getElementById('inline-mail').remove();
+    const widget = `mail-widget-verify.html${params.has('verified') ? '?verified' : ''}`;
+    frame.src = params.has('cross') ? `${location.protocol}//localhost:${location.port}/${widget}` : widget;
+  }
+</script>
+</body>
+</html>

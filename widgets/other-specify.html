@@ -1,0 +1,15 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Other</title></head>
+<body>
+<h1>Certifications</h1>
+<fieldset><legend>Which certifications does your company hold?</legend>
+  <label><input type="checkbox" name="cert[]" value="iso14001"> ISO 14001</label>
+  <label><input type="checkbox" name="cert[]" value="iso45001"> ISO 45001</label>
+  <label><input type="checkbox" name="cert[]" value="other" id="cert-other"> Other</label>
+  <span id="other-wrap" hidden><label for="cert-other-text">Please specify</label> <input id="cert-other-text" name="cert_other"></span>
+</fieldset>
+<script>
+  const other = document.getElementById('cert-other');
+  other.addEventListener('change', () => { document.getElementById('other-wrap').hidden = !other.checked; });
+</script>
+</body></html>

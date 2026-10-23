@@ -1,0 +1,17 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Sign in to Verdantis</title>
+<style>body { font: 14px sans-serif; margin: 16px; } input, select { display: block; width: 200px; height: 30px; margin: 8px 0; }</style>
+</head>
+<body>
+<!-- A username-first sign-in on the portal's own origin: a language picker, then an email field with no autocomplete hint, and no password until the next step. -->
+<label>Language <select id="language"><option>English</option><option>Deutsch</option></select></label>
+<h1>Sign in</h1>
+<p>USERNAME-STEP-TEXT</p>
+<form id="f">
+  <label>Email <input id="email" name="email"></label>
+  <label><input type="checkbox" id="remember"> Remember me</label>
+  <button type="submit">Continue</button>
+</form>
+</body>
+</html>

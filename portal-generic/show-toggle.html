@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Sign in again</title>
+<style>body { font: 14px sans-serif; margin: 16px; } input { width: 220px; height: 30px; }</style>
+</head>
+<body>
+<!-- A password the client revealed with the "show" toggle: the field is type=text now, so only its other signals mark it. -->
+<h1>Your session has expired</h1>
+<label>Password <input id="password" name="password" type="password" autocomplete="current-password"></label>
+<button type="button" id="toggle">Show</button>
+<script>
+  document.getElementById('toggle').addEventListener('click', () => {
+    const field = document.getElementById('password');
+    field.type = field.type === 'password' ? 'text' : 'password';
+  });
+</script>
+</body>
+</html>

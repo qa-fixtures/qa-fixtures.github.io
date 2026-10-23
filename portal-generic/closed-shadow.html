@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Supplier profile</title>
+<style>
+  body { font: 14px sans-serif; margin: 16px; }
+  .field { display: block; width: 320px; height: 30px; margin: 0; box-sizing: border-box; }
+  x-declared-panel, x-late-panel { display: block; width: 320px; margin: 12px 0; }
+</style>
+</head>
+<body>
+<!--
+  A portal page whose Submit, password field and "Send" link live inside closed shadow roots, the two ways a portal makes one:
+  "declared" is parsed from the HTML (<template shadowrootmode="closed">), so attachShadow is never called for it, and its custom
+  element reaches its own root through ElementInternals; "late" is attached by the page's script after load. Each root carries
+  the same controls, laid out so the centre of the panel lands on Submit. Neither root is reachable from outside the page's
+  script: what the page script records about them is exposed on window.fixture, for the spec's own hands only.
+-->
+<h1>Supplier profile</h1>
+<label>Company <input id="company" class="field" type="text"></label>
+<x-declared-panel id="declared" role="group" aria-label="Declared panel">
+  <template shadowrootmode="closed">
+    <style>.field { display: block; width: 320px; height: 30px; margin: 0; box-sizing: border-box; } #submit { height: 60px; }</style>
+    <form id="form">
+      <input id="note" class="field" type="text" aria-label="Declared note">
+      <input id="pw" class="field" type="password" aria-label="Declared password">
+      <button id="submit" class="field" type="submit">Submit</button>
+    </form>
+    <a id="send" class="field" href="https://evil.example/collect">Send</a>
+  </template>
+</x-declared-panel>
+<label>Reference <input id="reference" class="field" type="text"></label>
+<x-late-panel id="late" role="group" aria-label="Late panel"></x-late-panel>
+<script>
+  window.fixture = { ready: false, roots: {}, submits: { declared: 0, late: 0 }, clicks: { declared: 0, late: 0 }, followed: { declared: 0, late: 0 } };
+  const instrument = (root, name) => {
+    window.fixture.roots[name] = root;
+    root.getElementById('form').addEventListener('submit', (event) => { event.preventDefault(); window.fixture.submits[name] += 1; });
+    root.getElementById('submit').addEventListener('click', () => { window.fixture.clicks[name] += 1; });
+    root.getElementById('send').addEventListener('click', (event) => { event.preventDefault(); window.fixture.followed[name] += 1; });
+  };
+  customElements.define('x-declared-panel', class extends HTMLElement {
+    constructor() {
+      super();
+      instrument(this.attachInternals().shadowRoot, 'declared');
+    }
+  });
+  customElements.define('x-late-panel', class extends HTMLElement {});
+  window.addEventListener('load', () => {
+    setTimeout(() => {
+      const root = document.getElementById('late').attachShadow({ mode: 'closed' });
+      root.innerHTML = document.getElementById('declared-copy').innerHTML.replace('Declared note', 'Late note').replace('Declared password', 'Late password');
+      instrument(root, 'late');
+      window.fixture.ready = true;
+    }, 50);
+  });
+</script>
+<template id="declared-copy">
+  <style>.field { display: block; width: 320px; height: 30px; margin: 0; box-sizing: border-box; } #submit { height: 60px; }</style>
+  <form id="form">
+    <input id="note" class="field" type="text" aria-label="Declared note">
+    <input id="pw" class="field" type="password" aria-label="Declared password">
+    <button id="submit" class="field" type="submit">Submit</button>
+  </form>
+  <a id="send" class="field" href="https://evil.example/collect">Send</a>
+</template>
+</body>
+</html>

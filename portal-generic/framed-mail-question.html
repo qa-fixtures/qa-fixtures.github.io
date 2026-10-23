@@ -1,0 +1,24 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Primary Contact Details</title>
+<style>body { font: 14px sans-serif; margin: 16px; } input { display: block; margin: 4px 0; } iframe { display: block; width: 340px; height: 50px; border: 0; }</style>
+</head>
+<body>
+<!--
+  A questionnaire page whose email question is a widget in a frame of its own: `?cross` loads the widget from another
+  origin (the same fixture server reached as localhost), which Chrome runs in a process of its own; without it, from the portal.
+  `?alone` leaves the page's own questions out, so the frame holds the only field: the shape of a framed username step.
+-->
+<h1>Primary Contact Details</h1>
+<form id="contact">
+  <label class="question">Full name <input type="text" name="q18_fullName[first]"></label>
+  <label class="question">Mobile number <input type="tel" name="q19_mobileNumber[phone]"></label>
+</form>
+<iframe id="mail-widget" title="Email"></iframe>
+<script>
+  const params = new URLSearchParams(location.search);
+  if (params.has('alone')) document.getElementById('contact').remove();
+  document.getElementById('mail-widget').src = params.has('cross') ? `${location.protocol}//localhost:${location.port}/mail-widget.html` : 'mail-widget.html';
+</script>
+</body>
+</html>

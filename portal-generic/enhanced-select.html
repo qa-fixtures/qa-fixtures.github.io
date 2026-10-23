@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="en">
+<head><meta charset="utf-8"><title>Supplier questionnaire</title>
+<style>
+  body { font: 14px sans-serif; margin: 16px; }
+  .hidden { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .select2-hidden-accessible { border: 0 !important; clip: rect(0 0 0 0) !important; height: 1px !important; margin: -1px !important; overflow: hidden !important; padding: 0 !important; position: absolute !important; width: 1px !important; }
+  .select2-selection { display: inline-block; min-width: 320px; border: 1px solid #888; padding: 4px; cursor: pointer; }
+  .select2-results { position: absolute; background: #fff; border: 1px solid #888; list-style: none; margin: 0; padding: 0; min-width: 320px; }
+  .select2-results li { padding: 4px; cursor: pointer; }
+</style>
+</head>
+<body>
+<!--
+  A list a script library draws over a native select, as select2 does on a real Sitefinity form: the native select is
+  kept, visually hidden and aria-hidden, and carries the options and the value the form submits; a span with
+  role=combobox shows the pick, and a click opens a listbox appended to the end of the body. The question's wording
+  stands twice — a numbered visually hidden label and a heading in a content block above it.
+-->
+<h1>Supplier questionnaire</h1>
+<form action="#" method="POST" id="questionnaire">
+<div class="form-group"><label for="company">001. Company name</label> <input id="company" name="company" type="text" required="required"></div>
+<div class="sitefinity-content-block"><div><strong>Country of the main production facility</strong></div></div>
+<div class="form-group" data-sf-role="dropdown-list-field-container">
+  <label class="h6 hidden" for="Dropdown-1">003. Country of the main production facility</label>
+  <select id="Dropdown-1" name="DropdownListFieldController" required="required" aria-required="true" class="select form-control select2-hidden-accessible" tabindex="-1" aria-hidden="true">
+    <option></option>
+    <option value="">Country of the main production facility</option>
+    <option value="Finland (FI)">Finland (FI)</option>
+    <option value="France (FR)">France (FR)</option>
+    <option value="Germany (DE)">Germany (DE)</option>
+  </select><span class="select2 select2-container" dir="ltr"><span class="selection"><span id="country-combo" class="select2-selection select2-selection--single" role="combobox" aria-haspopup="true" aria-expanded="false" tabindex="0" aria-labelledby="select2-Dropdown-1-container"><span class="select2-selection__rendered" id="select2-Dropdown-1-container" role="textbox" aria-readonly="true"><span class="select2-selection__placeholder">003. Country of the main production facility</span></span></span></span></span>
+</div>
+<div class="sitefinity-content-block"><div><strong>Size of the company</strong></div></div>
+<div class="form-group"><input type="radio" id="size-s" name="Size" value="Small" required="required"><label for="size-s">Small</label> <input type="radio" id="size-l" name="Size" value="Large"><label for="size-l">Large</label></div>
+</form>
+<script>
+  const select = document.getElementById('Dropdown-1');
+  const combo = document.getElementById('country-combo');
+  const rendered = document.getElementById('select2-Dropdown-1-container');
+  select.addEventListener('change', () => {
+    const picked = select.options[select.selectedIndex];
+    rendered.textContent = picked && picked.value ? picked.textContent : '003. Country of the main production facility';
+  });
+  combo.addEventListener('click', () => {
+    const open = document.getElementById('select2-Dropdown-1-dropdown');
+    if (open) { open.remove(); combo.setAttribute('aria-expanded', 'false'); combo.removeAttribute('aria-owns'); return; }
+    // As select2 does: the dropdown holds a search field that takes the focus and owns the listbox, hidden when the
+    // list has no search; a key typed there moves the highlight and picks nothing.
+    const dropdown = document.createElement('span');
+    dropdown.id = 'select2-Dropdown-1-dropdown';
+    const search = document.createElement('input');
+    search.type = 'search';
+    search.className = 'select2-search__field';
+    search.setAttribute('role', 'searchbox');
+    search.setAttribute('aria-controls', 'select2-Dropdown-1-results');
+    search.style.opacity = '0';
+    dropdown.appendChild(search);
+    const list = document.createElement('ul');
+    list.id = 'select2-Dropdown-1-results';
+    list.className = 'select2-results';
+    list.setAttribute('role', 'listbox');
+    for (const option of Array.from(select.options).filter((entry) => entry.value)) {
+      const item = document.createElement('li');
+      item.setAttribute('role', 'option');
+      item.textContent = option.textContent;
+      item.addEventListener('click', () => {
+        select.value = option.value;
+        select.dispatchEvent(new Event('change', { bubbles: true }));
+        dropdown.remove();
+        combo.setAttribute('aria-expanded', 'false');
+        combo.removeAttribute('aria-owns');
+      });
+      list.appendChild(item);
+    }
+    dropdown.appendChild(list);
+    document.body.appendChild(dropdown);
+    combo.setAttribute('aria-owns', list.id);
+    combo.setAttribute('aria-expanded', 'true');
+    search.focus();
+  });
+</script>
+</body>
+</html>
