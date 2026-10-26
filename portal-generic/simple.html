@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Signing in…</title></head>
+<body><p id="msg">Signing in to the fixture portal…</p>
+<script>
+// Test-only entry to simple-q.html, a plainer twin of q.html with native inputs only.
+// simple.html?v=<layout> sets the sign-in cookie login.html sets, starts a fresh draft when the layout changes
+// (kept under its own localStorage key) and opens the page. Add &fresh to start a fresh draft anyway.
+const NAMES=['std','nodecl','last-reveal','six'];
+const params=new URLSearchParams(location.search);
+const v=params.get('v')||'std';
+if(!NAMES.includes(v)){document.getElementById('msg').textContent='Unknown layout: '+v+'. Known: '+NAMES.join(', ');}
+else{
+ document.cookie='vd_auth=1; path=/; max-age=2592000';
+ if(localStorage.getItem('vds_variant')!==v||params.has('fresh')){
+  localStorage.removeItem('vds_state');
+  localStorage.setItem('vds_variant',v);
+ }
+ location.replace('simple-q.html');
+}
+</script></body></html>

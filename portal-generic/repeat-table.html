@@ -1,0 +1,26 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Supplier sites</title>
+<!-- One section with a text field and a repeating table whose rows are added with an "Add another" control,
+     for the portal assistant's repeated-click checks. No sign-in, no submit. -->
+<style>body{font-family:system-ui,sans-serif;max-width:820px;margin:24px auto;color:#1d2b24}label{font-weight:600}input{padding:6px;border:1px solid #c8d3cd;border-radius:6px}table{border-collapse:collapse;margin:8px 0}td,th{padding:4px 8px;text-align:left}button{padding:6px 12px;border-radius:6px;border:1px solid #1f7a4d;background:#fff;cursor:pointer}</style>
+</head><body>
+<h1>Supplier sites</h1>
+<form id="sites-form" onsubmit="return false">
+<p><label for="company">Company Name</label><br><input id="company" name="company" style="width:60%"></p>
+<p><label id="sites-label">List every production site located in a country classified as high-risk for human rights (one row per site)</label></p>
+<table id="sites" aria-labelledby="sites-label"><thead><tr><th>#</th><th>Site name</th><th>Country</th></tr></thead><tbody></tbody></table>
+<button type="button" id="add-another">Add another</button>
+<p><button type="button" id="save">Save draft</button> <span id="saved"></span></p>
+</form>
+<script>
+const body = document.querySelector('#sites tbody');
+function addRow() {
+  const n = body.rows.length + 1;
+  const row = body.insertRow();
+  row.innerHTML = `<td>${n}</td><td><input name="site_${n}_name" aria-label="Site ${n} name"></td><td><input name="site_${n}_country" aria-label="Site ${n} country"></td>`;
+}
+addRow();
+document.getElementById('add-another').addEventListener('click', addRow);
+document.getElementById('save').addEventListener('click', () => { document.getElementById('saved').textContent = 'Draft saved'; });
+</script>
+</body></html>

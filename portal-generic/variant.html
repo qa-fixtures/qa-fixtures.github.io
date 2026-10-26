@@ -1,0 +1,20 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Signing in…</title></head>
+<body><p id="msg">Signing in to the fixture portal…</p>
+<script>
+// Test-only entry to variant-q.html, a copy of q.html that applies one named variant on every render.
+// variant.html?v=<name> sets the sign-in cookie login.html sets, starts a fresh draft when the variant changes
+// (kept under its own localStorage key, so q.html's own draft is never touched) and opens the page.
+const NAMES=['plain','truncate-12','lowercase','strip-commas','c20399','c20400','c20502','c20503','c20504','c20505','c20944'];
+const params=new URLSearchParams(location.search);
+const v=params.get('v')||'plain';
+if(!NAMES.includes(v)){document.getElementById('msg').textContent='Unknown variant: '+v+'. Known: '+NAMES.join(', ');}
+else{
+ document.cookie='vd_auth=1; path=/; max-age=2592000';
+ if(localStorage.getItem('vdv_variant')!==v||params.has('fresh')){
+  localStorage.setItem('vdv_state',JSON.stringify({unlocked:0,current:0,answers:{},done:[],modalShown:false,submitted:false}));
+  localStorage.setItem('vdv_variant',v);
+ }
+ location.replace('variant-q.html');
+}
+</script></body></html>

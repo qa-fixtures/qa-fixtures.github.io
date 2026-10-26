@@ -1,0 +1,29 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Supplier profile – six parts</title>
+<!-- A questionnaire in six parts, one question each. Every part ends in one non-submit button, named in turn
+     Save draft, Save for later, Save progress, Save, Save and continue, Save changes; pressing it keeps the part and
+     opens the next one, so the assistant meets each button in order. No sign-in, no submit. -->
+<style>body{font-family:system-ui,sans-serif;max-width:760px;margin:24px auto;color:#1d2b24}.part{border:1px solid #c8d3cd;border-radius:8px;padding:16px;margin-bottom:14px}.part[hidden]{display:none}label{display:block;font-weight:600;margin-bottom:6px}input{padding:8px;border:1px solid #c8d3cd;border-radius:6px;width:60%}button{margin-top:10px;padding:8px 16px;border-radius:6px;border:1px solid #1f7a4d;background:#fff;cursor:pointer}.saved{color:#1f7a4d;font-size:13px;margin-left:8px}</style>
+</head><body>
+<h1>Supplier profile</h1>
+<p id="progress">Part 1 of 6. Save each part to open the next one.</p>
+<form id="profile" onsubmit="return false">
+<section class="part" id="part-1"><h2>Part 1 · Company</h2><label for="legal_name">Legal entity name</label><input id="legal_name" name="legal_name"><br><button type="button" id="btn-1">Save draft</button><span class="saved" id="saved-1"></span></section>
+<section class="part" id="part-2" hidden><h2>Part 2 · Workforce</h2><label for="employees">Number of employees (FTE) at the end of the last fiscal year</label><input id="employees" name="employees" type="number"><br><button type="button" id="btn-2">Save for later</button><span class="saved" id="saved-2"></span></section>
+<section class="part" id="part-3" hidden><h2>Part 3 · Location</h2><label for="hq">City and country of headquarters</label><input id="hq" name="hq"><br><button type="button" id="btn-3">Save progress</button><span class="saved" id="saved-3"></span></section>
+<section class="part" id="part-4" hidden><h2>Part 4 · Reporting</h2><label for="fy_end">Fiscal year end date</label><input id="fy_end" name="fy_end"><br><button type="button" id="btn-4">Save</button><span class="saved" id="saved-4"></span></section>
+<section class="part" id="part-5" hidden><h2>Part 5 · Emissions</h2><label for="scope1">Total Scope 1 GHG emissions in the last fiscal year (tCO2e)</label><input id="scope1" name="scope1" type="number"><br><button type="button" id="btn-5">Save and continue</button><span class="saved" id="saved-5"></span></section>
+<section class="part" id="part-6" hidden><h2>Part 6 · Training</h2><label for="training">Average training hours per employee per year</label><input id="training" name="training" type="number"><br><button type="button" id="btn-6">Save changes</button><span class="saved" id="saved-6"></span></section>
+</form>
+<p id="done" hidden>All six parts are saved. Thank you.</p>
+<script>
+for (let part = 1; part <= 6; part++) {
+  document.getElementById('btn-' + part).addEventListener('click', () => {
+    document.getElementById('saved-' + part).textContent = 'Saved at ' + new Date().toLocaleTimeString();
+    const next = document.getElementById('part-' + (part + 1));
+    if (next) { next.hidden = false; document.getElementById('progress').textContent = 'Part ' + (part + 1) + ' of 6. Save each part to open the next one.'; }
+    else { document.getElementById('done').hidden = false; document.getElementById('progress').textContent = 'All parts saved.'; }
+  });
+}
+</script>
+</body></html>

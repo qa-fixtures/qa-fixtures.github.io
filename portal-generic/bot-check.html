@@ -1,0 +1,22 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Just a moment...</title>
+<!-- A sign-in-time bot check: Cloudflare Turnstile with its published test sitekey that always asks for an interactive
+     check (3x00000000000000000000FF). The widget's frame loads from challenges.cloudflare.com, which the portal assistant
+     reads as a bot check. Once a person ticks it, the page signs the fixture portal in and opens it (variant.html?v=plain). -->
+<script src="https://challenges.cloudflare.com/turnstile/v0/api.js" async defer></script>
+<style>body{font-family:system-ui,sans-serif;background:#fff;color:#313131;display:flex;justify-content:center;padding-top:12vh}main{max-width:560px}h1{font-size:28px;font-weight:500}</style>
+</head>
+<body><main>
+<h1>qa-fixtures.github.io</h1>
+<h2 style="font-size:20px;font-weight:400">Verify you are human by completing the action below.</h2>
+<div class="cf-turnstile" data-sitekey="3x00000000000000000000FF" data-callback="botCheckPassed"></div>
+<p style="font-size:14px;color:#595959">qa-fixtures.github.io needs to review the security of your connection before proceeding.</p>
+<p id="passed" hidden>Verification successful. Opening the portal…</p>
+</main>
+<script>
+function botCheckPassed(){
+  document.getElementById('passed').hidden=false;
+  setTimeout(()=>{document.querySelectorAll('.cf-turnstile').forEach(el=>el.remove());location.replace('variant.html?v=plain');},1500);
+}
+</script>
+</body></html>
