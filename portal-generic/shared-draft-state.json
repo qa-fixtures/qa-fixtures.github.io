@@ -13,6 +13,12 @@
     "grievance": ""
    },
    "clear": []
+  },
+  "s2": {
+   "rev": 0,
+   "signOutRev": 1,
+   "set": {},
+   "clear": []
   }
  }
 }
