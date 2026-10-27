@@ -19,6 +19,12 @@
    "signOutRev": 2,
    "set": {},
    "clear": []
+  },
+  "s3": {
+   "rev": 0,
+   "signOutRev": 1,
+   "set": {},
+   "clear": []
   }
  }
 }
