@@ -5,6 +5,14 @@
    "signOutRev": 1,
    "set": {},
    "clear": []
+  },
+  "s1": {
+   "rev": 1,
+   "signOutRev": 0,
+   "set": {
+    "legal_name": "Northwind Alloys Trading GmbH"
+   },
+   "clear": []
   }
  }
 }
