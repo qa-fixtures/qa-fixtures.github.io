@@ -2,10 +2,8 @@
  "drafts": {
   "selftest": {
    "rev": 1,
-   "signOutRev": 0,
-   "set": {
-    "legal_name": "Changed Elsewhere AG"
-   },
+   "signOutRev": 1,
+   "set": {},
    "clear": []
   }
  }
