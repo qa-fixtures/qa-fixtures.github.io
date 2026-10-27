@@ -42,15 +42,17 @@ pre{background:#f3f6f4;padding:12px;border-radius:6px;font-size:12px;overflow:au
 <div id="toast" role="status"></div>
 <div id="modal" role="dialog" aria-modal="true" aria-labelledby="mt"><div class="box"><h3 id="mt">Your session is about to expire</h3><p>For security reasons you will be signed out in 2 minutes. Do you want to stay signed in?</p><div class="actions"><button class="secondary" id="m-out">Sign out</button><button class="primary" id="m-stay">Stay signed in</button></div></div></div>
 <script>
-if(!/vsd_auth=1/.test(document.cookie)){location.replace('shared-draft-login.html');}
+if(!/vsd_auth=1/.test(document.cookie)){localStorage.setItem('vsd_next',location.pathname.split('/').pop()+location.search);location.replace('shared-draft-login.html');}
 const COUNTRIES=["Australia","Austria","Belgium","Brazil","Canada","Chile","China","Democratic Republic of the Congo","Finland","France","Germany","India","Italy","Japan","Netherlands","Norway","Peru","Poland","South Africa","Spain","Sweden","Switzerland","United Kingdom","United States"];
 const SECTIONS=[{id:"profile",title:"1. Company profile"},{id:"env",title:"2. Environment"},{id:"labor",title:"3. Labor & Human Rights"},{id:"review",title:"4. Review & submit"}];
 // Test-only copy of q.html whose draft behaves as if the portal kept it on its own server: every change is saved at once,
-// and edits made "in another browser signed in to the same account" are published as shared-draft-state.json in this
-// repository. The page applies each new revision of that file on load and every few seconds, so a tester changes the
-// draft (or ends every sign-in) while a session is paused by committing the file. Add ?fresh to start a new draft.
-const KEY='vsd_state';
-if(new URLSearchParams(location.search).has('fresh'))localStorage.removeItem(KEY);
+// and edits made "in another browser signed in to the same account" are published in shared-draft-state.json in this
+// repository, under drafts.<name>. The page applies each new revision of its entry on load and every few seconds, so a
+// tester changes the draft, or ends every sign-in, while a session is paused by committing the file.
+// ?draft=<name> picks the draft (one per test run, so runs sharing a browser profile never share a draft).
+const DRAFT=new URLSearchParams(location.search).get('draft')||localStorage.getItem('vsd_draft')||'default';
+localStorage.setItem('vsd_draft',DRAFT);
+const KEY='vsd_state_'+DRAFT;
 let S=JSON.parse(localStorage.getItem(KEY)||'null')||{unlocked:0,current:0,answers:{},done:[],modalShown:true,submitted:false};
 const save=()=>{localStorage.setItem(KEY,JSON.stringify(S));toast('Draft saved')};
 let lastSaved='';setInterval(()=>{const j=JSON.stringify(S);if(j!==lastSaved){localStorage.setItem(KEY,j);lastSaved=j}},300);
@@ -130,8 +132,8 @@ function next(){const sec=SECTIONS[S.current].id;$$('.err').forEach(e=>e.textCon
  if(sec==='review'){S.submitted=true;S.done.push('review');localStorage.setItem(KEY,JSON.stringify(S));render();return}
  if(!S.done.includes(sec))S.done.push(sec);S.unlocked=Math.max(S.unlocked,S.current+1);S.current=S.current+1;save();render();window.scrollTo(0,0)}
 $('#m-stay').onclick=()=>{$('#modal').style.display='none';S.modalShown=true;localStorage.setItem(KEY,JSON.stringify(S))};
-function signOut(){document.cookie='vsd_auth=; path=/; max-age=0';location.replace('shared-draft-login.html')}
-async function syncRemote(first){let st;try{st=await (await fetch('shared-draft-state.json?ts='+Date.now(),{cache:'no-store'})).json()}catch(e){return false}
+function signOut(){document.cookie='vsd_auth=; path=/; max-age=0';localStorage.setItem('vsd_next',location.pathname.split('/').pop()+location.search);location.replace('shared-draft-login.html')}
+async function syncRemote(first){let st;try{st=((await (await fetch('shared-draft-state.json?ts='+Date.now(),{cache:'no-store'})).json()).drafts||{})[DRAFT]||{rev:0,signOutRev:0}}catch(e){return false}
  if(S.appliedRev==null){S.appliedRev=st.rev;S.signOutSeen=st.signOutRev;localStorage.setItem(KEY,JSON.stringify(S));return false}
  if(st.signOutRev>S.signOutSeen){S.signOutSeen=st.signOutRev;localStorage.setItem(KEY,JSON.stringify(S));signOut();return true}
  if(st.rev>S.appliedRev){S.appliedRev=st.rev;Object.assign(A,st.set||{});(st.clear||[]).forEach(k=>delete A[k]);localStorage.setItem(KEY,JSON.stringify(S));if(!first){render();toast('Draft updated from another device')}return true}
