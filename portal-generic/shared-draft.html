@@ -133,12 +133,18 @@ function next(){const sec=SECTIONS[S.current].id;$$('.err').forEach(e=>e.textCon
  if(!S.done.includes(sec))S.done.push(sec);S.unlocked=Math.max(S.unlocked,S.current+1);S.current=S.current+1;save();render();window.scrollTo(0,0)}
 $('#m-stay').onclick=()=>{$('#modal').style.display='none';S.modalShown=true;localStorage.setItem(KEY,JSON.stringify(S))};
 function signOut(){document.cookie='vsd_auth=; path=/; max-age=0';localStorage.setItem('vsd_next',location.pathname.split('/').pop()+location.search);location.replace('shared-draft-login.html')}
-async function syncRemote(first){let st;try{st=((await (await fetch('shared-draft-state.json?ts='+Date.now(),{cache:'no-store'})).json()).drafts||{})[DRAFT]||{rev:0,signOutRev:0}}catch(e){return false}
+// The first read is synchronous, before anything renders, so a page whose sign-in was ended elsewhere never shows
+// itself signed in, as on a portal that ends sessions on its server.
+function readRemote(sync){const url='shared-draft-state.json?ts='+Date.now();
+ if(sync){try{const x=new XMLHttpRequest();x.open('GET',url,false);x.send();return x.status===200?entryOf(JSON.parse(x.responseText)):null}catch(e){return null}}
+ return fetch(url,{cache:'no-store'}).then(r=>r.json()).then(entryOf).catch(()=>null)}
+function entryOf(st){return (st.drafts||{})[DRAFT]||{rev:0,signOutRev:0}}
+function applyRemote(st,first){if(!st)return false;
  if(S.appliedRev==null){S.appliedRev=st.rev;S.signOutSeen=st.signOutRev;localStorage.setItem(KEY,JSON.stringify(S));return false}
  if(st.signOutRev>S.signOutSeen){S.signOutSeen=st.signOutRev;localStorage.setItem(KEY,JSON.stringify(S));signOut();return true}
  if(st.rev>S.appliedRev){S.appliedRev=st.rev;Object.assign(A,st.set||{});(st.clear||[]).forEach(k=>delete A[k]);localStorage.setItem(KEY,JSON.stringify(S));if(!first){render();toast('Draft updated from another device')}return true}
  return false}
 $('#m-out').onclick=()=>signOut();
 $('#logout').onclick=e=>{e.preventDefault();signOut()};
-syncRemote(true).finally(()=>{render();setInterval(()=>syncRemote(false),5000)});
+if(!(applyRemote(readRemote(true),true)&&!/vsd_auth=1/.test(document.cookie))){render();setInterval(async()=>applyRemote(await readRemote(false),false),5000)}
 </script></body></html>
