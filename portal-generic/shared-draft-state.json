@@ -21,9 +21,11 @@
    "clear": []
   },
   "s3": {
-   "rev": 0,
+   "rev": 1,
    "signOutRev": 1,
-   "set": {},
+   "set": {
+    "legal_name": "Northwind Alloys Trading GmbH"
+   },
    "clear": []
   }
  }
