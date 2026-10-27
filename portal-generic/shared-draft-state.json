@@ -7,10 +7,10 @@
    "clear": []
   },
   "s1": {
-   "rev": 2,
+   "rev": 3,
    "signOutRev": 0,
    "set": {
-    "scope1": "12500"
+    "policy_doc": "Environmental_Policy_v3.pdf"
    },
    "clear": []
   }
