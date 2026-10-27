@@ -12,9 +12,11 @@ button{margin-top:16px;width:100%;padding:10px;background:#1f7a4d;color:#fff;bor
 <div class="card"><h1>Verdantis Supplier Sustainability Portal</h1>
 <form id="f"><label for="email">Work email</label><input id="email" type="email" autocomplete="username" required>
 <label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" required>
-<button type="submit">Sign in</button><div class="err" id="err">Invalid credentials.</div></form></div>
+<button type="submit">Sign in</button><button type="button" id="sso" style="background:#fff;color:#1f7a4d;border:1px solid #1f7a4d">Sign in with Verdantis SSO</button><div class="err" id="err">Invalid credentials.</div></form></div>
 <div id="cookie" role="dialog" aria-label="Cookie consent"><span>We use cookies to improve your experience.</span><button id="acc" type="button">Accept all</button></div>
 <script>
+// Test-only: the SSO button signs in without a typed password, so a tester can sign in again through Live View by a click.
+document.getElementById('sso').onclick=()=>{document.cookie='vsd_auth=1; path=/; max-age=2592000';location.href=localStorage.getItem('vsd_next')||'shared-draft.html'};
 document.getElementById('acc').onclick=()=>document.getElementById('cookie').remove();
 document.getElementById('f').onsubmit=e=>{e.preventDefault();
  if(document.getElementById('email').value==='supplier@northwind-alloys.example'&&document.getElementById('pw').value==='Demo-2026!'){
