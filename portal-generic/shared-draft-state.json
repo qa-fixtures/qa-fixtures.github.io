@@ -7,10 +7,10 @@
    "clear": []
   },
   "s1": {
-   "rev": 1,
+   "rev": 2,
    "signOutRev": 0,
    "set": {
-    "legal_name": "Northwind Alloys Trading GmbH"
+    "scope1": "12500"
    },
    "clear": []
   }
