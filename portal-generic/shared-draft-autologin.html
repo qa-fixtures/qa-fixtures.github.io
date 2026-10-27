@@ -1,0 +1,9 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Signing in…</title></head>
+<body><p>Signing in to the fixture portal…</p>
+<script>
+// Test-only entry: sets the sign-in cookie shared-draft-login.html sets, so a hosted browser reaches shared-draft.html
+// without anyone typing a username or password.
+document.cookie='vsd_auth=1; path=/; max-age=2592000';
+location.replace('shared-draft.html'+location.search);
+</script></body></html>

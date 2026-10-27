@@ -1,0 +1,142 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Verdantis Supplier Portal – Sustainability Assessment 2026 (shared draft)</title>
+<style>
+body{font-family:system-ui,sans-serif;margin:0;background:#f3f6f4;color:#1d2b24}
+header{background:#1f7a4d;color:#fff;padding:12px 24px;display:flex;justify-content:space-between;align-items:center}
+.wrap{display:flex;max-width:1180px;margin:20px auto;gap:20px;padding:0 16px}
+nav{width:250px;background:#fff;border-radius:10px;padding:12px;height:fit-content}
+nav .step{padding:10px;border-radius:6px;margin-bottom:6px;font-size:14px;display:flex;justify-content:space-between}
+nav .step.locked{color:#9aa8a0}nav .step.active{background:#e6f2ec;font-weight:600}nav .step.done{color:#1f7a4d}
+main{flex:1;background:#fff;border-radius:10px;padding:24px 28px}
+h2{margin:0 0 4px;font-size:20px}.sub{color:#5c6b63;font-size:13px;margin-bottom:20px}
+.q{border-top:1px solid #e3eae6;padding:16px 0}.q .t{font-weight:600;font-size:15px}.q .h{font-size:12px;color:#5c6b63;margin:2px 0 8px}
+.req::after{content:" *";color:#b00020}
+input[type=text],input[type=number],input[type=date],input[type=email],textarea,select{padding:8px;border:1px solid #c8d3cd;border-radius:6px;font:inherit}
+input[type=text],textarea{width:70%}textarea{min-height:70px}
+.cards{display:flex;gap:10px}.card{border:2px solid #c8d3cd;border-radius:8px;padding:10px 14px;cursor:pointer;font-size:14px}
+.card[aria-checked=true]{border-color:#1f7a4d;background:#e6f2ec}
+.combo{position:relative;width:60%}.combo .ctl{border:1px solid #c8d3cd;border-radius:6px;padding:8px;cursor:pointer;background:#fff}
+.combo .list{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #c8d3cd;border-radius:6px;z-index:5;display:none;max-height:200px;overflow:auto}
+.combo.open .list{display:block}.combo .list input{width:100%;box-sizing:border-box;border:0;border-bottom:1px solid #e3eae6;padding:8px}
+.combo .opt{padding:8px;cursor:pointer}.combo .opt:hover,.combo .opt[aria-selected=true]{background:#e6f2ec}
+.chk label{display:block;margin:4px 0;font-size:14px}
+.drop{border:2px dashed #c8d3cd;border-radius:8px;padding:18px;text-align:center;color:#5c6b63;width:70%;font-size:14px}
+.drop input{display:block;margin:8px auto 0}.file-ok{color:#1f7a4d;font-weight:600}
+table.mx{border-collapse:collapse;font-size:14px}table.mx td,table.mx th{border:1px solid #e3eae6;padding:8px 14px;text-align:center}table.mx th:first-child,table.mx td:first-child{text-align:left}
+.rte{border:1px solid #c8d3cd;border-radius:6px;min-height:90px;padding:10px;width:70%;font-size:14px}.rte:empty:before{content:attr(data-placeholder);color:#9aa8a0}
+.toolbar button{font-size:12px;margin-right:4px}
+.switch{width:46px;height:26px;border-radius:13px;background:#c8d3cd;border:0;position:relative;cursor:pointer}.switch[aria-checked=true]{background:#1f7a4d}
+.switch::after{content:"";position:absolute;top:3px;left:3px;width:20px;height:20px;border-radius:50%;background:#fff;transition:.15s}.switch[aria-checked=true]::after{left:23px}
+.err{color:#b00020;font-size:13px;margin-top:6px}.hidden{display:none}
+.actions{margin-top:24px;display:flex;gap:10px;justify-content:flex-end}
+button.primary{background:#1f7a4d;color:#fff;border:0;padding:10px 18px;border-radius:6px;font-size:15px;cursor:pointer}
+button.secondary{background:#fff;border:1px solid #c8d3cd;padding:10px 18px;border-radius:6px;font-size:15px;cursor:pointer}
+#toast{position:fixed;bottom:20px;right:20px;background:#1d2b24;color:#fff;padding:10px 14px;border-radius:6px;font-size:13px;display:none}
+#modal{position:fixed;inset:0;background:rgba(0,0,0,.45);display:none;align-items:center;justify-content:center}
+#modal .box{background:#fff;padding:24px;border-radius:10px;max-width:380px}
+.sites table{border-collapse:collapse;font-size:14px;margin-bottom:8px}.sites td{padding:4px}
+.likert{display:flex;gap:6px}.likert button{width:40px;height:36px;border:1px solid #c8d3cd;background:#fff;border-radius:6px;cursor:pointer}.likert button[aria-pressed=true]{background:#1f7a4d;color:#fff}
+pre{background:#f3f6f4;padding:12px;border-radius:6px;font-size:12px;overflow:auto}
+</style></head><body>
+<header><div><strong>Verdantis</strong> · Supplier Sustainability Assessment 2026 · Northwind Alloys GmbH</div><div id="user" style="font-size:13px">supplier@northwind-alloys.example · <a href="#" id="logout" style="color:#fff">Sign out</a></div></header>
+<div class="wrap"><nav aria-label="Sections" id="nav"></nav><main id="main"></main></div>
+<div id="toast" role="status"></div>
+<div id="modal" role="dialog" aria-modal="true" aria-labelledby="mt"><div class="box"><h3 id="mt">Your session is about to expire</h3><p>For security reasons you will be signed out in 2 minutes. Do you want to stay signed in?</p><div class="actions"><button class="secondary" id="m-out">Sign out</button><button class="primary" id="m-stay">Stay signed in</button></div></div></div>
+<script>
+if(!/vsd_auth=1/.test(document.cookie)){location.replace('shared-draft-login.html');}
+const COUNTRIES=["Australia","Austria","Belgium","Brazil","Canada","Chile","China","Democratic Republic of the Congo","Finland","France","Germany","India","Italy","Japan","Netherlands","Norway","Peru","Poland","South Africa","Spain","Sweden","Switzerland","United Kingdom","United States"];
+const SECTIONS=[{id:"profile",title:"1. Company profile"},{id:"env",title:"2. Environment"},{id:"labor",title:"3. Labor & Human Rights"},{id:"review",title:"4. Review & submit"}];
+// Test-only copy of q.html whose draft behaves as if the portal kept it on its own server: every change is saved at once,
+// and edits made "in another browser signed in to the same account" are published as shared-draft-state.json in this
+// repository. The page applies each new revision of that file on load and every few seconds, so a tester changes the
+// draft (or ends every sign-in) while a session is paused by committing the file. Add ?fresh to start a new draft.
+const KEY='vsd_state';
+if(new URLSearchParams(location.search).has('fresh'))localStorage.removeItem(KEY);
+let S=JSON.parse(localStorage.getItem(KEY)||'null')||{unlocked:0,current:0,answers:{},done:[],modalShown:true,submitted:false};
+const save=()=>{localStorage.setItem(KEY,JSON.stringify(S));toast('Draft saved')};
+let lastSaved='';setInterval(()=>{const j=JSON.stringify(S);if(j!==lastSaved){localStorage.setItem(KEY,j);lastSaved=j}},300);
+function toast(m){const t=document.getElementById('toast');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',1500)}
+const A=S.answers;const $=s=>document.querySelector(s);const $$=s=>[...document.querySelectorAll(s)];
+function renderNav(){$('#nav').innerHTML=SECTIONS.map((s,i)=>`<div class="step ${i>S.unlocked?'locked':''} ${i===S.current?'active':''} ${S.done.includes(s.id)?'done':''}" data-i="${i}" role="button" tabindex="0" aria-disabled="${i>S.unlocked}"><span>${s.title}</span><span>${S.done.includes(s.id)?'✓':(i>S.unlocked?'🔒':'')}</span></div>`).join('');
+ $$('#nav .step').forEach(el=>el.onclick=()=>{const i=+el.dataset.i;if(i<=S.unlocked){S.current=i;localStorage.setItem(KEY,JSON.stringify(S));render();}else toast('Complete the previous section first')});}
+function q(id,title,help,body,req){return `<div class="q" id="q-${id}"><div class="t ${req?'req':''}" id="l-${id}">${title}</div>${help?`<div class="h">${help}</div>`:''}<div role="group" aria-labelledby="l-${id}">${body}</div><div class="err" id="e-${id}"></div></div>`}
+function radioCards(id,opts){return `<div class="cards" role="radiogroup" aria-labelledby="l-${id}">${opts.map(o=>`<div class="card" role="radio" tabindex="0" aria-checked="${A[id]===o}" data-id="${id}" data-v="${o}">${o}</div>`).join('')}</div>`}
+function checks(id,opts){const cur=A[id]||[];return `<div class="chk">${opts.map((o,i)=>`<label><input type="checkbox" name="${id}" value="${o}" ${cur.includes(o)?'checked':''}> ${o}</label>`).join('')}</div>`}
+function nradio(id,opts){return `<div class="chk">${opts.map(o=>`<label><input type="radio" name="${id}" value="${o}" ${A[id]===o?'checked':''}> ${o}</label>`).join('')}</div>`}
+function combo(id,opts,ph){return `<div class="combo" id="c-${id}"><div class="ctl" role="combobox" aria-haspopup="listbox" aria-expanded="false" aria-labelledby="l-${id}" tabindex="0">${A[id]||`<span style="color:#9aa8a0">${ph}</span>`}</div><div class="list" role="listbox" aria-label="${ph}"><input type="text" placeholder="Type to search…" aria-label="Search ${ph.toLowerCase()}">${opts.map(o=>`<div class="opt" role="option" aria-selected="${A[id]===o}" data-v="${o}">${o}</div>`).join('')}</div></div>`}
+function sec_profile(){return `<h2>1. Company profile</h2><div class="sub">Tell us about the legal entity being assessed. Fields marked * are mandatory.</div>
+${q('legal_name','Legal entity name','As registered in the commercial register.',`<input type="text" id="legal_name" value="${A.legal_name||''}" aria-labelledby="l-legal_name">`,1)}
+${q('employees','Number of employees (FTE) at the end of the last fiscal year','',`<input type="number" id="employees" min="0" value="${A.employees??''}" aria-labelledby="l-employees">`,1)}
+${q('hq_country','Country of headquarters','',combo('hq_country',COUNTRIES,'Select a country'),1)}
+${q('size','Company size category','Select the category that matches your headcount.',radioCards('size',['XS (fewer than 25)','S (25–99)','M (100–999)','L (1,000 or more)']),1)}
+${q('fy_end','Fiscal year end date','',`<input type="date" id="fy_end" value="${A.fy_end||''}" aria-labelledby="l-fy_end">`,0)}
+${q('certs','Management system certifications currently held','Select all that apply.',checks('certs',['ISO 14001 (Environment)','ISO 45001 (Health & Safety)','ISO 50001 (Energy)','SA8000 (Social accountability)','None of the above']),1)}`}
+function sec_env(){const pol=A.env_policy;return `<h2>2. Environment</h2><div class="sub">Environmental management, emissions and measures.</div>
+${q('env_policy','Does your company have a formal environmental policy approved by senior management?','',nradio('env_policy',['Yes','No']),1)}
+<div id="pol-sub" class="${pol==='Yes'?'':'hidden'}">
+${q('policy_scope','Which topics does the environmental policy cover?','Shown because you answered "Yes" above.',checks('policy_scope',['Energy consumption','Water','Waste','Biodiversity','GHG emissions']),1)}
+${q('policy_doc','Upload the environmental policy document','PDF or DOCX, max 30 MB.',`<div class="drop">Drag & drop a file here, or choose a file<input type="file" id="policy_doc" accept=".pdf,.docx" aria-labelledby="l-policy_doc"><div id="policy_doc_name" class="file-ok">${A.policy_doc?'Attached: '+A.policy_doc:''}</div></div>`,1)}
+${q('policy_date','Date of last approval of the policy','Format: DD/MM/YYYY',`<input type="text" id="policy_date" placeholder="DD/MM/YYYY" value="${A.policy_date||''}" aria-labelledby="l-policy_date">`,1)}
+</div>
+${q('scope1','Total Scope 1 GHG emissions in the last fiscal year','Direct emissions from owned or controlled sources.',`<input type="number" id="scope1" step="any" value="${A.scope1??''}" aria-labelledby="l-scope1" style="width:160px"> <select id="scope1_unit" aria-label="Unit"><option ${A.scope1_unit==='tCO2e'?'selected':''}>tCO2e</option><option ${A.scope1_unit==='ktCO2e'?'selected':''}>ktCO2e</option></select>`,1)}
+${q('matrix','For each resource, indicate your monitoring status','',`<table class="mx"><thead><tr><th>Resource</th><th>Not tracked</th><th>Tracked</th><th>Tracked with reduction target</th></tr></thead><tbody>${['Energy','Water','Waste'].map(r=>`<tr><td>${r}</td>${['Not tracked','Tracked','Tracked with reduction target'].map(c=>`<td><input type="radio" name="mx_${r.toLowerCase()}" value="${c}" aria-label="${r}: ${c}" ${A['mx_'+r.toLowerCase()]===c?'checked':''}></td>`).join('')}</tr>`).join('')}</tbody></table>`,1)}
+${q('measures','Describe the main environmental measures implemented in the last 3 years','Minimum 100 characters. You may use formatting.',`<div class="toolbar"><button type="button" data-cmd="bold"><b>B</b></button><button type="button" data-cmd="italic"><i>I</i></button></div><div class="rte" id="measures" contenteditable="true" role="textbox" aria-multiline="true" aria-labelledby="l-measures" data-placeholder="Describe measures…">${A.measures||''}</div>`,1)}`}
+function sec_labor(){const hr=A.high_risk==='Yes';const sites=A.sites||[];return `<h2>3. Labor & Human Rights</h2><div class="sub">Working conditions, health & safety, human rights due diligence.</div>
+${q('grievance','What type of grievance mechanism is available to employees?','',`<select id="grievance" aria-labelledby="l-grievance"><option value="">— Select —</option>${['No mechanism','Internal HR contact only','Anonymous internal hotline','Independent third-party hotline','Trade union / works council channel'].map(o=>`<option ${A.grievance===o?'selected':''}>${o}</option>`).join('')}</select>`,1)}
+${q('high_risk','Do you operate sites in countries classified as high-risk for human rights?','',`<button type="button" class="switch" role="switch" aria-checked="${hr}" id="high_risk" aria-labelledby="l-high_risk"></button> <span id="hr_lbl">${hr?'Yes':'No'}</span>`,1)}
+<div id="hr-sub" class="${hr?'':'hidden'}">${q('sites','List the sites located in high-risk countries','Add one row per site. Shown because you answered "Yes" above.',`<div class="sites"><table id="sites_tbl"><thead><tr><td>Site name</td><td>Country</td><td></td></tr></thead><tbody>${sites.map((s,i)=>siteRow(s,i)).join('')}</tbody></table><button type="button" class="secondary" id="add_site">+ Add site</button></div>`,1)}</div>
+${q('ltifr','Lost-time injury frequency rate (LTIFR) in the last fiscal year','Per 1,000,000 hours worked.',`<input type="number" id="ltifr" step="any" value="${A.ltifr??''}" aria-labelledby="l-ltifr" style="width:160px" ${A.ltifr_na?'disabled':''}> <label><input type="checkbox" id="ltifr_na" ${A.ltifr_na?'checked':''}> Not tracked</label>`,1)}
+${q('training','Average training hours per employee per year','',`<input type="number" id="training" step="any" value="${A.training??''}" aria-labelledby="l-training" style="width:160px">`,1)}
+${q('hr_rating','How would you rate the maturity of your human rights due diligence process?','1 = not started, 5 = fully integrated and audited.',`<div class="likert" role="radiogroup" aria-labelledby="l-hr_rating">${[1,2,3,4,5].map(n=>`<button type="button" role="radio" aria-checked="${A.hr_rating===n}" aria-pressed="${A.hr_rating===n}" data-n="${n}">${n}</button>`).join('')}</div>`,1)}
+${q('comments','Additional comments (optional)','',`<textarea id="comments" aria-labelledby="l-comments">${A.comments||''}</textarea>`,0)}`}
+function siteRow(s,i){return `<tr><td><input type="text" style="width:220px" value="${s.name||''}" data-site="${i}" data-f="name" aria-label="Site ${i+1} name" placeholder="Site name"></td><td><select data-site="${i}" data-f="country" aria-label="Site ${i+1} country"><option value="">— Country —</option>${COUNTRIES.map(c=>`<option ${s.country===c?'selected':''}>${c}</option>`).join('')}</select></td><td><button type="button" class="secondary" data-del="${i}" aria-label="Remove site ${i+1}">✕</button></td></tr>`}
+function sec_review(){if(S.submitted){return `<h2>Assessment submitted</h2><div class="sub">Thank you. Reference VD-2026-88213. Your answers:</div><pre id="answers-json">${JSON.stringify(A,null,1)}</pre>`}
+ return `<h2>4. Review & submit</h2><div class="sub">Please review your answers before submitting. After submission the questionnaire is locked.</div><pre>${JSON.stringify(A,null,1)}</pre>
+ ${q('confirm','I confirm that the information provided is complete and accurate to the best of my knowledge.','',`<label><input type="checkbox" id="confirm" ${A.confirm?'checked':''}> I confirm</label>`,1)}
+ <label for="next" id="review-continue" aria-label="Continue">Submit assessment</label>`}
+function render(){renderNav();const sec=SECTIONS[S.current].id;const m=$('#main');m.innerHTML={profile:sec_profile,env:sec_env,labor:sec_labor,review:sec_review}[sec]()+(S.submitted?'':`<div class="actions"><button class="secondary" id="save">Save draft</button><button class="primary" id="next">${sec==='review'?'Submit assessment':'Save & continue'}</button></div>`);bind(sec);
+ if(sec==='env'&&!S.modalShown){setTimeout(()=>{if(S.current===1&&!S.modalShown){$('#modal').style.display='flex'}},2500)}}
+function bind(sec){
+ $$('.card[role=radio]').forEach(el=>el.onclick=()=>{A[el.dataset.id]=el.dataset.v;$$(`.card[data-id=${el.dataset.id}]`).forEach(c=>c.setAttribute('aria-checked',c===el))});
+ $$('input[type=text],input[type=number],input[type=date],textarea').forEach(el=>{if(el.id)el.oninput=()=>{const lim=(S.limits||{})[el.id];if(lim&&el.value.length>lim)el.value=el.value.slice(0,lim);A[el.id]=el.type==='number'?(el.value===''?null:Number(el.value)):el.value}});
+ $$('input[type=checkbox][name]').forEach(el=>el.onchange=()=>{A[el.name]=$$(`input[name=${el.name}]:checked`).map(c=>c.value)});
+ $$('input[type=radio][name]').forEach(el=>el.onchange=()=>{A[el.name]=el.value;if(el.name==='env_policy'){$('#pol-sub').classList.toggle('hidden',el.value!=='Yes')}});
+ $$('.combo').forEach(c=>{const ctl=c.querySelector('.ctl'),id=c.id.slice(2);ctl.onclick=()=>{c.classList.toggle('open');ctl.setAttribute('aria-expanded',c.classList.contains('open'));if(c.classList.contains('open'))c.querySelector('input').focus()};
+  c.querySelector('input').oninput=e=>{const v=e.target.value.toLowerCase();c.querySelectorAll('.opt').forEach(o=>o.style.display=o.textContent.toLowerCase().includes(v)?'':'none')};
+  c.querySelectorAll('.opt').forEach(o=>o.onclick=()=>{A[id]=o.dataset.v;ctl.textContent=o.dataset.v;c.classList.remove('open');ctl.setAttribute('aria-expanded','false');c.querySelectorAll('.opt').forEach(x=>x.setAttribute('aria-selected',x===o))})});
+ const sel=$('#scope1_unit');if(sel)sel.onchange=()=>A.scope1_unit=sel.value;if(sel&&!A.scope1_unit)A.scope1_unit='tCO2e';
+ const g=$('#grievance');if(g)g.onchange=()=>A.grievance=g.value;
+ const f=$('#policy_doc');if(f)f.onchange=()=>{A.policy_doc=f.files[0]?f.files[0].name:'';$('#policy_doc_name').textContent=A.policy_doc?'Attached: '+A.policy_doc:''};
+ const r=$('#measures');if(r){r.oninput=()=>A.measures=r.innerHTML;$$('.toolbar button').forEach(b=>b.onclick=()=>{document.execCommand(b.dataset.cmd);r.focus()})}
+ const sw=$('#high_risk');if(sw)sw.onclick=()=>{const v=sw.getAttribute('aria-checked')!=='true';sw.setAttribute('aria-checked',v);A.high_risk=v?'Yes':'No';$('#hr_lbl').textContent=A.high_risk;$('#hr-sub').classList.toggle('hidden',!v)};
+ const add=$('#add_site');if(add)add.onclick=()=>{A.sites=A.sites||[];A.sites.push({name:'',country:''});rerenderSites()};
+ bindSites();
+ const na=$('#ltifr_na');if(na)na.onchange=()=>{A.ltifr_na=na.checked;$('#ltifr').disabled=na.checked;if(na.checked){A.ltifr=null;$('#ltifr').value=''}};
+ $$('.likert button').forEach(b=>b.onclick=()=>{A.hr_rating=+b.dataset.n;$$('.likert button').forEach(x=>{x.setAttribute('aria-checked',x===b);x.setAttribute('aria-pressed',x===b)})});
+ const cf=$('#confirm');if(cf)cf.onchange=()=>A.confirm=cf.checked;
+ const sv=$('#save');if(sv)sv.onclick=save;const nx=$('#next');if(nx)nx.onclick=next;
+}
+function rerenderSites(){$('#sites_tbl tbody').innerHTML=(A.sites||[]).map((s,i)=>siteRow(s,i)).join('');bindSites()}
+function bindSites(){$$('[data-site]').forEach(el=>el.onchange=el.oninput=()=>{A.sites[+el.dataset.site][el.dataset.f]=el.value});$$('[data-del]').forEach(b=>b.onclick=()=>{A.sites.splice(+b.dataset.del,1);rerenderSites()})}
+function validate(sec){const errs={};const need=(id,ok,msg)=>{if(!ok)errs[id]=msg||'This field is required.'};
+ if(sec==='profile'){need('legal_name',!!A.legal_name);need('employees',A.employees!=null&&A.employees>=0);need('hq_country',!!A.hq_country);need('size',!!A.size);need('certs',(A.certs||[]).length>0);if(A.fy_end&&!/^\d{4}-\d{2}-\d{2}$/.test(A.fy_end))errs.fy_end='Invalid date.'}
+ if(sec==='env'){need('env_policy',!!A.env_policy);if(A.env_policy==='Yes'){need('policy_scope',(A.policy_scope||[]).length>0);need('policy_doc',!!A.policy_doc,'Please attach the policy document.');need('policy_date',/^\d{2}\/\d{2}\/\d{4}$/.test(A.policy_date||''),'Enter the date as DD/MM/YYYY.')}
+  need('scope1',A.scope1!=null);['energy','water','waste'].forEach(r=>{if(!A['mx_'+r])errs.matrix='Please answer for every resource.'});need('measures',(A.measures||'').replace(/<[^>]+>/g,'').trim().length>=100,'Minimum 100 characters.')}
+ if(sec==='labor'){need('grievance',!!A.grievance);need('high_risk',!!A.high_risk);if(A.high_risk==='Yes'){const s=A.sites||[];need('sites',s.length>0&&s.every(x=>x.name&&x.country),'Add at least one site with name and country.')}
+  need('ltifr',A.ltifr_na||A.ltifr!=null,'Enter a value or tick "Not tracked".');need('training',A.training!=null);need('hr_rating',!!A.hr_rating)}
+ if(sec==='review'){need('confirm',!!A.confirm,'You must confirm before submitting.')}
+ return errs}
+function next(){const sec=SECTIONS[S.current].id;$$('.err').forEach(e=>e.textContent='');const errs=validate(sec);
+ if(Object.keys(errs).length){Object.entries(errs).forEach(([k,v])=>{const e=$('#e-'+k);if(e)e.textContent=v});toast('Please fix the highlighted fields');const first=$('#q-'+Object.keys(errs)[0]);if(first)first.scrollIntoView({block:'center'});return}
+ if(sec==='review'){S.submitted=true;S.done.push('review');localStorage.setItem(KEY,JSON.stringify(S));render();return}
+ if(!S.done.includes(sec))S.done.push(sec);S.unlocked=Math.max(S.unlocked,S.current+1);S.current=S.current+1;save();render();window.scrollTo(0,0)}
+$('#m-stay').onclick=()=>{$('#modal').style.display='none';S.modalShown=true;localStorage.setItem(KEY,JSON.stringify(S))};
+function signOut(){document.cookie='vsd_auth=; path=/; max-age=0';location.replace('shared-draft-login.html')}
+async function syncRemote(first){let st;try{st=await (await fetch('shared-draft-state.json?ts='+Date.now(),{cache:'no-store'})).json()}catch(e){return false}
+ if(S.appliedRev==null){S.appliedRev=st.rev;S.signOutSeen=st.signOutRev;localStorage.setItem(KEY,JSON.stringify(S));return false}
+ if(st.signOutRev>S.signOutSeen){S.signOutSeen=st.signOutRev;localStorage.setItem(KEY,JSON.stringify(S));signOut();return true}
+ if(st.rev>S.appliedRev){S.appliedRev=st.rev;Object.assign(A,st.set||{});(st.clear||[]).forEach(k=>delete A[k]);localStorage.setItem(KEY,JSON.stringify(S));if(!first){render();toast('Draft updated from another device')}return true}
+ return false}
+$('#m-out').onclick=()=>signOut();
+$('#logout').onclick=e=>{e.preventDefault();signOut()};
+syncRemote(true).finally(()=>{render();setInterval(()=>syncRemote(false),5000)});
+</script></body></html>
