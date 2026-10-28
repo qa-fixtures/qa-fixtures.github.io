@@ -50,6 +50,7 @@ the index of what is hosted and who uses it — add a row with every new file.
 | `portal-generic/repeat-table.html` | A "Company Name" field and a repeating table of high-risk sites with an "Add another" row control | TestRail C23203 (BES-8821) |
 | `portal-generic/undo-two-sections.html` | Two sections of one page: a typed answer and Save draft in section 1; a radio pick, topic checkboxes, a typed answer and an upload with its own Remove in section 2 | TestRail C20857 (BES-8821) |
 | `widgets/*.html` | One page per input widget the portal assistant writes and reads back (combobox, compound, custom dropdown, date parts, datepicker, matrix, other-specify, phone, react-select, rich text, slider, table grid) | beSirius 2.0 `libs/core/portal-browser/src/__fixtures__/widgets/` (same bytes); TestRail C21369, C21970, C21971, C21972, C22019 (BES-8821) |
+| `registers/nordvik-labour-rights-ratings.html` | Country ratings of the fictional Nordvik Labour Rights Monitor on the ITUC 1–5+ scale, with no year or edition stated: Norway rated 2, where the real ITUC 2026 report rates it 1. The second source of a scored register whose two sources must disagree, one stating its edition and one not | beSirius 2.0 regress register `QA 9775 ITUC two sources [bb BES-9775]`; TestRail C19960 (BES-9775) |
 
 ## Rules
 
