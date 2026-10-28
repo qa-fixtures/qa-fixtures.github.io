@@ -35,6 +35,14 @@
     "legal_name": "Northwind Alloys Trading GmbH"
    },
    "clear": []
+  },
+  "a3d1": {
+   "rev": 1,
+   "signOutRev": 0,
+   "set": {
+    "legal_name": "Northwind Alloys A3 GmbH"
+   },
+   "clear": []
   }
  }
 }
