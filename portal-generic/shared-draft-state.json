@@ -1,62 +1,70 @@
 {
- "drafts": {
-  "selftest": {
-   "rev": 1,
-   "signOutRev": 1,
-   "set": {},
-   "clear": []
-  },
-  "s1": {
-   "rev": 4,
-   "signOutRev": 0,
-   "set": {
-    "grievance": ""
-   },
-   "clear": []
-  },
-  "s2": {
-   "rev": 0,
-   "signOutRev": 2,
-   "set": {},
-   "clear": []
-  },
-  "s3": {
-   "rev": 1,
-   "signOutRev": 1,
-   "set": {
-    "legal_name": "Northwind Alloys Trading GmbH"
-   },
-   "clear": []
-  },
-  "s4": {
-   "rev": 1,
-   "signOutRev": 0,
-   "set": {
-    "legal_name": "Northwind Alloys Trading GmbH"
-   },
-   "clear": []
-  },
-  "a3d1": {
-   "rev": 1,
-   "signOutRev": 1,
-   "set": {
-    "legal_name": "Northwind Alloys A3 GmbH"
-   },
-   "clear": []
-  },
-  "c24509-r483": {
-   "rev": 1,
-   "signOutRev": 0,
-   "set": {
-    "legal_name": "Northwind Alloys Trading GmbH"
-   },
-   "clear": []
-  },
-  "s2-r505-a": {
-   "rev": 0,
-   "signOutRev": 1,
-   "set": {},
-   "clear": []
+  "drafts": {
+    "selftest": {
+      "rev": 1,
+      "signOutRev": 1,
+      "set": {},
+      "clear": []
+    },
+    "s1": {
+      "rev": 4,
+      "signOutRev": 0,
+      "set": {
+        "grievance": ""
+      },
+      "clear": []
+    },
+    "s2": {
+      "rev": 0,
+      "signOutRev": 2,
+      "set": {},
+      "clear": []
+    },
+    "s3": {
+      "rev": 1,
+      "signOutRev": 1,
+      "set": {
+        "legal_name": "Northwind Alloys Trading GmbH"
+      },
+      "clear": []
+    },
+    "s4": {
+      "rev": 1,
+      "signOutRev": 0,
+      "set": {
+        "legal_name": "Northwind Alloys Trading GmbH"
+      },
+      "clear": []
+    },
+    "a3d1": {
+      "rev": 1,
+      "signOutRev": 1,
+      "set": {
+        "legal_name": "Northwind Alloys A3 GmbH"
+      },
+      "clear": []
+    },
+    "c24509-r483": {
+      "rev": 1,
+      "signOutRev": 0,
+      "set": {
+        "legal_name": "Northwind Alloys Trading GmbH"
+      },
+      "clear": []
+    },
+    "s2-r505-a": {
+      "rev": 0,
+      "signOutRev": 1,
+      "set": {},
+      "clear": []
+    },
+    "r505s3b": {
+      "rev": 1,
+      "signOutRev": 0,
+      "set": {},
+      "clear": [
+        "measures"
+      ]
+    }
   }
- }
 }
