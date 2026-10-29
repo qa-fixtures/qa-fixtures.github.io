@@ -65,6 +65,14 @@
       "clear": [
         "measures"
       ]
+    },
+    "r505y1": {
+      "rev": 1,
+      "signOutRev": 0,
+      "set": {},
+      "clear": [
+        "measures"
+      ]
     }
   }
 }
