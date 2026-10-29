@@ -1,0 +1,97 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Verdantis Supplier Portal – Supplier Assessment 2026</title>
+<!-- A multi-section questionnaire behind a sign-in, every section reachable without writing anything: the section list
+     opens any section at once (no lock, no required field in the way), and the first section already holds a grid with
+     column headers and row labels, next to a single choice; the second holds a file question shown from the start. For
+     reading a portal into a Request read-only. The sign-in is the fixture portal's (login.html's credentials) or the
+     "Sign in with Verdantis SSO" button, kept for the tab only, so every new browser session meets the sign-in again.
+     Nothing is kept between page loads; submitting shows the answers as recorded. -->
+<style>
+body{font-family:system-ui,sans-serif;margin:0;background:#f3f6f4;color:#1d2b24}
+header{background:#1f7a4d;color:#fff;padding:12px 24px;display:flex;justify-content:space-between;align-items:center}
+.card{max-width:380px;margin:80px auto;background:#fff;padding:28px;border-radius:10px;box-shadow:0 2px 12px rgba(0,0,0,.08)}
+.card h1{font-size:20px;margin:0 0 16px}.card label{display:block;font-size:13px;margin:12px 0 4px}
+.card input{width:100%;padding:9px;border:1px solid #c8d3cd;border-radius:6px;box-sizing:border-box}
+.card button{margin-top:16px;width:100%;padding:10px;background:#1f7a4d;color:#fff;border:0;border-radius:6px;font-size:15px;cursor:pointer}
+.card button.alt{background:#fff;color:#1f7a4d;border:1px solid #1f7a4d}
+.wrap{display:flex;max-width:1180px;margin:20px auto;gap:20px;padding:0 16px}
+nav{width:250px;background:#fff;border-radius:10px;padding:12px;height:fit-content}
+nav .step{padding:10px;border-radius:6px;margin-bottom:6px;font-size:14px;display:flex;justify-content:space-between;cursor:pointer}
+nav .step.active{background:#e6f2ec;font-weight:600}nav .step.done{color:#1f7a4d}
+main{flex:1;background:#fff;border-radius:10px;padding:24px 28px}
+h2{margin:0 0 4px;font-size:20px}.sub{color:#5c6b63;font-size:13px;margin-bottom:20px}
+.q{border-top:1px solid #e3eae6;padding:16px 0}.q .t{font-weight:600;font-size:15px}.q .h{font-size:12px;color:#5c6b63;margin:2px 0 8px}
+.req::after{content:" *";color:#b00020}
+input[type=text],input[type=number],select{padding:8px;border:1px solid #c8d3cd;border-radius:6px;font:inherit}
+input[type=text]{width:70%}
+.chk label{display:block;margin:4px 0;font-size:14px}
+table.mx{border-collapse:collapse;font-size:14px}table.mx th,table.mx td{border:1px solid #e3eae6;padding:6px 10px;text-align:center}table.mx td:first-child,table.mx th:first-child{text-align:left}
+.drop{border:1px dashed #9fb5a9;border-radius:8px;padding:12px;font-size:13px;color:#5c6b63}
+.file-ok{color:#1f7a4d;font-size:13px;margin-top:6px}
+.err{color:#b00020;font-size:13px;margin-top:6px}.hidden{display:none}
+.actions{margin-top:24px;display:flex;gap:10px;justify-content:flex-end}
+button.primary{background:#1f7a4d;color:#fff;border:0;padding:10px 18px;border-radius:6px;font-size:15px;cursor:pointer}
+button.secondary{background:#fff;border:1px solid #c8d3cd;padding:10px 18px;border-radius:6px;font-size:15px;cursor:pointer}
+#toast{position:fixed;bottom:20px;right:20px;background:#1d2b24;color:#fff;padding:10px 14px;border-radius:6px;font-size:13px;display:none}
+pre{background:#f3f6f4;padding:12px;border-radius:6px;font-size:12px;overflow:auto}
+</style></head><body>
+<div id="app"></div>
+<div id="toast" role="status"></div>
+<script>
+const AUTH='vrg_auth';
+const signedIn=()=>{try{return sessionStorage.getItem(AUTH)==='1'}catch(error){return false}};
+const signIn=()=>{try{sessionStorage.setItem(AUTH,'1')}catch(error){}showQuestionnaire()};
+const signOut=()=>{try{sessionStorage.removeItem(AUTH)}catch(error){}showSignIn()};
+const $=s=>document.querySelector(s);const $$=s=>[...document.querySelectorAll(s)];
+function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',1500)}
+const esc=v=>String(v??'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+function showSignIn(){document.title='Verdantis Supplier Portal – Sign in';
+ $('#app').innerHTML=`<div class="card"><h1>Verdantis Supplier Sustainability Portal</h1>
+<form id="f"><label for="email">Work email</label><input id="email" type="email" autocomplete="username" required>
+<label for="pw">Password</label><input id="pw" type="password" autocomplete="current-password" required>
+<button type="submit">Sign in</button><button type="button" class="alt" id="sso">Sign in with Verdantis SSO</button><div class="err hidden" id="err">Invalid credentials.</div></form></div>`;
+ $('#sso').onclick=signIn;
+ $('#f').onsubmit=e=>{e.preventDefault();if($('#email').value==='supplier@northwind-alloys.example'&&$('#pw').value==='Demo-2026!')signIn();else $('#err').classList.remove('hidden')};}
+const SECTIONS=['1. Company profile','2. Environment','3. Labor & Human Rights','4. Review & submit'];
+const S={current:0,answers:{},done:[],submitted:false};const A=S.answers;
+const RESOURCES=['Energy','Water','Waste'];const STATUSES=['Not tracked','Tracked','Tracked with reduction target'];
+function q(id,title,help,body,req){return `<div class="q" id="q-${id}"><div class="t ${req?'req':''}" id="l-${id}">${title}</div>${help?`<div class="h">${help}</div>`:''}<div role="group" aria-labelledby="l-${id}">${body}</div><div class="err" id="e-${id}"></div></div>`}
+function radios(id,opts){return `<div class="chk" role="radiogroup" aria-labelledby="l-${id}">${opts.map(o=>`<label><input type="radio" name="${id}" value="${o}" ${A[id]===o?'checked':''}> ${o}</label>`).join('')}</div>`}
+function grid(){return `<table class="mx"><thead><tr><th>Resource</th>${STATUSES.map(c=>`<th>${c}</th>`).join('')}</tr></thead><tbody>${RESOURCES.map(r=>`<tr><td>${r}</td>${STATUSES.map(c=>`<td><input type="radio" name="mx_${r.toLowerCase()}" value="${c}" aria-label="${r}: ${c}" ${A['mx_'+r.toLowerCase()]===c?'checked':''}></td>`).join('')}</tr>`).join('')}</tbody></table>`}
+const BODY=[
+ ()=>`<h2>1. Company profile</h2><div class="sub">Tell us about the legal entity being assessed. Fields marked * are mandatory.</div>
+${q('size','Company size category','Select the category that matches your headcount.',radios('size',['XS (fewer than 25)','S (25–99)','M (100–999)','L (1,000 or more)']),1)}
+${q('matrix','For each resource, indicate your monitoring status','One answer per row.',grid(),1)}
+${q('legal_name','Legal entity name','As registered in the commercial register.',`<input type="text" id="legal_name" value="${esc(A.legal_name)}" aria-labelledby="l-legal_name">`,1)}`,
+ ()=>`<h2>2. Environment</h2><div class="sub">Environmental management and evidence. Fields marked * are mandatory.</div>
+${q('env_policy','Does your company have a formal environmental policy approved by senior management?','',radios('env_policy',['Yes','No']),1)}
+${q('policy_doc','Upload the environmental policy document','PDF or DOCX, max 30 MB.',`<div class="drop">Drag & drop a file here, or choose a file <input type="file" id="policy_doc" accept=".pdf,.docx" aria-labelledby="l-policy_doc"><div id="policy_doc_name" class="file-ok">${A.policy_doc?'Attached: '+esc(A.policy_doc):''}</div></div>`,0)}
+${q('scope1','Total Scope 1 GHG emissions in the last fiscal year','Direct emissions from owned or controlled sources, in tCO2e.',`<input type="number" id="scope1" step="any" value="${esc(A.scope1)}" aria-labelledby="l-scope1" style="width:160px">`,1)}`,
+ ()=>`<h2>3. Labor & Human Rights</h2><div class="sub">Fields marked * are mandatory.</div>
+${q('grievance','What type of grievance mechanism is available to employees?','',`<select id="grievance" aria-labelledby="l-grievance"><option value="">— Select —</option>${['No mechanism','Internal HR contact only','Anonymous internal hotline','Independent third-party hotline','Trade union / works council channel'].map(o=>`<option ${A.grievance===o?'selected':''}>${o}</option>`).join('')}</select>`,1)}
+${q('ltifr','Lost-time injury frequency rate (LTIFR) in the last fiscal year','Per 1,000,000 hours worked.',`<input type="number" id="ltifr" step="any" value="${esc(A.ltifr)}" aria-labelledby="l-ltifr" style="width:160px">`,1)}`,
+ ()=>`<h2>4. Review & submit</h2><div class="sub">Please review your answers before submitting. After submission the questionnaire is locked.</div><pre>${esc(JSON.stringify(A,null,1))}</pre>`];
+const REQUIRED=[['size','matrix','legal_name'],['env_policy','scope1'],['grievance','ltifr'],[]];
+function showQuestionnaire(){document.title='Verdantis Supplier Portal – Supplier Assessment 2026';
+ $('#app').innerHTML=`<header><div><strong>Verdantis</strong> · Supplier Assessment 2026 · Northwind Alloys GmbH</div><div style="font-size:13px">supplier@northwind-alloys.example · <a href="#" id="logout" style="color:#fff">Sign out</a></div></header><div class="wrap"><nav aria-label="Sections" id="nav"></nav><main id="main"></main></div>`;
+ $('#logout').onclick=e=>{e.preventDefault();signOut()};render();}
+function renderNav(){$('#nav').innerHTML=SECTIONS.map((s,i)=>`<div class="step ${i===S.current?'active':''} ${S.done.includes(i)?'done':''}" data-i="${i}" role="button" tabindex="0"><span>${s}</span><span>${S.done.includes(i)?'✓':''}</span></div>`).join('');
+ $$('#nav .step').forEach(el=>el.onclick=()=>{S.current=+el.dataset.i;render()});}
+function render(){renderNav();
+ if(S.submitted){$('#main').innerHTML=`<h2>Assessment submitted</h2><div class="sub">Thank you. Reference VD-2026-90671. Your answers:</div><pre id="answers-json">${esc(JSON.stringify(A,null,1))}</pre>`;return}
+ const last=S.current===SECTIONS.length-1;
+ $('#main').innerHTML=BODY[S.current]()+`<div class="actions"><button type="button" class="secondary" id="save">Save draft</button><button type="button" class="primary" id="next">${last?'Submit assessment':'Save & continue'}</button></div>`;
+ bind();}
+function bind(){
+ $$('#main input[type=text],#main input[type=number]').forEach(el=>el.oninput=()=>{A[el.id]=el.type==='number'?(el.value===''?null:Number(el.value)):el.value});
+ $$('#main select').forEach(el=>el.onchange=()=>{A[el.id]=el.value});
+ $$('#main input[type=radio]').forEach(el=>el.onchange=()=>{A[el.name]=el.value;if(el.name.startsWith('mx_'))A.matrix=RESOURCES.every(r=>A['mx_'+r.toLowerCase()])?'complete':''});
+ const f=$('#policy_doc');if(f)f.onchange=()=>{A.policy_doc=f.files[0]?f.files[0].name:'';$('#policy_doc_name').textContent=A.policy_doc?'Attached: '+A.policy_doc:''};
+ $('#save').onclick=()=>toast('Draft saved');$('#next').onclick=next;}
+function next(){$$('.err').forEach(e=>e.textContent='');const errs={};
+ REQUIRED[S.current].forEach(id=>{const v=A[id];if(v===undefined||v===null||v==='')errs[id]=id==='matrix'?'Answer every row.':'This field is required.'});
+ if(Object.keys(errs).length){Object.entries(errs).forEach(([k,v])=>{const e=$('#e-'+k);if(e)e.textContent=v});toast('Please fix the highlighted fields');return}
+ if(!S.done.includes(S.current))S.done.push(S.current);
+ if(S.current===SECTIONS.length-1){S.submitted=true;render();return}
+ S.current+=1;toast('Draft saved');render();window.scrollTo(0,0)}
+if(signedIn())showQuestionnaire();else showSignIn();
+</script></body></html>
