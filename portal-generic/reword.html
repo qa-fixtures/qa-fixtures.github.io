@@ -1,0 +1,63 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Halvorsen Supplier Onboarding Form</title>
+<!-- A public supplier form (no sign-in) whose first field's label comes from the address, so a tester rewords a field
+     after a reading by changing the URL instead of editing someone else's form. Every field keeps its id and name in
+     every variant; only the "Company Name" label changes:
+       reword.html               Company Name
+       reword.html?v=reworded    Name of the legal entity        (another wording of the same field)
+       reword.html?v=prefixed    Company details - Company Name  (the same wording with its section as a prefix)
+     An unknown variant shows an error and no form. Nothing is kept between page loads; submitting shows the answers. -->
+<style>
+body{font-family:system-ui,sans-serif;margin:0;background:#f4f5f8;color:#20242c}
+.form{max-width:760px;margin:28px auto;background:#fff;border-radius:10px;padding:28px 32px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+h1{font-size:22px;margin:0 0 4px}.sub{color:#5d6472;font-size:13px;margin-bottom:18px}
+h2{font-size:17px;margin:0 0 12px}
+.pages{display:flex;gap:8px;margin-bottom:18px}.pages button{border:1px solid #cdd2db;background:#fff;border-radius:16px;padding:6px 12px;font-size:13px;cursor:pointer}.pages button[aria-current=step]{background:#2e5bd8;color:#fff;border-color:#2e5bd8}
+.q{padding:12px 0;border-top:1px solid #eceef2}.q label{display:block;font-weight:600;font-size:15px;margin-bottom:6px}.req::after{content:" *";color:#c0262d}
+.q .h{font-size:12px;color:#5d6472;margin:-2px 0 6px}
+input[type=text],input[type=email],select{padding:8px;border:1px solid #cdd2db;border-radius:6px;font:inherit;width:70%}
+.err{color:#c0262d;font-size:13px;margin-top:4px}
+.actions{margin-top:22px;display:flex;gap:10px;justify-content:flex-end}
+button.primary{background:#2e5bd8;color:#fff;border:0;padding:10px 18px;border-radius:6px;font-size:15px;cursor:pointer}
+button.secondary{background:#fff;border:1px solid #cdd2db;padding:10px 18px;border-radius:6px;font-size:15px;cursor:pointer}
+pre{background:#f4f5f8;padding:12px;border-radius:6px;font-size:12px;overflow:auto}
+</style></head><body>
+<div class="form" id="form"></div>
+<script>
+const LABELS={'':'Company Name',reworded:'Name of the legal entity',prefixed:'Company details - Company Name'};
+const variant=new URLSearchParams(location.search).get('v')??'';
+const COUNTRIES=['Austria','Denmark','Finland','Germany','Netherlands','Norway','Poland','Sweden','Switzerland','United Kingdom'];
+const PAGES=[
+ {title:'Company details',fields:[
+  {id:'company_name',label:LABELS[variant],kind:'text',req:1},
+  {id:'registration_number',label:'Company registration number',kind:'text',req:1,help:'As shown on the certificate of incorporation.'},
+  {id:'country',label:'Country of incorporation',kind:'select',options:COUNTRIES,req:1}]},
+ {title:'Contact person',fields:[
+  {id:'contact_name',label:'Full name of the contact person',kind:'text',req:1},
+  {id:'contact_email',label:'Contact email address',kind:'email',req:1}]},
+ {title:'Review and submit',fields:[]}];
+const S={page:0,answers:{},submitted:false};const A=S.answers;
+const $=s=>document.querySelector(s);const $$=s=>[...document.querySelectorAll(s)];
+const esc=v=>String(v??'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+function field(f){
+ const control=f.kind==='select'
+  ?`<select id="${f.id}" name="${f.id}"><option value="">Please select</option>${f.options.map(o=>`<option ${A[f.id]===o?'selected':''}>${o}</option>`).join('')}</select>`
+  :`<input type="${f.kind}" id="${f.id}" name="${f.id}" value="${esc(A[f.id])}">`;
+ return `<div class="q" id="q-${f.id}"><label for="${f.id}" class="${f.req?'req':''}">${esc(f.label)}</label>${f.help?`<div class="h">${f.help}</div>`:''}${control}<div class="err" id="e-${f.id}"></div></div>`}
+function render(){const form=$('#form');
+ if(!(variant in LABELS)){form.innerHTML=`<h1>Form not found</h1><div class="sub">Unknown variant "${esc(variant)}". Known: (none), reworded, prefixed.</div>`;return}
+ if(S.submitted){form.innerHTML=`<h1>Thank you</h1><div class="sub">Your submission has been received. Reference HSO-2026-4418.</div><pre id="answers-json">${esc(JSON.stringify(A,null,1))}</pre>`;return}
+ const page=PAGES[S.page];const last=S.page===PAGES.length-1;
+ form.innerHTML=`<h1>Halvorsen Supplier Onboarding Form</h1><div class="sub">Halvorsen Silica Works AS asks every new supplier for these details. Fields marked * are required.</div>
+<div class="pages" role="navigation" aria-label="Pages">${PAGES.map((p,i)=>`<button type="button" data-i="${i}" ${i===S.page?'aria-current="step"':''}>${i+1}. ${p.title}</button>`).join('')}</div>
+<h2>${page.title}</h2>${page.fields.map(field).join('')}${last?`<pre>${esc(JSON.stringify(A,null,1))}</pre>`:''}
+<div class="actions">${S.page>0?'<button type="button" class="secondary" id="back">Back</button>':''}<button type="button" class="primary" id="next">${last?'Submit':'Next'}</button></div>`;
+ $$('.pages button').forEach(el=>el.onclick=()=>{S.page=+el.dataset.i;render()});
+ $$('#form input,#form select').forEach(el=>{el.oninput=el.onchange=()=>{A[el.id]=el.value}});
+ const back=$('#back');if(back)back.onclick=()=>{S.page-=1;render()};
+ $('#next').onclick=next;}
+function next(){$$('.err').forEach(e=>e.textContent='');const missing=PAGES[S.page].fields.filter(f=>f.req&&!String(A[f.id]??'').trim());
+ if(missing.length){missing.forEach(f=>{$('#e-'+f.id).textContent='This field is required.'});return}
+ if(S.page===PAGES.length-1){S.submitted=true;render();return}
+ S.page+=1;render();window.scrollTo(0,0)}
+render();
+</script></body></html>
