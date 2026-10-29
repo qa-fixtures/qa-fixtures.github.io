@@ -43,6 +43,14 @@
     "legal_name": "Northwind Alloys A3 GmbH"
    },
    "clear": []
+  },
+  "c24509-r483": {
+   "rev": 1,
+   "signOutRev": 0,
+   "set": {
+    "legal_name": "Northwind Alloys Trading GmbH"
+   },
+   "clear": []
   }
  }
 }
