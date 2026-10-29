@@ -51,6 +51,12 @@
     "legal_name": "Northwind Alloys Trading GmbH"
    },
    "clear": []
+  },
+  "s2-r505-a": {
+   "rev": 0,
+   "signOutRev": 1,
+   "set": {},
+   "clear": []
   }
  }
 }
