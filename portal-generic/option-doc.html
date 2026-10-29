@@ -1,0 +1,79 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Verdantis Supplier Portal – Supplier Assessment 2026</title>
+<!-- One question holds both an option and its evidence document: the environmental-policy question shows its Yes / No
+     radios and its file input (accept=".pdf,.docx", max 30 MB) in one block, the file input on the page from the start,
+     so the portal assistant can propose the option and the document as one option-with-document. The wording of the
+     questions is q.html's, so a Request read from q.html matches them. No sign-in. Nothing is kept between page loads:
+     every session starts on an empty form, and "Save draft" only confirms. Submitting shows the answers as recorded. -->
+<style>
+body{font-family:system-ui,sans-serif;margin:0;background:#f3f6f4;color:#1d2b24}
+header{background:#1f7a4d;color:#fff;padding:12px 24px;display:flex;justify-content:space-between;align-items:center}
+.wrap{display:flex;max-width:1180px;margin:20px auto;gap:20px;padding:0 16px}
+nav{width:250px;background:#fff;border-radius:10px;padding:12px;height:fit-content}
+nav .step{padding:10px;border-radius:6px;margin-bottom:6px;font-size:14px;display:flex;justify-content:space-between;cursor:pointer}
+nav .step.active{background:#e6f2ec;font-weight:600}nav .step.done{color:#1f7a4d}
+main{flex:1;background:#fff;border-radius:10px;padding:24px 28px}
+h2{margin:0 0 4px;font-size:20px}.sub{color:#5c6b63;font-size:13px;margin-bottom:20px}
+.q{border-top:1px solid #e3eae6;padding:16px 0}.q .t{font-weight:600;font-size:15px}.q .h{font-size:12px;color:#5c6b63;margin:2px 0 8px}
+.req::after{content:" *";color:#b00020}
+input[type=text],input[type=number]{padding:8px;border:1px solid #c8d3cd;border-radius:6px;font:inherit;width:70%}
+.chk label{display:block;margin:4px 0;font-size:14px}
+.evidence{margin-top:10px;padding:10px 12px;border:1px dashed #9fb5a9;border-radius:8px;background:#fafcfb}
+.evidence .cap{font-size:13px;font-weight:600;margin-bottom:6px}
+.file-ok{color:#1f7a4d;font-size:13px;margin-top:6px}
+.err{color:#b00020;font-size:13px;margin-top:6px}
+.actions{margin-top:24px;display:flex;gap:10px;justify-content:flex-end}
+button.primary{background:#1f7a4d;color:#fff;border:0;padding:10px 18px;border-radius:6px;font-size:15px;cursor:pointer}
+button.secondary{background:#fff;border:1px solid #c8d3cd;padding:10px 18px;border-radius:6px;font-size:15px;cursor:pointer}
+#toast{position:fixed;bottom:20px;right:20px;background:#1d2b24;color:#fff;padding:10px 14px;border-radius:6px;font-size:13px;display:none}
+pre{background:#f3f6f4;padding:12px;border-radius:6px;font-size:12px;overflow:auto}
+</style></head><body>
+<header><div><strong>Verdantis</strong> · Supplier Assessment 2026 · Northwind Alloys GmbH</div><div style="font-size:13px">supplier@northwind-alloys.example</div></header>
+<div class="wrap"><nav aria-label="Sections" id="nav"></nav><main id="main"></main></div>
+<div id="toast" role="status"></div>
+<script>
+const SECTIONS=['1. Company profile','2. Environment','3. Review & submit'];
+const S={current:0,answers:{},done:[],submitted:false};
+const A=S.answers;
+const $=s=>document.querySelector(s);const $$=s=>[...document.querySelectorAll(s)];
+function toast(m){const t=$('#toast');t.textContent=m;t.style.display='block';setTimeout(()=>t.style.display='none',1500)}
+const esc=v=>String(v??'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+function radios(id,opts){return `<div class="chk" role="radiogroup" aria-labelledby="l-${id}">${opts.map(o=>`<label><input type="radio" name="${id}" value="${o}" ${A[id]===o?'checked':''}> ${o}</label>`).join('')}</div>`}
+function sec0(){return `<h2>1. Company profile</h2><div class="sub">Tell us about the legal entity being assessed. Fields marked * are mandatory.</div>
+<div class="q" id="q-legal_name"><div class="t req" id="l-legal_name">Legal entity name</div><div class="h">As registered in the commercial register.</div><input type="text" id="legal_name" value="${esc(A.legal_name)}" aria-labelledby="l-legal_name"><div class="err" id="e-legal_name"></div></div>
+<div class="q" id="q-employees"><div class="t req" id="l-employees">Number of employees (FTE) at the end of the last fiscal year</div><input type="number" id="employees" min="0" value="${esc(A.employees)}" aria-labelledby="l-employees" style="width:160px"><div class="err" id="e-employees"></div></div>`}
+function sec1(){return `<h2>2. Environment</h2><div class="sub">Environmental management. Fields marked * are mandatory.</div>
+<fieldset class="q" id="q-env_policy" style="border:0;border-top:1px solid #e3eae6;margin:0;padding:16px 0">
+ <legend class="t req" id="l-env_policy" style="padding:0">Does your company have a formal environmental policy approved by senior management?</legend>
+ <div class="h">If you answer "Yes", attach the policy document below. Accepted formats: PDF, DOCX. Maximum file size: 30 MB.</div>
+ ${radios('env_policy',['Yes','No'])}
+ <div class="evidence">
+  <div class="cap" id="cap-policy_doc">Evidence: the policy document (PDF or DOCX, max 30 MB)</div>
+  <input type="file" id="policy_doc" name="env_policy_evidence" accept=".pdf,.docx" aria-labelledby="l-env_policy" aria-describedby="cap-policy_doc">
+  <div id="policy_doc_name" class="file-ok">${A.policy_doc?'Attached: '+esc(A.policy_doc):''}</div>
+ </div>
+ <div class="err" id="e-env_policy"></div>
+</fieldset>
+<div class="q" id="q-scope1"><div class="t req" id="l-scope1">Total Scope 1 GHG emissions in the last fiscal year</div><div class="h">Direct emissions from owned or controlled sources, in tCO2e.</div><input type="number" id="scope1" step="any" value="${esc(A.scope1)}" aria-labelledby="l-scope1" style="width:160px"><div class="err" id="e-scope1"></div></div>`}
+function sec2(){return `<h2>3. Review & submit</h2><div class="sub">Please review your answers before submitting. After submission the questionnaire is locked.</div><pre>${esc(JSON.stringify(A,null,1))}</pre>`}
+function renderNav(){$('#nav').innerHTML=SECTIONS.map((s,i)=>`<div class="step ${i===S.current?'active':''} ${S.done.includes(i)?'done':''}" data-i="${i}" role="button" tabindex="0"><span>${s}</span><span>${S.done.includes(i)?'✓':''}</span></div>`).join('');
+ $$('#nav .step').forEach(el=>el.onclick=()=>{S.current=+el.dataset.i;render()});}
+function render(){renderNav();
+ if(S.submitted){$('#main').innerHTML=`<h2>Assessment submitted</h2><div class="sub">Thank you. Reference VD-2026-90533. Your answers:</div><pre id="answers-json">${esc(JSON.stringify(A,null,1))}</pre>`;return}
+ const last=S.current===SECTIONS.length-1;
+ $('#main').innerHTML=[sec0,sec1,sec2][S.current]()+`<div class="actions"><button type="button" class="secondary" id="save">Save draft</button><button type="button" class="primary" id="next">${last?'Submit assessment':'Save & continue'}</button></div>`;
+ bind();}
+function bind(){
+ $$('#main input[type=text],#main input[type=number]').forEach(el=>el.oninput=()=>{A[el.id]=el.type==='number'?(el.value===''?null:Number(el.value)):el.value});
+ $$('#main input[type=radio]').forEach(el=>el.onchange=()=>{A[el.name]=el.value});
+ const f=$('#policy_doc');if(f)f.onchange=()=>{A.policy_doc=f.files[0]?f.files[0].name:'';$('#policy_doc_name').textContent=A.policy_doc?'Attached: '+A.policy_doc:''};
+ $('#save').onclick=()=>toast('Draft saved');$('#next').onclick=next;}
+const REQUIRED=[['legal_name','employees'],['env_policy','scope1'],[]];
+function validate(){const errs={};REQUIRED[S.current].forEach(id=>{const v=A[id];if(v===undefined||v===null||v==='')errs[id]='This field is required.'});
+ if(S.current===1&&A.env_policy==='Yes'&&!A.policy_doc)errs.env_policy='Attach the policy document.';return errs}
+function next(){$$('.err').forEach(e=>e.textContent='');const errs=validate();
+ if(Object.keys(errs).length){Object.entries(errs).forEach(([k,v])=>{const e=$('#e-'+k);if(e)e.textContent=v});toast('Please fix the highlighted fields');return}
+ if(!S.done.includes(S.current))S.done.push(S.current);
+ if(S.current===SECTIONS.length-1){S.submitted=true;render();return}
+ S.current+=1;toast('Draft saved');render();window.scrollTo(0,0)}
+render();
+</script></body></html>
