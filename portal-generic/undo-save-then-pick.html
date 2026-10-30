@@ -1,9 +1,10 @@
 <!doctype html>
-<html lang="en"><head><meta charset="utf-8"><title>Supplier questionnaire – save, then pick</title>
-<!-- undo-two-sections.html without section 2's Save draft: section 1 has typed answers and a Save draft; section 2 has
-     a pick (radio), topic checkboxes, a typed answer and an upload with its own Remove control and NO save, so the
-     section-2 pick and upload stay the newest writes after the session's last save while section 1's typed writes
-     sit in an earlier section and before a save. Same labels as undo-two-sections.html. No sign-in, no submit. -->
+<html lang="en"><head><meta charset="utf-8"><title>Undo fixture – save, then pick</title>
+<!-- undo-picks.html's wording split into two sections of one page, switched by "Next section" / "Previous section":
+     section 1 holds two typed answers (Legal entity name, City and country of headquarters) and a Save draft; section 2
+     holds the picks (ISO 14001 radio, topic checkboxes, nothing pre-selected) and the "Environmental policy" upload with
+     its own Remove, and NO save, so the section-2 pick and upload are written after the session's last save while
+     section 1's typed writes sit in an earlier section and before a save. No sign-in, no submit. -->
 <style>body{font-family:system-ui,sans-serif;max-width:820px;margin:24px auto;color:#1d2b24}section[hidden]{display:none}fieldset{border:1px solid #c8d3cd;border-radius:8px;margin:10px 0}label.block{display:block;font-weight:600;margin:10px 0 4px}input[type=text]{padding:6px;width:60%}button{padding:6px 12px;margin:6px 4px 0 0}</style>
 </head><body>
 <h1>Supplier questionnaire</h1>
@@ -20,13 +21,12 @@
   <fieldset><legend>Do you hold ISO 14001?</legend>
     <label><input type="radio" name="iso" value="yes"> Yes</label>
     <label><input type="radio" name="iso" value="no"> No</label></fieldset>
-  <fieldset><legend>Which topics does the environmental policy cover?</legend>
-    <label><input type="checkbox" name="topics" value="energy"> Energy consumption</label>
+  <fieldset><legend>Which topics?</legend>
+    <label><input type="checkbox" name="topics" value="climate"> Climate</label>
     <label><input type="checkbox" name="topics" value="water"> Water</label>
     <label><input type="checkbox" name="topics" value="waste"> Waste</label></fieldset>
-  <label class="block" for="policy_title">Title of the environmental policy document</label><input type="text" id="policy_title" name="policy_title">
   <div class="upload-block">
-    <label class="block" for="policy">Upload the environmental policy document</label>
+    <label class="block" for="policy">Environmental policy</label>
     <input type="file" id="policy" accept=".pdf,.docx">
     <span id="policy-name"></span>
     <button type="button" id="policy-remove" hidden>Remove</button>
@@ -39,7 +39,7 @@ const show = (n) => { document.getElementById('section-1').hidden = n !== 1; doc
 show(1);
 document.getElementById('next').addEventListener('click', () => show(2));
 document.getElementById('prev').addEventListener('click', () => show(1));
-for (const n of [1]) document.getElementById('save-' + n).addEventListener('click', () => { document.getElementById('saved-' + n).textContent = 'Draft saved'; });
+document.getElementById('save-1').addEventListener('click', () => { document.getElementById('saved-1').textContent = 'Draft saved'; });
 const policy = document.getElementById('policy');
 policy.addEventListener('change', () => {
   const file = policy.files[0];
