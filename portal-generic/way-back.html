@@ -1,0 +1,33 @@
+<!doctype html><html lang="en"><head><meta charset="utf-8"><title>Brekke Supplier Contact Form</title>
+<!-- A public one-section supplier form (no sign-in) whose second question, "Company Name", is the one a Twin can answer,
+     while the first, the contact person's name, is one it cannot. A fill in "verified answers" mode with only the email
+     verified leaves both name questions in Needs you, the answerable one second, so a tester can take the Needs-you
+     "Regenerate from the Twin" way to the Request from an item that is not the first and see where the way back lands.
+     Nothing is kept between page loads; Submit shows the answers. -->
+<style>
+body{font-family:system-ui,sans-serif;margin:0;background:#f4f5f8;color:#20242c}
+.form{max-width:760px;margin:28px auto;background:#fff;border-radius:10px;padding:28px 32px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+h1{font-size:22px;margin:0 0 4px}.sub{color:#5d6472;font-size:13px;margin-bottom:18px}h2{font-size:17px;margin:0 0 12px}
+.q{padding:12px 0;border-top:1px solid #eceef2}.q label{display:block;font-weight:600;font-size:15px;margin-bottom:6px}.req::after{content:" *";color:#c0262d}
+input{padding:8px;border:1px solid #cdd2db;border-radius:6px;font:inherit;width:70%}.err{color:#c0262d;font-size:13px;margin-top:4px}
+.actions{margin-top:22px;display:flex;gap:10px;justify-content:flex-end}
+button.primary{background:#2e5bd8;color:#fff;border:0;padding:10px 18px;border-radius:6px;font-size:15px;cursor:pointer}
+pre{background:#f4f5f8;padding:12px;border-radius:6px;font-size:12px}
+</style></head><body>
+<div class="form" id="form"></div>
+<script>
+const FIELDS=[
+ {id:'contact_name',label:'Full name of the contact person',kind:'text'},
+ {id:'company_name',label:'Company Name',kind:'text'},
+ {id:'contact_email',label:'Contact email address',kind:'email'}];
+const A={};let submitted=false;
+const esc=v=>String(v??'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;');
+function render(){const form=document.getElementById('form');
+ if(submitted){form.innerHTML=`<h1>Thank you</h1><div class="sub">Your submission has been received.</div><pre>${esc(JSON.stringify(A,null,1))}</pre>`;return}
+ form.innerHTML=`<h1>Brekke Supplier Contact Form</h1><div class="sub">Fields marked * are required.</div><h2>Supplier contact</h2>`+
+ FIELDS.map(f=>`<div class="q"><label for="${f.id}" class="req">${f.label}</label><input type="${f.kind}" id="${f.id}" name="${f.id}" value="${esc(A[f.id])}"><div class="err" id="e-${f.id}"></div></div>`).join('')+
+ `<div class="actions"><button type="button" class="primary" id="submit">Submit</button></div>`;
+ document.querySelectorAll('#form input').forEach(el=>{el.oninput=el.onchange=()=>{A[el.id]=el.value}});
+ document.getElementById('submit').onclick=()=>{let bad=false;FIELDS.forEach(f=>{const e=document.getElementById('e-'+f.id);e.textContent='';if(!String(A[f.id]??'').trim()){e.textContent='This field is required.';bad=true}});if(!bad){submitted=true;render()}};}
+render();
+</script></body></html>
