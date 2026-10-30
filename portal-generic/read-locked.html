@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Halvorsen Supplier Portal – Annual Supplier Questionnaire</title>
+<!-- A public questionnaire for reading a portal into a Request: three sections in the section list. Section 1 holds a
+     text, a single choice, a file and a grid (column headers and row labels); its "Next" opens section 2 with nothing
+     answered. Section 2 holds two questions and ends in "Submit section 2" (no Next). Section 3 is listed but locked
+     until section 2 is submitted, so a reading that never submits ends on section 2 and can only name section 3 as
+     locked. Nothing is kept between page loads. No sign-in. -->
+<style>
+body{font-family:system-ui,sans-serif;margin:0;background:#f4f5f8;color:#1d2433}
+header{background:#2b3f6b;color:#fff;padding:12px 24px}
+.wrap{display:flex;max-width:1100px;margin:20px auto;gap:20px;padding:0 16px}
+#sections{width:250px;background:#fff;border-radius:10px;padding:12px;height:fit-content;list-style:none;margin:0}
+#sections li{padding:10px;border-radius:6px;margin-bottom:6px;font-size:14px}
+#sections li.active{background:#e7ecf6;font-weight:600}#sections li.locked{color:#9aa1ad}
+main{flex:1;background:#fff;border-radius:10px;padding:24px 28px}
+.q{border-top:1px solid #e4e7ee;padding:14px 0}.q .t{font-weight:600}.q .h{font-size:12px;color:#5d6577;margin:2px 0 8px}
+input[type=text]{padding:8px;border:1px solid #c7ccd8;border-radius:6px;width:60%}
+table.mx{border-collapse:collapse;font-size:14px}table.mx th,table.mx td{border:1px solid #e4e7ee;padding:6px 10px;text-align:center}table.mx td:first-child{text-align:left}
+.actions{margin-top:22px;display:flex;gap:10px;justify-content:flex-end}
+button{padding:9px 16px;border-radius:6px;font-size:15px;cursor:pointer;border:1px solid #c7ccd8;background:#fff}
+button.primary{background:#2b3f6b;color:#fff;border:0}
+section[hidden]{display:none}
+.lockmsg{color:#5d6577;font-size:14px}
+</style></head><body>
+<header>Halvorsen Supplier Portal</header>
+<div class="wrap">
+<ul id="sections" aria-label="Questionnaire sections">
+  <li id="nav-1" class="active">1. Company profile</li>
+  <li id="nav-2">2. Operations</li>
+  <li id="nav-3" class="locked" aria-disabled="true">3. Declaration (locked until section 2 is submitted)</li>
+</ul>
+<main>
+<form id="f" onsubmit="return false">
+<section id="s1">
+  <h2>1. Company profile</h2>
+  <div class="q"><label class="t" for="legal_name">Legal entity name</label><div class="h">As registered in the commercial register.</div>
+    <input type="text" id="legal_name" name="legal_name"></div>
+  <div class="q"><div class="t" id="l-size">Company size category</div>
+    <div role="radiogroup" aria-labelledby="l-size">
+      <label><input type="radio" name="size" value="small"> Small (fewer than 50 employees)</label><br>
+      <label><input type="radio" name="size" value="medium"> Medium (50–249 employees)</label><br>
+      <label><input type="radio" name="size" value="large"> Large (250 or more employees)</label></div></div>
+  <div class="q"><label class="t" for="iso_cert">Upload your ISO 14001 certificate</label><div class="h">PDF, at most 10 MB.</div>
+    <input type="file" id="iso_cert" name="iso_cert" accept=".pdf"></div>
+  <div class="q"><div class="t" id="l-mx">For each resource, indicate your monitoring status</div><div class="h">One answer per row.</div>
+    <table class="mx" aria-labelledby="l-mx"><thead><tr><th>Resource</th><th>Not tracked</th><th>Tracked</th><th>Tracked with reduction target</th></tr></thead>
+    <tbody>
+      <tr><td>Energy</td><td><input type="radio" name="mx_energy" value="Not tracked" aria-label="Energy: Not tracked"></td><td><input type="radio" name="mx_energy" value="Tracked" aria-label="Energy: Tracked"></td><td><input type="radio" name="mx_energy" value="Tracked with reduction target" aria-label="Energy: Tracked with reduction target"></td></tr>
+      <tr><td>Water</td><td><input type="radio" name="mx_water" value="Not tracked" aria-label="Water: Not tracked"></td><td><input type="radio" name="mx_water" value="Tracked" aria-label="Water: Tracked"></td><td><input type="radio" name="mx_water" value="Tracked with reduction target" aria-label="Water: Tracked with reduction target"></td></tr>
+      <tr><td>Waste</td><td><input type="radio" name="mx_waste" value="Not tracked" aria-label="Waste: Not tracked"></td><td><input type="radio" name="mx_waste" value="Tracked" aria-label="Waste: Tracked"></td><td><input type="radio" name="mx_waste" value="Tracked with reduction target" aria-label="Waste: Tracked with reduction target"></td></tr>
+    </tbody></table></div>
+  <div class="actions"><button type="button" class="primary" id="next">Next</button></div>
+</section>
+<section id="s2" hidden>
+  <h2>2. Operations</h2>
+  <div class="q"><label class="t" for="sites">Number of production sites</label><input type="text" id="sites" name="sites"></div>
+  <div class="q"><div class="t" id="l-report">Do you publish an annual sustainability report?</div>
+    <div role="radiogroup" aria-labelledby="l-report">
+      <label><input type="radio" name="report" value="yes"> Yes</label>
+      <label><input type="radio" name="report" value="no"> No</label></div></div>
+  <div class="actions"><button type="button" id="prev">Previous</button><button type="button" class="primary" id="submit2">Submit section 2</button></div>
+</section>
+<section id="s3" hidden>
+  <h2>3. Declaration</h2>
+  <div class="q"><label><input type="checkbox" id="declare"> I declare that the information given is correct.</label></div>
+</section>
+<p class="lockmsg" id="lockmsg"></p>
+</form>
+</main>
+</div>
+<script>
+const show = (n) => { for (const i of [1, 2, 3]) { document.getElementById('s' + i).hidden = i !== n; document.getElementById('nav-' + i).classList.toggle('active', i === n); } };
+document.getElementById('next').addEventListener('click', () => show(2));
+document.getElementById('prev').addEventListener('click', () => show(1));
+document.getElementById('submit2').addEventListener('click', () => {
+  const nav = document.getElementById('nav-3');
+  nav.classList.remove('locked'); nav.removeAttribute('aria-disabled'); nav.textContent = '3. Declaration';
+  show(3);
+});
+</script>
+</body></html>
