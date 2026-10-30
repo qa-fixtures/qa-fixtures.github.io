@@ -1,0 +1,28 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Northwind Supplier Hub – Dashboard</title>
+<!-- BES-12996 fixture: a supplier dashboard with no questions of its own. "Enter questionnaire" opens the
+     questionnaire (new-window-questionnaire.html) in a new window with window.open(url, '_blank'), the way
+     EcoVadis opens its questionnaire from the supplier dashboard. No sign-in: the page is reachable as is. -->
+<style>
+body{font-family:system-ui,sans-serif;margin:0;background:#f4f5f8;color:#1d2433}
+header{background:#2b3a67;color:#fff;padding:12px 24px;display:flex;justify-content:space-between}
+main{max-width:860px;margin:32px auto;background:#fff;border-radius:10px;padding:28px}
+button{background:#2b3a67;color:#fff;border:0;padding:12px 20px;border-radius:6px;font-size:16px;cursor:pointer}
+.tile{border:1px solid #dde1ea;border-radius:8px;padding:16px;margin:16px 0}
+</style></head><body>
+<header><strong>Northwind Supplier Hub</strong><span>supplier@northwind-alloys.example</span></header>
+<main>
+  <h1>Supplier dashboard</h1>
+  <p>Hi, it looks like your company has not yet submitted the 2026 sustainability questionnaire.</p>
+  <div class="tile">
+    <h2>2026 Sustainability questionnaire</h2>
+    <p>Status: not started. The questionnaire opens in a new window.</p>
+    <button id="enter" type="button">Enter questionnaire</button>
+  </div>
+</main>
+<script>
+document.getElementById('enter').addEventListener('click', function () {
+  window.open(new URL('new-window-questionnaire.html', location.href).href, '_blank');
+});
+</script>
+</body></html>

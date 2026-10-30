@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8"><title>Questionnaire – 2026 Sustainability questionnaire</title>
+<!-- BES-12996 fixture: the questionnaire window new-window-dashboard.html opens with window.open. One section, four
+     plain labelled fields; values are kept in this window only (sessionStorage), nothing is sent anywhere. -->
+<style>
+body{font-family:system-ui,sans-serif;margin:0;background:#f4f5f8;color:#1d2433}
+header{background:#2b3a67;color:#fff;padding:12px 24px}
+main{max-width:860px;margin:32px auto;background:#fff;border-radius:10px;padding:28px}
+.q{border-top:1px solid #e3e6ee;padding:14px 0}label{display:block;font-weight:600;margin-bottom:6px}
+input,select{padding:8px;border:1px solid #c8cedb;border-radius:6px;font:inherit;width:60%}
+</style></head><body>
+<header><strong>QUESTIONNAIRE</strong> · 2026 Sustainability questionnaire · Northwind Alloys GmbH</header>
+<main>
+  <h1>Questionnaire: 2026 Sustainability questionnaire</h1>
+  <h2>Section 1. Company profile</h2>
+  <form id="f" onsubmit="return false">
+    <div class="q"><label for="legal_name">Legal entity name *</label><input type="text" id="legal_name" name="legal_name"></div>
+    <div class="q"><label for="employees">Number of employees (FTE) at the end of the last fiscal year *</label><input type="number" id="employees" name="employees"></div>
+    <div class="q"><label for="hq_country">Country of headquarters *</label>
+      <select id="hq_country" name="hq_country"><option value="">Select a country</option><option>Austria</option><option>France</option><option>Germany</option><option>Netherlands</option><option>Spain</option><option>United Kingdom</option></select></div>
+    <div class="q"><label for="website">Company website address</label><input type="text" id="website" name="website"></div>
+  </form>
+</main>
+<script>
+const KEY='nwq_state';
+const state=JSON.parse(sessionStorage.getItem(KEY)||'{}');
+for(const el of document.querySelectorAll('#f input,#f select')){
+  if(state[el.id]!==undefined)el.value=state[el.id];
+  el.addEventListener('change',()=>{state[el.id]=el.value;sessionStorage.setItem(KEY,JSON.stringify(state));});
+}
+</script>
+</body></html>
