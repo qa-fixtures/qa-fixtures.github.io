@@ -73,6 +73,14 @@
       "clear": [
         "measures"
       ]
+    },
+    "r510z1": {
+      "rev": 1,
+      "signOutRev": 0,
+      "set": {},
+      "clear": [
+        "measures"
+      ]
     }
   }
 }
