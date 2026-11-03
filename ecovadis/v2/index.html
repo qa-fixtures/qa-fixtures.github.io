@@ -15,8 +15,25 @@
   "Show more" expansion, the ENV605xs number+unit fields, where the last
   "Save & next" and the Subscription "Next" lead, and the logged-out view.
 
-  Safety: nothing is stored or sent anywhere. Every Save-type control and Submit only
-  increments the fixture counters in the fixture footer.
+  Icons: as on the live portal, every glyph on a control is an inline SVG icon with
+  aria-hidden="true", so a button or link reads by its text alone ("Save & next",
+  "Upload new document", ...). No glyph is part of any element's text.
+
+  Saved state: like the server-saving live portal, a Save-type action ("Save",
+  "Save & next", "Save & previous", the Subscription "Next") writes the page's answers,
+  option picks, text values, attached document names and chosen plan to localStorage
+  under "qa-fixture.ecovadis.v2.state"; a reload restores the last save. Unsaved typing
+  and picks survive hash navigation within one page load, never a reload. The footer
+  counters count this page load only. "Reset fixture state" in the footer, or ?reset=1
+  in the URL (removed from the address once applied), clears the saved state.
+
+  Variants (query string, read from location.search, survive hash routing):
+  ?cert=empty (default) leaves the GEN200xs certificate-name box empty;
+  ?cert=filled starts it with a neutral placeholder certificate name. A saved state,
+  when there is one, wins over the variant.
+
+  Safety: nothing is sent anywhere. Every Save-type control and Submit only increments
+  the fixture counters in the fixture footer; the saved state stays in this browser.
 -->
 <html lang="en" translate="yes" dir="ltr">
 <head>
@@ -99,11 +116,13 @@
   #fixture_footer output { font-weight: 700; }
   #fixture_notice { color: #8a4b00; }
   [role="tooltip"] { background: #333; color: #fff; padding: 8px 10px; border-radius: 4px; font-size: 12px; font-weight: 400; margin-top: 6px; max-width: 420px; }
+  svg.icon { width: 1.25em; height: 1.25em; fill: currentColor; vertical-align: middle; flex: none; }
+  [data-expanded="true"] svg.icon { transform: rotate(90deg); }
   @media (max-width: 760px) { .layout { flex-direction: column; } aside { width: auto; flex: none; } main { padding: 0 16px 24px; } [role="dialog"] { inset: 10% 4%; } }
 </style>
 </head>
 <body>
-<div id="fixture_banner" data-testid="fixture_banner" role="note">QA fixture — reproduces the EcoVadis questionnaire structure as of 2026-11-03; not affiliated with EcoVadis</div>
+<div id="fixture_banner" data-testid="fixture_banner" role="note">QA fixture — reproduces the EcoVadis questionnaire structure as of 2026-11-03; not affiliated with EcoVadis. Icons are SVG; saves persist in this browser until reset; ?cert=filled pre-fills the certificate name.</div>
 <div id="root">
   <div id="question-locker">
     <div data-testid="onboarding_layout">
@@ -140,7 +159,10 @@
   <span>Match with AI: <output data-testid="fixture_match_ai_count" id="fixture_match_ai_count">0</output></span>
   <span>Uploads (in memory): <output data-testid="fixture_upload_count" id="fixture_upload_count">0</output></span>
   <span>Last save: <output data-testid="fixture_last_save" id="fixture_last_save">—</output></span>
+  <span>Saved state: <output data-testid="fixture_saved_state" id="fixture_saved_state">none</output></span>
+  <button type="button" data-testid="fixture_reset_state" id="fixture_reset_state">Reset fixture state</button>
   <label><input type="checkbox" data-testid="fixture_unlock_submit" id="fixture_unlock_submit" /> Enable "Submit questionnaire" regardless of state</label>
+  <span>Saves persist in localStorage until reset (or ?reset=1); ?cert=filled pre-fills the GEN200xs certificate name.</span>
   <span id="fixture_notice" data-testid="fixture_notice" role="status" aria-live="polite"></span>
 </div>
 
@@ -173,13 +195,57 @@ const INTROS = {
 const PAGE_COUNT = 25;
 const LEVEL_FILLED = { VeryHigh: 4, High: 3, Medium: 2, Low: 1, None: 0 };
 
-// In-memory answers only. Initial state mirrors the capture: GEN200xs "Yes" picked, certificate name empty, no documents.
+// Initial state mirrors the capture: GEN200xs "Yes" picked, certificate name empty (or the ?cert=filled placeholder), no documents.
+// A Save-type action writes the in-memory state to localStorage, as the live portal saves on its server; a reload restores it.
+const STATE_KEY = 'qa-fixture.ecovadis.v2.state';
+const FILLED_CERTIFICATE = 'ISO 14001:2015 environmental management system certificate — Fixture Supplier Ltd';
+const params = new URLSearchParams(location.search);
 const answers = {}; // `${page}:${optionIndex}` -> { checked, extra, documents: [], metric: {} }
 const texts = {};   // page -> free text
 const ui = { expanded: {}, plan: null, currency: 'EUR', helpOpen: {}, showMore: {} };
 const counters = { save: 0, submit: 0, ai: 0, upload: 0 };
 function ans(page, index) { return (answers[`${page}:${index}`] ??= { checked: false, extra: '', documents: [], metric: { value: '', unit: '' } }); }
-ans(2, 0).checked = true;
+
+function readSavedState() {
+  try {
+    const raw = localStorage.getItem(STATE_KEY);
+    if (raw === null) return null;
+    const saved = JSON.parse(raw);
+    return saved && typeof saved === 'object' && saved.answers && typeof saved.answers === 'object' ? saved : null;
+  } catch (error) {
+    console.warn('Fixture: the saved state could not be read, starting clean', error);
+    return null;
+  }
+}
+function clearSavedState() {
+  try { localStorage.removeItem(STATE_KEY); } catch (error) { console.warn('Fixture: the saved state could not be cleared', error); }
+}
+function writeSavedState() {
+  const snapshot = { savedAt: new Date().toISOString(), answers, texts, plan: ui.plan, currency: ui.currency };
+  try { localStorage.setItem(STATE_KEY, JSON.stringify(snapshot)); } catch (error) { console.warn('Fixture: the state could not be saved', error); }
+  showSavedState(snapshot.savedAt);
+}
+function showSavedState(savedAt) { document.getElementById('fixture_saved_state').textContent = savedAt ? `saved ${savedAt}` : 'none'; }
+
+if (params.get('reset') === '1') {
+  clearSavedState();
+  params.delete('reset');
+  const query = params.toString();
+  history.replaceState(null, '', `${location.pathname}${query ? `?${query}` : ''}${location.hash}`);
+}
+const restored = readSavedState();
+if (restored) {
+  for (const [key, state] of Object.entries(restored.answers)) {
+    answers[key] = { checked: !!state.checked, extra: String(state.extra ?? ''), documents: Array.isArray(state.documents) ? state.documents.map((document) => ({ name: String(document.name) })) : [], metric: { value: String(state.metric?.value ?? ''), unit: String(state.metric?.unit ?? '') } };
+  }
+  for (const [page, text] of Object.entries(restored.texts || {})) texts[page] = String(text);
+  ui.plan = typeof restored.plan === 'string' ? restored.plan : null;
+  if (restored.currency === 'EUR' || restored.currency === 'USD') ui.currency = restored.currency;
+} else {
+  ans(2, 0).checked = true;
+  if (params.get('cert') === 'filled') ans(2, 0).extra = FILLED_CERTIFICATE;
+}
+showSavedState(restored ? restored.savedAt : null);
 
 function el(tag, attrs, ...children) {
   const node = document.createElement(tag);
@@ -191,6 +257,28 @@ function el(tag, attrs, ...children) {
   }
   for (const child of children.flat()) if (child !== null && child !== undefined && child !== false) node.append(child);
   return node;
+}
+// The live portal draws its glyphs as inline MUI SVG icons hidden from assistive technology, so they never join a control's name.
+const ICON_PATHS = {
+  NavigateNextIcon: 'M10 6 8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z',
+  ChevronRightIcon: 'M10 6 8.59 7.41 13.17 12l-4.58 4.59L10 18l6-6z',
+  NavigatePreviousIcon: 'M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z',
+  SearchOutlinedIcon: 'M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z',
+  UploadFileOutlinedIcon: 'M14 2H6c-1.1 0-1.99.9-1.99 2L4 20c0 1.1.89 2 1.99 2H18c1.1 0 2-.9 2-2V8l-6-6zm4 18H6V4h7v5h5v11zM8 15.01l1.41 1.41L11 14.84V19h2v-4.16l1.59 1.59L16 15.01 12.01 11 8 15.01z',
+  KeyboardArrowDownOutlinedIcon: 'M7.41 8.59 12 13.17l4.59-4.58L18 10l-6 6-6-6 1.41-1.41z',
+  ExpandMoreOutlinedIcon: 'M16.59 8.59 12 13.17 7.41 8.59 6 10l6 6 6-6-1.41-1.41z',
+  InfoOutlinedIcon: 'M11 7h2v2h-2zm0 4h2v6h-2zm1-9C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z',
+  AutoAwesomeIcon: 'm19 9 1.25-2.75L23 5l-2.75-1.25L19 1l-1.25 2.75L15 5l2.75 1.25zm0 6-1.25 2.75L15 19l2.75 1.25L19 23l1.25-2.75L23 19l-2.75-1.25zm-7.5-5.5L9 4 6.5 9.5 1 12l5.5 2.5L9 20l2.5-5.5L17 12l-5.5-2.5zm-1.51 3.49L9 15.17l-.99-2.18L5.83 12l2.18-.99L9 8.83l.99 2.18 2.18.99-2.18.99z',
+  WarningIcon: 'M11.5626 6.02957L18.4651 17.9554H4.66008L11.5626 6.02957ZM11.5626 2.37207L1.47925 19.7887H21.6459L11.5626 2.37207ZM12.4792 15.2054H10.6459V17.0387H12.4792V15.2054ZM12.4792 9.7054H10.6459V13.3721H12.4792V9.7054Z',
+};
+function icon(name, testid) {
+  const SVG_NS = 'http://www.w3.org/2000/svg';
+  const svg = document.createElementNS(SVG_NS, 'svg');
+  for (const [key, value] of Object.entries({ class: 'icon', focusable: 'false', 'aria-hidden': 'true', viewBox: '0 0 24 24', 'data-testid': testid || name })) svg.setAttribute(key, value);
+  const path = document.createElementNS(SVG_NS, 'path');
+  path.setAttribute('d', ICON_PATHS[name]);
+  svg.append(path);
+  return svg;
 }
 function bump(kind, label) {
   counters[kind] += 1;
@@ -246,7 +334,7 @@ function renderSidebar(current) {
           el('a', { tabindex: '0', title: '', 'aria-hidden': 'false', href: `#/questionnaire/${page}/${question.code}` }, el('span', { text: question.sidebar })),
           el('span', { 'data-testid': `onboarding_menu_question_status_target_${question.uuid}` },
             el('div', { 'data-testid': `onboarding_menu_question_status_${question.uuid}_status` },
-              qAttention ? el('div', { role: 'img', 'aria-label': 'Needs attention', tabindex: '0', 'aria-hidden': 'false', text: '⚠' }) : el('span', { 'data-testid': `onboarding_menu_question_status_${question.uuid}_empty` }))));
+              qAttention ? el('div', { role: 'img', 'aria-label': 'Needs attention', tabindex: '0', 'aria-hidden': 'false' }, icon('WarningIcon', `onboarding_menu_question_status_${question.uuid}_missing_warning`)) : el('span', { 'data-testid': `onboarding_menu_question_status_${question.uuid}_empty` }))));
       })));
     });
     return el('li', { 'data-testid': `onboarding_menu_theme_${theme.code}` },
@@ -254,9 +342,9 @@ function renderSidebar(current) {
         el('a', { 'data-testid': `onboarding_menu_theme_link_${theme.code}`, href: `#/questionnaire/${theme.page}/${theme.code}` }, el('span', { 'aria-hidden': 'true' }), el('span', { text: theme.name })),
         el('span', { 'data-testid': `onboarding_menu_theme_status_target_${theme.code}` },
           el('div', { 'data-testid': `onboarding_menu_theme_status_${theme.code}_status` },
-            attention ? el('div', { role: 'img', 'aria-label': 'Needs attention', tabindex: '0', 'aria-hidden': 'false', text: '⚠' }) : el('span', { 'data-testid': `onboarding_menu_theme_status_${theme.code}_empty` }))),
+            attention ? el('div', { role: 'img', 'aria-label': 'Needs attention', tabindex: '0', 'aria-hidden': 'false' }, icon('WarningIcon', `onboarding_menu_theme_status_${theme.code}_missing_warning`)) : el('span', { 'data-testid': `onboarding_menu_theme_status_${theme.code}_empty` }))),
         el('button', { type: 'button', 'aria-expanded': String(open), 'aria-controls': `onboarding_menu_theme_content_${theme.code}`, 'aria-label': `Toggle ${theme.name}`, 'data-testid': `onboarding_menu_toggle_${theme.code}`, 'data-action': 'toggle-theme', 'data-theme': theme.code },
-          el('span', { 'data-expanded': String(open), 'aria-hidden': 'true', text: open ? '⌄' : '›' }))),
+          el('span', { 'data-expanded': String(open), 'aria-hidden': 'true' }, icon('ChevronRightIcon')))),
       el('div', { class: `MuiCollapse-root collapse${open ? '' : ' hidden MuiCollapse-hidden'}` },
         el('div', {}, el('div', {}, el('div', { id: `onboarding_menu_theme_content_${theme.code}`, 'data-testid': `onboarding_menu_theme_children_${theme.code}` }, ...children)))));
   });
@@ -294,14 +382,14 @@ function upperbar() {
       el('div', {}, el('span', {}, el('span', { text: DEADLINE })))),
     el('div', {},
       el('div', {}, el('a', { 'data-testid': 'layout_upperbar_link_documents_library', href: '#/documents-library' }, el('span', { text: 'Document Library' }))),
-      el('div', {}, el('div', {}, el('button', { 'data-testid': 'layout_upperbar_link_download', 'data-action': 'download' }, el('span', { text: 'Download questionnaire' }), el('span', { text: ' ⌄' }))))));
+      el('div', {}, el('div', {}, el('button', { 'data-testid': 'layout_upperbar_link_download', 'data-action': 'download' }, el('span', { text: 'Download questionnaire' }), el('span', {}, icon('KeyboardArrowDownOutlinedIcon')))))));
 }
 function aiBanner() {
   return el('div', { 'data-testid': 'ai-matching-question-banner' },
     el('div', { 'data-testid': 'ai-matching-question-banner-content' },
       el('span', { text: 'Match your documents\nto questions with AI.' }),
       el('div', { 'data-testid': 'ai-matching-question-banner-beta-label', text: 'BETA' })),
-    el('div', {}, el('button', { class: 'pill primary', tabindex: '0', type: 'button', id: 'ai-matching-question-banner-start-btn', 'data-testid': 'ai-matching-question-banner-start-btn', 'data-action': 'match-ai' }, 'Match with AI', el('span', { text: ' ✦' }))));
+    el('div', {}, el('button', { class: 'pill primary', tabindex: '0', type: 'button', id: 'ai-matching-question-banner-start-btn', 'data-testid': 'ai-matching-question-banner-start-btn', 'data-action': 'match-ai' }, 'Match with AI', el('span', {}, icon('AutoAwesomeIcon', 'ai-matching-question-banner-btn-icon')))));
 }
 
 function renderIntroPage(page) {
@@ -322,8 +410,8 @@ function renderIntroPage(page) {
       el('a', { 'data-testid': 'indicator-popup-link', text: 'How are management indicators scored?' }))];
   }
   const bar = el('div', { class: 'bottomBar' },
-    page > 0 ? el('button', { 'data-testid': 'questionnaire_previous_page', type: 'button', class: 'linkBtn', id: '', 'data-action': 'previous' }, el('span', { 'aria-hidden': 'true', text: '‹ ' }), 'Previous') : el('span'),
-    el('div', { class: 'right' }, el('button', { 'data-testid': 'questionnaire_next_page', type: 'button', class: 'pill primary', id: '', 'data-action': 'next' }, 'Next')));
+    page > 0 ? el('button', { 'data-testid': 'questionnaire_previous_page', type: 'button', class: 'linkBtn', id: '', 'data-action': 'previous' }, icon('NavigatePreviousIcon', 'icon'), 'Previous') : el('span'),
+    el('div', { class: 'right' }, el('button', { 'data-testid': 'questionnaire_next_page', type: 'button', class: 'pill primary', id: '', 'data-action': 'next' }, 'Next', icon('NavigateNextIcon'))));
   return [el('div', { 'data-testid': 'vadis_root' }, ...content, bar)];
 }
 
@@ -363,8 +451,8 @@ function evidenceBlocks(page, index, option) {
       el('label', { for: `metric-unit-${option.uuid}`, text: 'Unit' }), unit));
   }
   blocks.push(el('div', { class: '_attachments' }, el('div', { 'data-testid': 'attachment_picker' }, el('div', {},
-    el('button', { 'data-testid': 'document-buttons-browse', type: 'button', id: '', 'data-action': 'browse', 'data-key': `${page}:${index}` }, el('span', { 'aria-hidden': 'true', text: '🔍 ' }), 'Select document from library'),
-    el('button', { 'data-testid': 'document-buttons-upload', type: 'button', id: '', 'data-action': 'upload', 'data-key': `${page}:${index}` }, el('span', { 'aria-hidden': 'true', text: '⇪ ' }), 'Upload new document')))));
+    el('button', { 'data-testid': 'document-buttons-browse', type: 'button', id: '', 'data-action': 'browse', 'data-key': `${page}:${index}` }, icon('SearchOutlinedIcon'), 'Select document from library'),
+    el('button', { 'data-testid': 'document-buttons-upload', type: 'button', id: '', 'data-action': 'upload', 'data-key': `${page}:${index}` }, icon('UploadFileOutlinedIcon'), 'Upload new document')))));
   state.documents.forEach((document, docIndex) => blocks.push(attachmentDetails(page, index, document, docIndex)));
   return blocks;
 }
@@ -411,7 +499,7 @@ function renderQuestionPage(page) {
       el('span', { class: 'badge', 'data-testid': 'question_label_badge_question_required', text: question.badge }),
       el('span', { class: 'badge', 'data-testid': 'question_label_badge_question_code', text: question.code }),
       question.impact ? el('div', { 'data-testid': `${question.uuid}_topSection_impactOnScore_${question.impact}`, style: 'display:inline-block' }, impactTag(question.impactFilled)) : null),
-    el('div', {}, question.textfield ? null : el('a', { 'data-testid': 'questionnaire-discover-how-we-score', href: '#', text: 'Discover how we score ⓘ' })));
+    el('div', {}, question.textfield ? null : el('a', { 'data-testid': 'questionnaire-discover-how-we-score', href: '#' }, 'Discover how we score', icon('InfoOutlinedIcon'))));
   let body;
   if (question.textfield) {
     const area = el('textarea', { 'data-testid': question.textfield.testid, rows: '4', title: 'Please specify', class: '_control', type: 'multiline', id: question.textfield.id, placeholder: '', autocomplete: 'off', 'data-page': page, 'data-field': 'text' });
@@ -430,10 +518,10 @@ function renderQuestionPage(page) {
         el('div', { class: '_groupLevel' }),
         el('div', { class: '_optionsWrapper' }, body)),
       el('div', { class: 'bottomBar' },
-        el('button', { 'data-testid': 'questionnaire_previous_page', type: 'button', class: 'linkBtn', id: '', 'data-action': 'save-previous' }, el('span', { 'aria-hidden': 'true', text: '‹ ' }), 'Save & previous'),
+        el('button', { 'data-testid': 'questionnaire_previous_page', type: 'button', class: 'linkBtn', id: '', 'data-action': 'save-previous' }, icon('NavigatePreviousIcon', 'icon'), 'Save & previous'),
         el('div', { class: 'right' },
           el('button', { 'data-testid': 'questionaire_intro_button', type: 'button', class: 'pill', id: '', 'data-action': 'save' }, 'Save'),
-          el('button', { 'data-testid': nextTestid, type: 'button', class: 'pill primary', id: '', 'data-action': 'save-next' }, 'Save & next', el('span', { 'aria-hidden': 'true', text: ' ›' })))))];
+          el('button', { 'data-testid': nextTestid, type: 'button', class: 'pill primary', id: '', 'data-action': 'save-next' }, 'Save & next', icon('NavigateNextIcon')))))];
 }
 
 function renderIntroduction() {
@@ -444,7 +532,7 @@ function renderIntroduction() {
       el('p', { 'data-testid': 'welcome_header_intro', text: 'Answer questions about your policies and practices, back them up with documents, and get your scorecard.' })),
     el('div', { 'data-testid': 'company_profile_card', class: 'card' },
       el('div', {}, el('h1', { 'data-testid': 'company_profile_card_title', text: 'Your company profile' }),
-        el('button', { tabindex: '0', type: 'button', 'aria-label': 'Collapse company profile', 'data-testid': 'company_profile_toggle_collapse', text: '⌃' })),
+        el('button', { tabindex: '0', type: 'button', 'aria-label': 'Collapse company profile', 'data-testid': 'company_profile_toggle_collapse' }, icon('ExpandMoreOutlinedIcon'), el('span'))),
       el('p', { 'data-testid': 'company_profile_card_subtitle', text: 'The questionnaire is tailored to this profile.' }),
       ...[['legal_entity_name', 'Legal entity', 'Fixture Supplier Ltd'], ['assessment_scope', 'Scope', 'Entity'], ['company_size', 'Company size', 'XS (up to 25 employees)'], ['industry', 'Industry', 'Information technology services']].map(([key, label, value]) =>
         el('div', { 'data-testid': `company_profile_${key}_field` }, el('p', { text: label }), el('p', { 'data-testid': `company_profile_${key}`, text: value }))),
@@ -547,7 +635,7 @@ function renderReview() {
   };
   const disclosure = (testid, idBase, title, pages) => el('div', { 'data-testid': testid, class: 'card' },
     el('div', {}, el('div', { id: `:${idBase}l:`, text: title }),
-      el('button', { tabindex: '0', type: 'button', 'aria-expanded': 'false', 'aria-controls': `:${idBase}m:`, 'aria-labelledby': `:${idBase}l:`, 'data-action': 'disclose', text: '⌄' })),
+      el('button', { tabindex: '0', type: 'button', 'aria-expanded': 'false', 'aria-controls': `:${idBase}m:`, 'aria-labelledby': `:${idBase}l:`, 'data-action': 'disclose' }, icon('ChevronRightIcon'), el('span'))),
     el('div', { id: `:${idBase}m:` }, el('div', { class: 'tableRow' }, el('div', { text: 'Question' }), el('div', { text: 'Theme' })), ...pages.map(row)));
   return [el('div', { 'data-testid': 'page_progress_report' },
     el('div', {}, el('h2', { 'data-testid': 'reviewAndSubmitHeader', text: 'Review & Submit' }),
@@ -654,6 +742,7 @@ document.addEventListener('submit', (event) => {
 });
 document.addEventListener('click', (event) => {
   if (event.target.id === 'topMenu_logoutLink') { navigate('#/logged-out'); return; }
+  if (event.target.id === 'fixture_reset_state') { clearSavedState(); location.reload(); return; }
   const button = event.target.closest('[data-action]');
   if (!button || button.matches('input')) return;
   const action = button.dataset.action;
@@ -668,10 +757,10 @@ document.addEventListener('click', (event) => {
   if (action === 'match-ai') { bump('ai'); notice('Match with AI intercepted by the fixture.'); return; }
   if (action === 'next') { navigate(hashFor(page + 1)); return; }
   if (action === 'previous') { navigate(hashFor(page - 1)); return; }
-  if (action === 'save') { bump('save', `Save on ${location.hash}`); notice('Saved (fixture counter only).'); return; }
-  if (action === 'save-previous') { bump('save', `Save & previous on ${location.hash}`); navigate(hashFor(page - 1)); return; }
-  if (action === 'save-next') { bump('save', `Save & next on ${location.hash}`); navigate(page + 1 < PAGE_COUNT ? hashFor(page + 1) : '#/account-information'); return; }
-  if (action === 'save-billing') { bump('save', 'Subscription Next (saveBillingInformations)'); navigate('#/progress-report'); return; }
+  if (action === 'save') { bump('save', `Save on ${location.hash}`); writeSavedState(); notice('Saved (fixture counter and this browser\'s localStorage only).'); return; }
+  if (action === 'save-previous') { bump('save', `Save & previous on ${location.hash}`); writeSavedState(); navigate(hashFor(page - 1)); return; }
+  if (action === 'save-next') { bump('save', `Save & next on ${location.hash}`); writeSavedState(); navigate(page + 1 < PAGE_COUNT ? hashFor(page + 1) : '#/account-information'); return; }
+  if (action === 'save-billing') { bump('save', 'Subscription Next (saveBillingInformations)'); writeSavedState(); navigate('#/progress-report'); return; }
   if (action === 'detach') { const [p, i, d] = button.dataset.key.split(':').map(Number); ans(p, i).documents.splice(d, 1); route(); return; }
   if (action === 'upload') {
     const [p, i] = button.dataset.key.split(':').map(Number);
