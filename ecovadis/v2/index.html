@@ -1,0 +1,696 @@
+<!doctype html>
+<!--
+  QA fixture — reproduces the EcoVadis supplier questionnaire structure as captured
+  signed in on 2026-11-03 (25 questionnaire pages, introduction, prepare evidence,
+  document library, subscription, review & submit). Not affiliated with EcoVadis.
+
+  Captured, kept as seen: routes, sidebar, data-testid values, element types, label
+  associations, aria attributes, question codes, question wording, option labels,
+  badges, button texts. Internal ids (uuids, cuids) are replaced by fake ids of the
+  same shape. Person, company, deadline and prices-of-account are placeholders.
+  Long help prose is shortened.
+
+  Reconstructed (NOT captured) and marked data-fixture-reconstructed="true":
+  the upload / library dialogs and the attached-document block, the "?" help panel,
+  "Show more" expansion, the ENV605xs number+unit fields, where the last
+  "Save & next" and the Subscription "Next" lead, and the logged-out view.
+
+  Safety: nothing is stored or sent anywhere. Every Save-type control and Submit only
+  increments the fixture counters in the fixture footer.
+-->
+<html lang="en" translate="yes" dir="ltr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Questionnaire</title>
+<style>
+  :root { --green: #5fa98a; --dark: #2f6b55; --ink: #222; --muted: #666; --line: #e3e3e3; --bg: #fff; }
+  * { box-sizing: border-box; }
+  body { margin: 0; font-family: "Noto Sans", Helvetica, Arial, sans-serif; color: var(--ink); background: var(--bg); font-size: 14px; }
+  #fixture_banner { background: #fff4c2; color: #5a4500; border-bottom: 1px solid #e0c96a; padding: 6px 16px; font-size: 12px; text-align: center; }
+  #topMenu_root { display: flex; align-items: center; justify-content: space-between; background: var(--green); color: #fff; height: 52px; padding: 0 16px; }
+  #topMenu_logo a { color: #fff; font-size: 22px; font-weight: 600; text-decoration: none; letter-spacing: .5px; }
+  #topMenu_userWelcome { font-style: italic; }
+  #topMenu_rightMenu { display: flex; gap: 24px; align-items: center; }
+  #topMenu_languages { position: relative; cursor: pointer; }
+  #topMenu_languages ._languageList { display: none; position: absolute; right: 0; top: 24px; background: #fff; color: #222; border: 1px solid var(--line); z-index: 5; }
+  #topMenu_languages:hover ._languageList { display: block; }
+  #topMenu_languages ul { list-style: none; margin: 0; padding: 4px 0; }
+  #topMenu_languages li { padding: 4px 12px; white-space: nowrap; }
+  #topMenu_logoutLink { color: #fff; cursor: pointer; }
+  .layout { display: flex; min-height: calc(100vh - 80px); }
+  aside { width: 248px; flex: 0 0 248px; border-right: 1px solid var(--line); padding: 16px; }
+  nav ul { list-style: none; margin: 0; padding: 0; }
+  nav h2 { font-size: 13px; font-weight: 400; color: var(--muted); margin: 18px 0 6px; }
+  nav a { color: var(--ink); text-decoration: none; display: inline-block; padding: 7px 0; }
+  nav a.active { font-weight: 700; }
+  .themeRow { display: flex; align-items: center; justify-content: space-between; gap: 6px; }
+  .themeRow button { background: none; border: 0; cursor: pointer; font-size: 14px; padding: 4px 6px; }
+  .collapse { overflow: hidden; }
+  .collapse.hidden { visibility: hidden; height: 0; }
+  .indicatorLabel { color: var(--muted); font-size: 12px; margin: 6px 0 2px 12px; }
+  .collapse ul a { padding: 4px 0 4px 12px; font-size: 13px; }
+  .progressbar { height: 6px; background: #ddd; border-radius: 3px; position: relative; width: 180px; display: inline-block; vertical-align: middle; }
+  .progressbar > span { position: absolute; left: 0; top: 0; bottom: 0; background: var(--dark); border-radius: 3px; }
+  .sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+  .uploadLimit { margin-top: 24px; background: #f6f6f6; border-radius: 6px; padding: 10px 12px; color: var(--muted); font-size: 12px; }
+  main { flex: 1; min-width: 0; padding: 0 40px 40px; }
+  [data-testid="layout_upperbar"] { display: flex; justify-content: space-between; align-items: center; box-shadow: 0 2px 4px #0001; padding: 12px 24px; margin-bottom: 24px; }
+  [data-testid="layout_upperbar"] a, [data-testid="layout_upperbar"] button { color: var(--ink); text-decoration: underline; background: none; border: 0; font: inherit; cursor: pointer; margin-left: 18px; }
+  #extend-deadline-modal-extend-link { color: var(--dark); text-decoration: underline; cursor: pointer; margin-left: 6px; }
+  [data-testid="ai-matching-question-banner"] { display: flex; justify-content: center; align-items: center; gap: 16px; background: #eef1f4; border-radius: 8px; padding: 12px; margin-bottom: 24px; }
+  [data-testid="ai-matching-question-banner-beta-label"] { display: inline-block; background: #dde7e2; font-size: 11px; padding: 2px 5px; margin-left: 6px; }
+  .pill { border-radius: 20px; padding: 8px 18px; border: 1px solid #bbb; background: #fff; cursor: pointer; font: inherit; }
+  .pill.primary { background: var(--dark); border-color: var(--dark); color: #fff; }
+  .pill:disabled { opacity: .45; cursor: not-allowed; }
+  .badge { display: inline-block; background: #eee; border-radius: 14px; padding: 4px 12px; margin-right: 8px; }
+  .qtop { display: flex; justify-content: space-between; align-items: center; }
+  [data-testid="impact-tag"] { display: inline-flex; gap: 6px; align-items: center; font-size: 12px; color: var(--muted); }
+  [data-testid="impact-circle-wrapper"] { display: inline-flex; gap: 2px; }
+  [data-testid="impact-circle-filled"], [data-testid="impact-circle-outlined"] { width: 8px; height: 8px; border-radius: 50%; border: 1px solid var(--dark); }
+  [data-testid="impact-circle-filled"] { background: var(--dark); }
+  h3._titleWrapper { font-size: 17px; margin: 18px 0; }
+  [data-testid="help_context_need_help"] { margin-left: 8px; border-radius: 50%; width: 22px; height: 22px; border: 1px solid #999; background: #fff; cursor: pointer; }
+  ._option { margin: 14px 0; }
+  ._control label { cursor: pointer; display: inline-flex; align-items: center; gap: 8px; font-weight: 600; }
+  [data-testid="option_help_context_message"] { margin: 6px 0 0 30px; color: var(--muted); font-size: 13px; }
+  [data-testid="option_help_context_message"] ._text { display: block; max-height: 20px; overflow: hidden; }
+  [data-testid="option_help_context_message"] p { margin: 0 0 4px; }
+  [data-testid="option_help_context_message"].open ._text { max-height: none; }
+  [data-testid="option_help_context_toggle_new"] { text-decoration: underline; cursor: pointer; }
+  ._extraValue, ._attachments, ._reconstructedMetric { margin: 8px 0 0 30px; }
+  ._extraValue label { display: block; font-size: 12px; color: var(--muted); }
+  ._extraValue textarea { width: 460px; max-width: 100%; min-height: 40px; border: 0; border-bottom: 1px solid #999; font: inherit; }
+  .shadowTextarea { visibility: hidden; position: absolute; overflow: hidden; height: 0; top: 0; left: 0; transform: translateZ(0); padding: 0; width: 460px; }
+  [data-testid="attachment_picker"] button { border-radius: 16px; border: 1px solid #bbb; background: #fff; padding: 6px 14px; margin-right: 10px; cursor: pointer; font: inherit; }
+  [data-testid="attachment_wrapper"] { border: 1px solid var(--line); border-radius: 6px; padding: 8px 12px; margin-top: 8px; }
+  ._textfield label { display: block; color: var(--muted); font-size: 12px; margin-bottom: 4px; }
+  ._textfield textarea { width: 100%; max-width: 700px; font: inherit; }
+  .bottomBar { display: flex; justify-content: space-between; align-items: center; margin-top: 40px; }
+  .bottomBar .right { display: flex; gap: 14px; }
+  .linkBtn { background: none; border: 0; color: var(--dark); cursor: pointer; font: inherit; }
+  .card { border: 1px solid var(--line); border-radius: 8px; padding: 16px; margin: 14px 0; }
+  .plans { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; }
+  table { border-collapse: collapse; width: 100%; }
+  td, th { text-align: left; border-bottom: 1px solid var(--line); padding: 6px; }
+  [role="dialog"] { position: fixed; inset: 15% 25%; background: #fff; border: 1px solid #999; padding: 16px; box-shadow: 0 4px 24px #0004; z-index: 10; overflow: auto; }
+  [role="dialog"] label { display: block; margin-top: 8px; }
+  #fixture_footer { border-top: 2px dashed #e0c96a; background: #fffbe6; padding: 10px 16px; font-size: 12px; display: flex; gap: 24px; flex-wrap: wrap; align-items: center; }
+  #fixture_footer output { font-weight: 700; }
+  #fixture_notice { color: #8a4b00; }
+  [role="tooltip"] { background: #333; color: #fff; padding: 8px 10px; border-radius: 4px; font-size: 12px; font-weight: 400; margin-top: 6px; max-width: 420px; }
+  @media (max-width: 760px) { .layout { flex-direction: column; } aside { width: auto; flex: none; } main { padding: 0 16px 24px; } [role="dialog"] { inset: 10% 4%; } }
+</style>
+</head>
+<body>
+<div id="fixture_banner" data-testid="fixture_banner" role="note">QA fixture — reproduces the EcoVadis questionnaire structure as of 2026-11-03; not affiliated with EcoVadis</div>
+<div id="root">
+  <div id="question-locker">
+    <div data-testid="onboarding_layout">
+      <div>
+        <div id="topMenu_root">
+          <div id="topMenu_logo" data-testid="topMenu_logo"><a href="#/introduction" aria-label="Introduction">ecovadis</a></div>
+          <div id="topMenu_userWelcome"><div>Hello, Alex Example</div></div>
+          <div id="topMenu_rightMenu">
+            <div id="topMenu_languages">
+              <div id="topMenu_currentLang" data-testid="top-bar-change-language">English</div>
+              <div class="_languageList"><ul id="langList"></ul></div>
+            </div>
+            <div id="topMenu_logout"><div><a id="topMenu_logoutLink">Logout</a></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="layout">
+        <aside data-testid="onboarding_layout_menu_slot">
+          <nav aria-label="Questionnaire navigation" data-testid="onboarding_menu" id="sidebar"></nav>
+        </aside>
+        <main data-testid="onboarding_layout_main">
+          <div data-testid="onboarding_layout_banner_slot" aria-hidden="true"></div>
+          <div id="upperbarSlot"></div>
+          <div id="page"></div>
+        </main>
+      </div>
+    </div>
+  </div>
+</div>
+<div id="fixture_footer" data-testid="fixture_footer" role="region" aria-label="Fixture-only controls">
+  <strong>Fixture only — not part of the portal.</strong>
+  <span>Saves: <output data-testid="fixture_save_count" id="fixture_save_count">0</output></span>
+  <span>Submits: <output data-testid="fixture_submit_count" id="fixture_submit_count">0</output></span>
+  <span>Match with AI: <output data-testid="fixture_match_ai_count" id="fixture_match_ai_count">0</output></span>
+  <span>Uploads (in memory): <output data-testid="fixture_upload_count" id="fixture_upload_count">0</output></span>
+  <span>Last save: <output data-testid="fixture_last_save" id="fixture_last_save">—</output></span>
+  <label><input type="checkbox" data-testid="fixture_unlock_submit" id="fixture_unlock_submit" /> Enable "Submit questionnaire" regardless of state</label>
+  <span id="fixture_notice" data-testid="fixture_notice" role="status" aria-live="polite"></span>
+</div>
+
+<script>
+const QUESTIONS = {"2": {"n": 2, "code": "GEN200xs", "uuid": "cfb6cbc8-70db-4664-ad98-af4ee6c3b22c", "badge": "Mandatory", "title": "Does your company have any certifications related to environmental, social, business ethics, or sustainable procurement issues (for example, ISO 14001, ISO 45001, SA8000, ISO 27001)?", "help": false, "impact": null, "impactFilled": null, "sidebar": "Sustainability Certifications", "nextTestid": "questionnaire_next_page", "options": [{"uuid": "45fae2cb-4e77-40dd-a59e-1efe3507d041", "kind": "radio", "inputId": "radio-cfxf5c05189beb5e157faf799", "text": "Yes", "helpHead": "Examples of documents to attach:", "helpItems": ["Environmental certificate (e.g., ISO 14001)", "Health and safety certificate (e.g., ISO 45001)", "Information security certificate (e.g., ISO 27001 or Cyber Essentials PLUS)"]}, {"uuid": "86037597-90a6-4e02-a518-13532e1881b8", "kind": "radio", "inputId": "radio-cfx299873d20886557652f3cf", "text": "No certifications yet/I don't know", "helpHead": null, "helpItems": []}]}, "3": {"n": 3, "code": "GEN800xs", "uuid": "6c385dd9-64e7-4f4d-a694-2e7ab493540c", "badge": "Optional", "title": "Please provide information about your company’s business activities and number of operational sites. Indicate if one or more sites has a significantly higher number of employees compared to other sites.", "help": true, "impact": null, "impactFilled": null, "sidebar": "Company information", "nextTestid": "questionnaire_next_page", "textfield": {"testid": "question_textfield_6c385dd9-64e7-4f4d-a694-2e7ab493540c", "id": "input-cfxfc76ecae852478321bfc6f"}, "options": []}, "6": {"n": 6, "code": "LAB100xs", "uuid": "e7ab18ac-9522-4c26-a54c-449d31372f13", "badge": "Mandatory", "title": "Does your company have a policy with qualitative objectives and quantitative targets for:", "help": false, "impact": "VeryHigh", "impactFilled": 4, "sidebar": "Labor & Human Rights Policies", "nextTestid": "questionnaire_next_page", "options": [{"uuid": "acd27269-d8d3-453d-a0b6-e956e7505088", "kind": "checkbox", "inputId": "checkbox-cfxd3a7cca280545e3f01f7af", "text": "Employee health and safety", "helpHead": "Examples of documents to attach", "helpItems": ["Employee Health and Safety Policy", "Employee Health and Safety Manual", "CEO letter with health and safety commitments"]}, {"uuid": "bccd1c9d-18f9-4caf-aa1d-f8119e1e2fe7", "kind": "checkbox", "inputId": "checkbox-cfxee9f56aa234791c78b5489", "text": "Working conditions", "helpHead": "Examples of documents to attach", "helpItems": ["Working Conditions Policy", "Minimum Wage Policy", "Adequate Remuneration Policy"]}, {"uuid": "69700762-d82d-4cb4-a8b6-70ab3d8b44d3", "kind": "checkbox", "inputId": "checkbox-cfxbcfd2c4cbb7c209c7e697c", "text": "Career management and training", "helpHead": "Examples of documents to attach", "helpItems": ["Career Development Policy", "Training Policy", "Skills Development Policy"]}, {"uuid": "3e9dfa27-454a-47ce-a083-d3e071c81b6d", "kind": "checkbox", "inputId": "checkbox-cfx9403d91e8474dd519f659f", "text": "Discrimination and Harassment", "helpHead": "Examples of documents to attach", "helpItems": ["Diversity and Inclusion Policy", "Anti-discrimination Policy", "Anti-harassment Policy"]}, {"uuid": "9d4a48da-e800-42b0-a11e-8a843bd2c19c", "kind": "checkbox", "inputId": "checkbox-cfxf3257d72de9611c92bd8ae", "text": "No policies yet/I don't know", "helpHead": null, "helpItems": []}]}, "8": {"n": 8, "code": "LAB313xs", "uuid": "d6244422-079a-418e-ac07-5cf3436af947", "badge": "Mandatory", "title": "What actions has your company implemented to address labor and human rights?", "help": true, "impact": "VeryHigh", "impactFilled": 4, "sidebar": "Labor & Human Rights Measures", "nextTestid": "questionnaire_next_page", "options": [{"uuid": "8fa226ee-4169-4f6c-a9e1-08236bf648f7", "kind": "checkbox", "inputId": "checkbox-cfx5e0a6a4ade407124213937", "text": "Health care coverage of employees", "helpHead": "Examples of documents to attach:", "helpItems": ["Detailed health care plan with your company name", "Health insurance program implementation record", "Employee handbook"]}, {"uuid": "4406d68a-423c-46e8-a8c6-311455e52c4b", "kind": "checkbox", "inputId": "checkbox-cfxdfb7c22767024ff6fdead7", "text": "Flexible organization of work available to employees", "helpHead": "Examples of documents to attach:", "helpItems": ["Employee handbook", "Employee contract", "Communication email"]}, {"uuid": "6e426fda-946a-414e-a18d-d23290349b20", "kind": "checkbox", "inputId": "checkbox-cfxdab6f1465dcadc65499216", "text": "Compensation for extra or atypical working hours", "helpHead": "Examples of documents to attach:", "helpItems": ["Pay slip", "Contract", "Employee handbook"]}, {"uuid": "2add1ff6-6552-4a74-a712-7271f7e7bbba", "kind": "checkbox", "inputId": "checkbox-cfxd1b8a1cdd1d83e4504f2bc", "text": "Family-friendly programs", "helpHead": "Examples of documents to attach:", "helpItems": ["Employee handbook", "Employee contract", "Communication email"]}, {"uuid": "6308e718-06fb-4c69-aaa0-2ad7e6db9772", "kind": "checkbox", "inputId": "checkbox-cfx336892426fc4c41130be5b", "text": "Skills development training", "helpHead": "Examples of documents to attach:", "helpItems": ["Training materials such as training slides", "Training progress or completion reports", "Course evaluation forms with course name, description, and list of participants"]}, {"uuid": "1cf98f0c-5c15-490e-a1c0-0d6b37cefd8d", "kind": "checkbox", "inputId": "checkbox-cfx6f3bfc2cbf755caec8d0e3", "text": "Regular assessment of individual performance", "helpHead": "Examples of documents to attach:", "helpItems": ["Completed employee performance evaluation forms", "Management guidelines on how to perform an annual assessment", "Performance review invitations sent to employees"]}, {"uuid": "ac013dbf-5c11-4dd8-a3c5-b46edd0a020b", "kind": "checkbox", "inputId": "checkbox-cfx741ae2f5b97e33ca999aa9", "text": "Employee health and safety risk assessment", "helpHead": "Examples of documents to attach", "helpItems": ["Internal health and safety risk assessments", "Safety procedures", "Safety matrix"]}, {"uuid": "3582f1b2-78bc-4a45-a13f-7490e0b931f0", "kind": "checkbox", "inputId": "checkbox-cfx49f7000eacc1600d0a0bee", "text": "Training of employees on health and safety risks and good working practices", "helpHead": "Examples of documents to attach:", "helpItems": ["Training materials (such as slide decks, training content summaries)", "Evidence of training execution (such as progress reports, certificates of completion)"]}, {"uuid": "df3a0fb2-3e11-4742-a339-a6cbc69f0235", "kind": "checkbox", "inputId": "checkbox-cfx353dfb518f3f4c5eb27069", "text": "Regular employee health check-up", "helpHead": "Examples of documents to attach:", "helpItems": ["Occupational health check-up report", "Health check arrangement", "Employee contract"]}, {"uuid": "f0c1cfaf-2168-44c9-aa0c-7d351e92663d", "kind": "checkbox", "inputId": "checkbox-cfx30fea34da21fae026c162a", "text": "Health and safety emergency action plan", "helpHead": "Examples of documents to attach:", "helpItems": ["Emergency procedure for employees in case of accident or injury", "Standard operating procedure for the provision of emergency equipment", "Emergency evacuation procedure"]}, {"uuid": "a0491b55-b95b-4c73-a4c0-039ab519cb39", "kind": "checkbox", "inputId": "checkbox-cfx781d3e2047435310535c32", "text": "Training of employees on discrimination and harassment", "helpHead": "Examples of documents to attach", "helpItems": ["Training materials (such as slide decks, training content summaries, etc.)", "Evidence of training execution (such as progress reports, certificates of completion, etc.)"]}, {"uuid": "481ed136-a92d-430d-a05f-1d3cbc8afb10", "kind": "checkbox", "inputId": "checkbox-cfx6b4ceb3b536bbfa0ecd29b", "text": "Actions to promote equal opportunity for all in the workplace", "helpHead": "Examples of documents to attach", "helpItems": ["Program implementation records", "Communication materials", "Employee handbook"]}, {"uuid": "f8982675-e65c-4f15-a821-d2f3ae72a6d8", "kind": "checkbox", "inputId": "checkbox-cfx0ea68933db2e4896b4a023", "text": "Other actions to address labor and human rights not included elsewhere in this question", "helpHead": "Your document should:", "helpItems": ["Any health and safety document", "Employee handbook"]}, {"uuid": "0398d94a-dda4-4df1-a4b1-d6cf171992d3", "kind": "checkbox", "inputId": "checkbox-cfxf767826bdaa9b5857395b2", "text": "No actions yet/I don't know", "helpHead": null, "helpItems": []}]}, "10": {"n": 10, "code": "LAB600xs", "uuid": "4adbc8e4-4a4a-4c32-abb7-43472646cb61", "badge": "Mandatory", "title": "On which of the following topics does your company report metrics?", "help": false, "impact": "High", "impactFilled": 3, "sidebar": "Labor & Human Rights Reporting", "nextTestid": "questionnaire_next_page", "options": [{"uuid": "ea485dbc-f725-4416-ab12-d90d1d2f896b", "kind": "checkbox", "inputId": "checkbox-cfx03737576ef1ffa59be8005", "text": "Employee health and safety", "helpHead": "Examples of documents to attach:", "helpItems": ["Internal Excel database on health and safety monitoring", "Health and safety training summary report", "Annual safety incident report"]}, {"uuid": "d72144bd-c47a-4b58-a11e-e6da0b931db0", "kind": "checkbox", "inputId": "checkbox-cfx77375c0356d55a4ffe8d63", "text": "Working conditions", "helpHead": "Examples of documents to attach:", "helpItems": ["Annual employee benefits report or internal Excel database", "Management presentation that includes reporting figures on employee working conditions", "Reporting section in your Sustainability report"]}, {"uuid": "6cdd6c20-ca4c-4e1c-aae0-f4340b000b3e", "kind": "checkbox", "inputId": "checkbox-cfx97270da051195ee88517c8", "text": "Career management and training", "helpHead": "Examples of documents to attach:", "helpItems": ["Internal Excel database on training", "Annual training report", "Management presentation that includes reporting figures on career management and training of employees"]}, {"uuid": "be510ac3-071c-4d83-a204-326779702238", "kind": "checkbox", "inputId": "checkbox-cfxdec07555115358b63a4351", "text": "Discrimination and harassment", "helpHead": "Examples of documents to attach", "helpItems": ["Internal excel database", "Annual social data report", "Management presentation that includes reporting on employee diversity and inclusion"]}, {"uuid": "66c6f340-c19b-42ad-ab37-eb9c362562e1", "kind": "checkbox", "inputId": "checkbox-cfxbdecce53b65f6376454d5a", "text": "No metrics yet/I don't know", "helpHead": null, "helpItems": []}]}, "13": {"n": 13, "code": "ENV102xs", "uuid": "05633a4f-24c3-4450-a839-ac291b893d27", "badge": "Mandatory", "title": "Does your company have a policy with qualitative objectives and quantitative targets for:", "help": false, "impact": "VeryHigh", "impactFilled": 4, "sidebar": "Environmental Policies", "nextTestid": "questionnaire_next_page", "options": [{"uuid": "5179e821-82b8-42d7-a551-c8ef80bdd9a5", "kind": "checkbox", "inputId": "checkbox-cfx8410b949c203f2e46ff6ac", "text": "Energy consumption and GHGs", "helpHead": "Examples of documents to attach", "helpItems": ["Environmental Policy", "CEO letter with environmental commitments", "Greenhouse gases (GHGs) or energy reduction policy"]}, {"uuid": "38b918c3-34f2-4470-a1dc-83a87e1fc230", "kind": "checkbox", "inputId": "checkbox-cfx283ae571daa8b16796ef74", "text": "Waste", "helpHead": "Examples of documents to attach", "helpItems": ["Environmental Policy", "CEO letter with environmental commitments", "Waste Management Policy"]}, {"uuid": "a6d89f1a-a7ef-41ec-a3ac-92055a5c5b92", "kind": "checkbox", "inputId": "checkbox-cfx97b2f00473f0aa20fd2324", "text": "No policies yet/I don't know", "helpHead": null, "helpItems": []}]}, "15": {"n": 15, "code": "ENV313xs", "uuid": "9baf260f-4613-4e3f-a3bf-ec0b8e179e5a", "badge": "Mandatory", "title": "What actions has your company implemented to reduce energy consumption and GHGs?", "help": true, "impact": "VeryHigh", "impactFilled": 4, "sidebar": "Energy Consumption & GHG Measures", "nextTestid": "questionnaire_next_page", "options": [{"uuid": "10674b27-83df-418e-a96a-5ea4c9c35ae0", "kind": "checkbox", "inputId": "checkbox-cfx6f7be86386558d3822b3ec", "text": "Improvement of energy efficiency through technology or equipment upgrades", "helpHead": "Examples of documents to attach:", "helpItems": ["Invoices or installation records of energy-efficient equipment", "Standard operation procedure related to energy management", "Work instructions"]}, {"uuid": "e0851f17-8197-4c87-a323-3adeb66e069f", "kind": "checkbox", "inputId": "checkbox-cfx64bb7a8b7ea52061e0b693", "text": "Actions to reduce emissions from transportation", "helpHead": "Examples of documents to attach:", "helpItems": ["Standard operation procedure related to fleet management", "Employee handbook", "Communication email covering employee commuting"]}, {"uuid": "a9ad60aa-a412-41dd-a06a-ab36714c936f", "kind": "checkbox", "inputId": "checkbox-cfx092b9e3c5cfaa1019993bf", "text": "Training of employees on energy conservation and climate action", "helpHead": "Examples of documents to attach:", "helpItems": ["Training materials (slide decks, training content summaries, etc.)", "Evidence of training execution (Training progress reports, certificates of completion, etc.)"]}, {"uuid": "e247554b-6f81-4d8f-aee2-6bc495dbeb8c", "kind": "checkbox", "inputId": "checkbox-cfx297493ed8ccdc69946f297", "text": "Purchase or generation of renewable energy", "helpHead": "Examples of documents to attach:", "helpItems": ["Standard operating procedure", "Contractual document with third parties", "Work instruction"]}, {"uuid": "dc6188d7-2f39-4a7a-a849-5b5c4583ab39", "kind": "checkbox", "inputId": "checkbox-cfxd635604dc89c7e225e6310", "text": "Other actions to reduce energy consumption and GHGs not included elsewhere in this question", "helpHead": "Your document should:", "helpItems": ["Standard operating procedure", "Work instruction", "Annual or Sustainability Report"]}, {"uuid": "c6e50713-aa06-4846-a6bc-0da01b062752", "kind": "checkbox", "inputId": "checkbox-cfxe78f22e807de129610fad5", "text": "No actions yet/I don't know", "helpHead": null, "helpItems": []}]}, "16": {"n": 16, "code": "ENV354xs", "uuid": "314c371c-b284-4703-aa07-c48b7234a02b", "badge": "Mandatory", "title": "What actions has your company implemented to manage waste?", "help": true, "impact": "VeryHigh", "impactFilled": 4, "sidebar": "Waste Management Measures", "nextTestid": "questionnaire_next_page", "options": [{"uuid": "33c6b1b1-1850-4f56-aea2-68cc3ebf9e43", "kind": "checkbox", "inputId": "checkbox-cfxd209c2a96e5b93ba8385c6", "text": "Actions to reuse or recycle office waste", "helpHead": "Examples of documents to attach:", "helpItems": ["Standard operation procedure for waste recycling", "Communication email to employees on waste management", "Contractual documents showing third parties appointed to recycle company waste"]}, {"uuid": "48530c69-a190-4bbc-a9e3-eb0188e557ff", "kind": "checkbox", "inputId": "checkbox-cfx05b7feaaf9b0fff85359b4", "text": "Actions to reduce paper consumption", "helpHead": "Examples of documents to attach:", "helpItems": ["Standard operation procedure for printing operations", "Communication email to employees regarding paper usage", "Training materials (slide decks, training content summaries) covering paper consumption"]}, {"uuid": "987ed9fe-25a1-4064-a8c9-d609c9e40bd3", "kind": "checkbox", "inputId": "checkbox-cfxd0dd71cda8419b9ffac0c0", "text": "Internal sorting and disposal of waste according to waste streams", "helpHead": "Examples of documents to attach:", "helpItems": ["Instructions for sorting of waste", "Invoice of waste sorting system", "Waste transportation or treatment contract"]}, {"uuid": "168a9ab2-a940-4068-a6b3-7abecbbb4669", "kind": "checkbox", "inputId": "checkbox-cfx44e3646b057f9306ab31ff", "text": "Training of employees on waste reduction and sorting", "helpHead": "Examples of documents to attach:", "helpItems": ["Training materials (slide decks, training content summaries, etc.)", "Evidence of training execution (Training progress reports, certificates of completion, etc.)"]}, {"uuid": "6b755cc2-46fc-4a54-a780-4cb35c06f746", "kind": "checkbox", "inputId": "checkbox-cfxb5aa3dc75819d749a48864", "text": "Other actions to manage waste not included elsewhere in this question", "helpHead": "Your document should:", "helpItems": ["Standard operating procedure", "Work instruction", "Annual or Sustainability Report"]}, {"uuid": "f89f6c1e-25c8-43f1-a76f-18c5ee1dd794", "kind": "checkbox", "inputId": "checkbox-cfxb5c48880a94f51c9b222db", "text": "No actions yet/I don't know", "helpHead": null, "helpItems": []}]}, "18": {"n": 18, "code": "ENV602xs", "uuid": "3f1445eb-0c26-48c6-a4e0-d9a47b737ecf", "badge": "Mandatory", "title": "On which of the following topics does your company report metrics?", "help": false, "impact": "High", "impactFilled": 3, "sidebar": "Environmental Reporting", "nextTestid": "questionnaire_next_page", "options": [{"uuid": "02c45df1-616f-45b8-a1ff-b48a25ce34ce", "kind": "checkbox", "inputId": "checkbox-cfx8ede4169fa4073281a34b5", "text": "Energy consumption and GHGs", "helpHead": "Examples of documents to attach", "helpItems": ["Internal Excel database", "Annual energy consumption report", "Annual greenhouse gas emissions report"]}, {"uuid": "665e0a3d-55f6-46f1-a953-d94057be2590", "kind": "checkbox", "inputId": "checkbox-cfx60b7f32fce017488c0c313", "text": "Waste", "helpHead": "Examples of documents to attach", "helpItems": ["Internal Excel database", "Annual waste management report", "Management presentation that includes annual waste production figures"]}, {"uuid": "2f3e8d71-884f-4da5-af24-cd06b78397f1", "kind": "checkbox", "inputId": "checkbox-cfx98ebd3162f37f812e1ca82", "text": "No metrics yet/I don't know", "helpHead": null, "helpItems": []}]}, "19": {"n": 19, "code": "ENV605xs", "uuid": "8fc74518-e884-4292-aa83-ba852b6150f3", "badge": "Mandatory", "title": "Please report on the following environmental metric:", "help": false, "impact": "High", "impactFilled": 3, "sidebar": "Energy Consumption Reporting", "nextTestid": "questionnaire_next_page", "options": [{"uuid": "ce9fd608-90d2-46f7-aaef-92264987dd50", "kind": "checkbox", "inputId": "checkbox-cfxb7615bed618270e4ef7568", "text": "Total energy consumption", "helpHead": "Examples of documents to attach:", "helpItems": ["Energy audit report", "Energy consumption report", "Internal energy tracking report"]}, {"uuid": "7d5bb5e0-12a4-44bf-a00a-3e084b8fb7ef", "kind": "checkbox", "inputId": "checkbox-cfx79339064610c76eea698ca", "text": "No metrics yet/I don't know", "helpHead": null, "helpItems": []}]}, "22": {"n": 22, "code": "FBP100xs", "uuid": "36f761e7-c0e8-4dbd-a0e9-168c52ef1bdc", "badge": "Mandatory", "title": "Does your company have a policy with qualitative objectives and quantitative targets for:", "help": false, "impact": "VeryHigh", "impactFilled": 4, "sidebar": "Business Ethics Policies", "nextTestid": "questionnaire_next_page", "options": [{"uuid": "558a1219-2d62-482a-a4d1-e280065cdd92", "kind": "checkbox", "inputId": "checkbox-cfxe634e965c44d841c01ae87", "text": "Corruption", "helpHead": "Examples of documents to attach", "helpItems": ["Code of Conduct with commitments related to anti-corruption & bribery", "Business Ethics Policy covering issues related to corruption", "CEO letter with anti-corruption commitments"]}, {"uuid": "7132ea72-4005-4ebd-a091-9b14f47de3ee", "kind": "checkbox", "inputId": "checkbox-cfxb28bd379fa36c47a7bdd62", "text": "Responsible information management", "helpHead": "Examples of documents to attach", "helpItems": ["Code of Conduct with commitments related to information security", "Business Ethics Policy covering data protection", "CEO letter with data protection or confidentiality commitments"]}, {"uuid": "ab3b0466-ca99-4b4d-a3db-38f9ce5edb95", "kind": "checkbox", "inputId": "checkbox-cfx499437afbf4d4eb914e5a8", "text": "No policies yet/I don't know", "helpHead": null, "helpItems": []}]}, "24": {"n": 24, "code": "FB330xs", "uuid": "209a8585-539d-4863-a45c-cb9863e9694b", "badge": "Mandatory", "title": "What actions has your company implemented to address business ethics?", "help": true, "impact": "VeryHigh", "impactFilled": 4, "sidebar": "Business Ethics Measures", "nextTestid": "questionnaire_finish_and_save", "options": [{"uuid": "f9c5f1b9-0323-4f5e-af6b-b5393f9eae41", "kind": "checkbox", "inputId": "checkbox-cfx2911187ecad4b23ce0df59", "text": "Specific approval procedure for sensitive transactions", "helpHead": "Examples of documents to attach", "helpItems": ["Standard operating procedures", "Work instructions", "Code of Ethics or Code of Conduct"]}, {"uuid": "911e4474-4882-4ac9-a702-8802b15e98f4", "kind": "checkbox", "inputId": "checkbox-cfxf2b889dccf5bd68bda45f2", "text": "Training of employees on corruption and bribery prevention", "helpHead": "Examples of documents to attach:", "helpItems": ["Training materials (slide decks, training content summaries, etc.)", "Evidence of training execution (Training progress reports, certificates of completion, etc.)"]}, {"uuid": "91965c91-3ca8-420c-a3c3-e7d19335d60e", "kind": "checkbox", "inputId": "checkbox-cfxb1551a3072d25e027ad590", "text": "Whistleblower procedure for stakeholders to report corruption and bribery", "helpHead": "Examples of documents to attach", "helpItems": ["Standalone whistleblower procedure", "Description of a procedure in an anti-corruption policy document", "Description of a procedure in a Code of Ethics or Code of Conduct"]}, {"uuid": "8c024942-7b81-422c-ab1e-5d01173ecbd0", "kind": "checkbox", "inputId": "checkbox-cfx0f2847c9928f7020a9cc3b", "text": "Measures to protect third party data from unauthorized access or disclosure", "helpHead": "Examples of documents to attach", "helpItems": ["Work instructions or procedures", "Subject access request procedure", "Description of functioning of firewalls"]}, {"uuid": "36a54520-d2ae-4621-a889-12a4a60ebb02", "kind": "checkbox", "inputId": "checkbox-cfx9dfe16699ef256a737f2d0", "text": "Training of employees on information security", "helpHead": "Examples of documents to attach", "helpItems": ["Training materials (such as slide decks, training content summaries, etc.)", "Evidence of training execution (such as progress reports, certificates of completion, etc.)"]}, {"uuid": "aa4cbd4b-5bc0-458e-a880-0994ff5dad94", "kind": "checkbox", "inputId": "checkbox-cfxa08428e57b976ece67d067", "text": "Whistleblower procedure for stakeholders to report information security concerns", "helpHead": "Examples of documents to attach", "helpItems": ["Standalone whistleblower procedure", "Description of a procedure in an information security policy document", "Description of a procedure in a Code of Ethics or Code of Conduct"]}, {"uuid": "dbb90985-863e-4288-affc-4f12365d1426", "kind": "checkbox", "inputId": "checkbox-cfx224f679b260d1b890a0e35", "text": "Other actions to address business ethics issues not included elsewhere in this question", "helpHead": "Your document should:", "helpItems": ["Standard operating procedure", "Work instruction", "Annual or Sustainability Report"]}, {"uuid": "ad4d7acb-635a-43c3-ab19-8b14d790862a", "kind": "checkbox", "inputId": "checkbox-cfx904c1b763bfdb336b19cf6", "text": "No actions yet/I don't know", "helpHead": null, "helpItems": []}]}};
+const DEADLINE = '23:59 CET, 31 Dec 2030';
+const LANGS = [['ar-001','العربية'],['de-DE','Deutsch'],['en-GB','English'],['es-ES','Español'],['fr-FR','Français'],['it-IT','Italiano'],['ja-JP','日本語'],['ko-KR','한국어'],['nl-NL','Nederlands'],['pl-PL','Polski'],['pt-BR','Português'],['th-TH','ไทย'],['tr-TR','Türkçe'],['zh-CN','中文']];
+const THEMES = [
+  { code: 'GEN', name: 'Cross-theme', page: 0, review: 'General', indicators: [['CERT', 'Certifications', [2]], [null, null, [3]]] },
+  { code: 'LAB', name: 'Labor & Human Rights', page: 4, review: 'Labor & Human Rights', indicators: [['POLI', 'Policies', [6]], ['MESU', 'Measures', [8]], ['REPO', 'Reporting', [10]]] },
+  { code: 'ENV', name: 'Environment', page: 11, review: 'Environment', indicators: [['POLI', 'Policies', [13]], ['MESU', 'Measures', [15, 16]], ['REPO', 'Reporting', [18, 19]]] },
+  { code: 'FBP', name: 'Ethics', page: 20, review: 'Ethics', indicators: [['POLI', 'Policies', [22]], ['MESU', 'Measures', [24]]] },
+];
+// Non-question pages of the questionnaire: theme intros and indicator intros.
+const INTROS = {
+  0: { type: 'theme', theme: 'GEN', title: 'Cross-theme', testid: 'questionnaire-theme-general-title', body: ['General questions that cover more than one theme: Environment, Labor & Human Rights, Ethics and Sustainable Procurement.', 'Covers sustainability principles and initiatives, KPI reporting standards, third-party assurance and materiality analysis.'] },
+  1: { type: 'indicator', code: 'CERT', title: 'Certifications', level: 'None', body: ['Certifications of your sustainability management system: management certificates and ecolabels.', 'Must be issued by an external certification body.'] },
+  4: { type: 'theme', theme: 'LAB', title: 'Labor & Human Rights', testid: 'questionnaire_theme_questionnaire_hws_endo_guidelines_lab', impactTestid: 'impact_questionnaire_hws_endo_guidelines_lab', filled: 3, contentTestid: 'theme-content-questionnaire_theme_laborText1', body: ['This theme focuses on labor rights and human rights.'], issues: ['Employee Health & Safety', 'Working Conditions', 'Career Management & Training', 'Discrimination and Harassment'] },
+  5: { type: 'indicator', code: 'POLI', title: 'Policies', level: 'VeryHigh', body: ['A policy is a set of objectives that addresses specific sustainability issues.'], link: 'Get more examples and best practices for developing policies' },
+  7: { type: 'indicator', code: 'MESU', title: 'Measures', level: 'VeryHigh', body: ['Actions that support your sustainability policies and commitments. Select options already implemented and provide documented proof.'], link: 'Learn more about the document requirements' },
+  9: { type: 'indicator', code: 'REPO', title: 'Reporting', level: 'High', body: ['Quantitative KPIs that measure your implementation of sustainability practices, with reporting year and unit.'], link: 'Learn more about the document requirements' },
+  11: { type: 'theme', theme: 'ENV', title: 'Environment', testid: 'questionnaire_theme_questionnaire_theme_environment', impactTestid: 'impact_questionnaire_theme_environment', filled: 1, contentTestid: 'theme-content-questionnaire_theme_laborText1', body: ['This theme focuses on environmental management of operations and of products and services.'], issues: ['Energy consumption & GHGs', 'Materials, Chemicals & Waste'] },
+  12: { type: 'indicator', code: 'POLI', title: 'Policies', level: 'VeryHigh', body: ['A policy is a set of objectives that addresses specific sustainability issues.'], link: 'Get more examples and best practices for developing policies' },
+  14: { type: 'indicator', code: 'MESU', title: 'Measures', level: 'VeryHigh', body: ['Actions that support your sustainability policies and commitments. Select options already implemented and provide documented proof.'], link: 'Learn more about the document requirements' },
+  17: { type: 'indicator', code: 'REPO', title: 'Reporting', level: 'High', body: ['Quantitative KPIs that measure your implementation of sustainability practices, with reporting year and unit.'], link: 'Learn more about the document requirements' },
+  20: { type: 'theme', theme: 'FBP', title: 'Ethics', testid: 'questionnaire_theme_questionnaire_theme_ethics', impactTestid: 'impact_questionnaire_theme_ethics', filled: 1, contentTestid: 'theme-content-questionnaire_theme_ethicsText1', body: ['This theme focuses on business ethics issues such as corruption, anticompetitive practices and poor information management.'], issues: ['Corruption', 'Responsible Information Management'] },
+  21: { type: 'indicator', code: 'POLI', title: 'Policies', level: 'VeryHigh', body: ['A policy is a set of objectives that addresses specific sustainability issues.'], link: 'Get more examples and best practices for developing policies' },
+  23: { type: 'indicator', code: 'MESU', title: 'Measures', level: 'VeryHigh', body: ['Actions that support your sustainability policies and commitments. Select options already implemented and provide documented proof.'], link: 'Learn more about the document requirements' },
+};
+const PAGE_COUNT = 25;
+const LEVEL_FILLED = { VeryHigh: 4, High: 3, Medium: 2, Low: 1, None: 0 };
+
+// In-memory answers only. Initial state mirrors the capture: GEN200xs "Yes" picked, certificate name empty, no documents.
+const answers = {}; // `${page}:${optionIndex}` -> { checked, extra, documents: [], metric: {} }
+const texts = {};   // page -> free text
+const ui = { expanded: {}, plan: null, currency: 'EUR', helpOpen: {}, showMore: {} };
+const counters = { save: 0, submit: 0, ai: 0, upload: 0 };
+function ans(page, index) { return (answers[`${page}:${index}`] ??= { checked: false, extra: '', documents: [], metric: { value: '', unit: '' } }); }
+ans(2, 0).checked = true;
+
+function el(tag, attrs, ...children) {
+  const node = document.createElement(tag);
+  for (const [key, value] of Object.entries(attrs || {})) {
+    if (value === false || value === null || value === undefined) continue;
+    if (key === 'text') node.textContent = value;
+    else if (key === 'class') node.className = value;
+    else node.setAttribute(key, value === true ? '' : value);
+  }
+  for (const child of children.flat()) if (child !== null && child !== undefined && child !== false) node.append(child);
+  return node;
+}
+function bump(kind, label) {
+  counters[kind] += 1;
+  const ids = { save: 'fixture_save_count', submit: 'fixture_submit_count', ai: 'fixture_match_ai_count', upload: 'fixture_upload_count' };
+  document.getElementById(ids[kind]).textContent = String(counters[kind]);
+  if (kind === 'save') document.getElementById('fixture_last_save').textContent = label;
+}
+function notice(message) { document.getElementById('fixture_notice').textContent = message; }
+
+function questionPages() { return Object.keys(QUESTIONS).map(Number).sort((a, b) => a - b); }
+function isAnswered(page) {
+  const question = QUESTIONS[page];
+  if (question.textfield) return (texts[page] || '').trim() !== '';
+  return question.options.some((_, index) => ans(page, index).checked);
+}
+function mandatoryPages() { return questionPages().filter((page) => QUESTIONS[page].badge === 'Mandatory'); }
+function progress() { const all = mandatoryPages(); return { done: all.filter(isAnswered).length, total: all.length }; }
+function percent() { const { done, total } = progress(); return Math.round((done / total) * 100); }
+function needsDocs(page) { return QUESTIONS[page].options.some((option, index) => ans(page, index).checked && option.helpHead && ans(page, index).documents.length === 0); }
+function themeOf(page) { return THEMES.filter((theme) => theme.page <= page).pop(); }
+function hashFor(page) {
+  if (QUESTIONS[page]) return `#/questionnaire/${page}/${QUESTIONS[page].code}`;
+  const theme = THEMES.find((candidate) => candidate.page === page);
+  return theme ? `#/questionnaire/${page}/${theme.code}` : `#/questionnaire/${page}`;
+}
+
+function impactTag(filled) {
+  return el('span', { 'data-testid': 'impact-tag' },
+    el('span', { 'data-testid': 'impact-tag-label', text: 'Impact on score' }),
+    el('div', { 'data-testid': 'impact-circle-wrapper' }, ...[0, 1, 2, 3].map((i) => el('div', { 'data-testid': i < filled ? 'impact-circle-filled' : 'impact-circle-outlined' }))));
+}
+function renderLanguages() {
+  document.getElementById('langList').replaceChildren(...LANGS.map(([code, name]) => el('li', { id: `topMenu_language_${code}`, 'data-testid': `topMenu_language_${code}`, class: code === 'en-GB' ? '_isActiveLang' : '' }, el('a', { text: name }))));
+}
+
+function renderSidebar(current) {
+  const nav = document.getElementById('sidebar');
+  const pct = percent();
+  const link = (testid, itemId, href, label) => el('li', { 'data-testid': testid, 'data-item-id': itemId },
+    el('a', { href, class: current === href ? 'active' : '', 'aria-current': current === href ? 'page' : false },
+      el('span', { 'aria-hidden': 'true' }), el('span', { text: label })));
+  const themeItems = THEMES.map((theme) => {
+    const open = !!ui.expanded[theme.code];
+    const pages = theme.indicators.flatMap(([, , list]) => list);
+    const attention = pages.some((page) => isAnswered(page) && needsDocs(page));
+    const children = [];
+    theme.indicators.forEach(([code, label, list]) => {
+      if (code) children.push(el('div', { 'data-testid': `onboarding_menu_indicator_${theme.code}_${code}`, class: 'indicatorLabel', text: label }));
+      children.push(el('ul', {}, ...list.map((page) => {
+        const question = QUESTIONS[page];
+        const qAttention = isAnswered(page) && needsDocs(page);
+        return el('li', { 'data-testid': `onboarding_menu_question_${question.uuid}` },
+          el('a', { tabindex: '0', title: '', 'aria-hidden': 'false', href: `#/questionnaire/${page}/${question.code}` }, el('span', { text: question.sidebar })),
+          el('span', { 'data-testid': `onboarding_menu_question_status_target_${question.uuid}` },
+            el('div', { 'data-testid': `onboarding_menu_question_status_${question.uuid}_status` },
+              qAttention ? el('div', { role: 'img', 'aria-label': 'Needs attention', tabindex: '0', 'aria-hidden': 'false', text: '⚠' }) : el('span', { 'data-testid': `onboarding_menu_question_status_${question.uuid}_empty` }))));
+      })));
+    });
+    return el('li', { 'data-testid': `onboarding_menu_theme_${theme.code}` },
+      el('div', { class: 'themeRow' },
+        el('a', { 'data-testid': `onboarding_menu_theme_link_${theme.code}`, href: `#/questionnaire/${theme.page}/${theme.code}` }, el('span', { 'aria-hidden': 'true' }), el('span', { text: theme.name })),
+        el('span', { 'data-testid': `onboarding_menu_theme_status_target_${theme.code}` },
+          el('div', { 'data-testid': `onboarding_menu_theme_status_${theme.code}_status` },
+            attention ? el('div', { role: 'img', 'aria-label': 'Needs attention', tabindex: '0', 'aria-hidden': 'false', text: '⚠' }) : el('span', { 'data-testid': `onboarding_menu_theme_status_${theme.code}_empty` }))),
+        el('button', { type: 'button', 'aria-expanded': String(open), 'aria-controls': `onboarding_menu_theme_content_${theme.code}`, 'aria-label': `Toggle ${theme.name}`, 'data-testid': `onboarding_menu_toggle_${theme.code}`, 'data-action': 'toggle-theme', 'data-theme': theme.code },
+          el('span', { 'data-expanded': String(open), 'aria-hidden': 'true', text: open ? '⌄' : '›' }))),
+      el('div', { class: `MuiCollapse-root collapse${open ? '' : ' hidden MuiCollapse-hidden'}` },
+        el('div', {}, el('div', {}, el('div', { id: `onboarding_menu_theme_content_${theme.code}`, 'data-testid': `onboarding_menu_theme_children_${theme.code}` }, ...children)))));
+  });
+  nav.replaceChildren(el('div', {},
+    el('div', { 'data-testid': 'onboarding_menu_assessment_progress' },
+      el('div', {}, el('span', { 'data-testid': 'onboarding_menu_assessment_progress_label', text: 'Assessment progress' })),
+      el('div', {},
+        el('div', { tabindex: '0', 'aria-pressed': 'false' },
+          el('span', { class: 'progressbar', role: 'progressbar', 'aria-valuenow': String(pct), 'aria-valuemin': '0', 'aria-valuemax': '100', 'data-testid': 'onboarding_menu_assessment_progress_bar' }, el('span', { style: `width:${pct}%` })),
+          el('span', { class: 'sr', text: `Assessment progress ${pct}%` })),
+        el('span', { 'data-testid': 'onboarding_menu_assessment_progress_value', text: ` ${pct}%` }))),
+    el('section', { 'aria-labelledby': 'onboarding_menu_group_get_started_heading', 'data-testid': 'onboarding_menu_group_get_started' },
+      el('h2', { id: 'onboarding_menu_group_get_started_heading', 'data-testid': 'onboarding_menu_group_get_started_heading', text: 'Get started' }),
+      el('ul', {},
+        link('onboarding_menu_link_introduction', 'introduction', '#/introduction', 'Introduction'),
+        link('onboarding_menu_link_useful_resources', 'useful_resources', '#/useful-resources', 'Useful resources'),
+        link('onboarding_menu_link_my_team', 'my_team', '#/collaboration', 'My team'),
+        link('onboarding_menu_link_prepare_evidence', 'prepare_evidence', '#/prepare-evidence', 'Prepare evidence'),
+        link('onboarding_menu_link_document_library', 'document_library', '#/documents-library', 'Document library'))),
+    el('section', { 'aria-labelledby': 'onboarding_menu_group_questionnaire_heading', 'data-testid': 'onboarding_menu_group_questionnaire' },
+      el('h2', { id: 'onboarding_menu_group_questionnaire_heading', 'data-testid': 'onboarding_menu_group_questionnaire_heading', text: 'Questionnaire' }),
+      el('ul', {}, ...themeItems,
+        link('onboarding_menu_link_subscription', 'subscription', '#/account-information', 'Subscription'),
+        link('onboarding_menu_link_review_and_submit', 'review_and_submit', '#/progress-report', 'Review and Submit')))),
+    el('div', { 'data-testid': 'onboarding_menu_document_upload_limit', class: 'uploadLimit' }, el('p', { text: 'You can upload 55 more documents' })));
+}
+
+function upperbar() {
+  return el('div', { 'data-testid': 'layout_upperbar' },
+    el('div', {},
+      el('div', {},
+        el('div', { 'data-testid': 'deadline-dot-indicator', tabindex: '0', 'aria-hidden': 'false' }, el('div', { 'data-testid': 'deadline-dot-indicator-grey' })),
+        el('span', { text: 'Deadline:' }),
+        el('span', { 'data-testid': 'extend-deadline-modal' }, el('span', { id: 'extend-deadline-modal-extend-link', 'data-testid': 'extend-deadline-modal-extend-link', text: 'Extend' }))),
+      el('div', {}, el('span', {}, el('span', { text: DEADLINE })))),
+    el('div', {},
+      el('div', {}, el('a', { 'data-testid': 'layout_upperbar_link_documents_library', href: '#/documents-library' }, el('span', { text: 'Document Library' }))),
+      el('div', {}, el('div', {}, el('button', { 'data-testid': 'layout_upperbar_link_download', 'data-action': 'download' }, el('span', { text: 'Download questionnaire' }), el('span', { text: ' ⌄' }))))));
+}
+function aiBanner() {
+  return el('div', { 'data-testid': 'ai-matching-question-banner' },
+    el('div', { 'data-testid': 'ai-matching-question-banner-content' },
+      el('span', { text: 'Match your documents\nto questions with AI.' }),
+      el('div', { 'data-testid': 'ai-matching-question-banner-beta-label', text: 'BETA' })),
+    el('div', {}, el('button', { class: 'pill primary', tabindex: '0', type: 'button', id: 'ai-matching-question-banner-start-btn', 'data-testid': 'ai-matching-question-banner-start-btn', 'data-action': 'match-ai' }, 'Match with AI', el('span', { text: ' ✦' }))));
+}
+
+function renderIntroPage(page) {
+  const intro = INTROS[page];
+  let content;
+  if (intro.type === 'theme') {
+    const blocks = [el('div', {}, el('div', { text: 'Theme' }),
+      el('div', { 'data-testid': intro.testid }, intro.title, intro.impactTestid ? el('div', { 'data-testid': intro.impactTestid }, impactTag(intro.filled)) : null))];
+    blocks.push(el('div', intro.contentTestid ? { 'data-testid': intro.contentTestid } : {}, ...intro.body.map((text) => el('p', { text }))));
+    if (intro.issues) blocks.push(el('div', {},
+      el('div', {}, el('span', {}, el('b', { text: 'Sustainability issues' }), ' relevant for your company:'), el('a', { href: '#', text: 'View your Industry Risk Profile' })),
+      el('div', { 'data-testid': 'sustainability-issues' }, ...intro.issues.map((issue) => el('div', { text: issue }))),
+      el('p', { text: 'How do sustainability issues affect your score?' })));
+    content = blocks;
+  } else {
+    content = [el('div', {}, el('div', {}, 'Indicator', el('p', {}, intro.title, el('div', { 'data-testid': `indicator-impact-${intro.code}-${intro.level}` }, intro.level === 'None' ? null : impactTag(LEVEL_FILLED[intro.level])))),
+      el('div', {}, ...intro.body.map((text) => el('p', { text })), intro.link ? el('a', { href: '#', text: intro.link }) : null),
+      el('a', { 'data-testid': 'indicator-popup-link', text: 'How are management indicators scored?' }))];
+  }
+  const bar = el('div', { class: 'bottomBar' },
+    page > 0 ? el('button', { 'data-testid': 'questionnaire_previous_page', type: 'button', class: 'linkBtn', id: '', 'data-action': 'previous' }, '‹ Previous') : el('span'),
+    el('div', { class: 'right' }, el('button', { 'data-testid': 'questionnaire_next_page', type: 'button', class: 'pill primary', id: '', 'data-action': 'next' }, 'Next')));
+  return [el('div', { 'data-testid': 'vadis_root' }, ...content, bar)];
+}
+
+function optionHelp(page, index, option) {
+  if (!option.helpHead) return null;
+  const key = `${page}:${index}`;
+  const open = !!ui.showMore[key];
+  return el('div', { class: `_optionHelpContext${open ? ' open' : ''}`, 'data-testid': 'option_help_context_message' },
+    el('span', { class: '_text' }, el('p', {}, el('strong', { text: option.helpHead })), option.helpItems.length ? el('ul', {}, ...option.helpItems.map((item) => el('li', { text: item }))) : null),
+    el('span', { 'data-testid': 'option_help_context_toggle_new', 'data-action': 'show-more', 'data-key': key, 'data-fixture-reconstructed': open ? 'true' : false, text: open ? 'Show less' : 'Show more' }));
+}
+
+function evidenceBlocks(page, index, option) {
+  const state = ans(page, index);
+  if (!state.checked || !option.helpHead) return [];
+  const blocks = [];
+  if (QUESTIONS[page].code === 'GEN200xs') {
+    // Captured: the "Yes" option carries a required certificate name (MUI TextField, no required attribute; the "*" is label text).
+    const textarea = el('textarea', { 'aria-invalid': 'false', 'aria-describedby': ':r3r:-helper-text', id: ':r3r:', 'data-testid': 'option_extra_value', class: 'MuiInputBase-input MuiInputBase-inputMultiline', 'data-page': page, 'data-index': index, 'data-field': 'extra' });
+    textarea.value = state.extra;
+    blocks.push(el('div', { class: '_extraValue', 'data-testid': 'please_specify_questionnaire' },
+      el('div', {}, el('div', {}, el('div', { class: 'MuiFormControl-root MuiTextField-root' },
+        el('label', { class: 'MuiFormLabel-root MuiInputLabel-root', 'data-shrink': 'true', for: ':r3r:', id: ':r3r:-label', text: 'Enter the name of the certificate you’re attaching *' }),
+        el('div', { class: 'MuiInputBase-root', style: 'position:relative' }, textarea,
+          el('textarea', { 'aria-hidden': 'true', class: 'MuiInputBase-input shadowTextarea', readonly: true, tabindex: '-1' })),
+        el('p', { class: 'MuiFormHelperText-root', id: ':r3r:-helper-text' }, el('span', { class: 'notranslate', text: '​' })))))));
+    blocks.push(el('div', { class: '_PropertyItemsWrapper' }));
+  }
+  if (QUESTIONS[page].code === 'ENV605xs') {
+    const value = el('input', { type: 'number', id: `metric-value-${option.uuid}`, 'data-testid': `option_${option.uuid}_metric_value`, 'data-page': page, 'data-index': index, 'data-field': 'metric-value' });
+    value.value = state.metric.value;
+    const unit = el('select', { id: `metric-unit-${option.uuid}`, 'data-testid': `option_${option.uuid}_metric_unit`, 'data-page': page, 'data-index': index, 'data-field': 'metric-unit' },
+      el('option', { value: '', text: 'Select unit' }), ...['kWh', 'MWh', 'GWh', 'GJ'].map((unitName) => el('option', { value: unitName, text: unitName })));
+    unit.value = state.metric.unit;
+    blocks.push(el('div', { class: '_reconstructedMetric', 'data-fixture-reconstructed': 'true' },
+      el('label', { for: `metric-value-${option.uuid}`, text: 'Value' }), value, ' ',
+      el('label', { for: `metric-unit-${option.uuid}`, text: 'Unit' }), unit));
+  }
+  blocks.push(el('div', { class: '_attachments' }, el('div', { 'data-testid': 'attachment_picker' }, el('div', {},
+    el('button', { 'data-testid': 'document-buttons-browse', type: 'button', id: '', 'data-action': 'browse', 'data-key': `${page}:${index}` }, '🔍 ', 'Select document from library'),
+    el('button', { 'data-testid': 'document-buttons-upload', type: 'button', id: '', 'data-action': 'upload', 'data-key': `${page}:${index}` }, '⇪ ', 'Upload new document')))));
+  state.documents.forEach((document, docIndex) => blocks.push(attachmentDetails(page, index, document, docIndex)));
+  return blocks;
+}
+function attachmentDetails(page, index, document, docIndex) {
+  const id = `${page}-${index}-${docIndex}`;
+  return el('div', { 'data-testid': 'attachment_wrapper', 'data-fixture-reconstructed': 'true', class: '_attachments' },
+    el('div', { 'data-testid': `AttachmentDetails_${id}` },
+      el('span', { text: 'Attached document' }),
+      el('div', { 'data-testid': 'document-name-wrapper' }, el('a', { href: '#', 'data-testid': `doc_preview_url_${id}`, text: document.name })),
+      el('a', { 'data-testid': `replace-document-btn-${id}`, href: '#', text: 'Replace document' }),
+      el('div', { 'data-testid': `attachment_actions_${id}` },
+        el('button', { type: 'button', 'data-testid': 'attachment_actions_remove', 'data-action': 'detach', 'data-key': `${page}:${index}:${docIndex}`, text: 'Detach from question' }),
+        el('button', { type: 'button', 'data-testid': 'attachment_actions_edit', text: 'Edit details' }))));
+}
+
+function renderOption(page, index, option) {
+  const state = ans(page, index);
+  const control = option.kind === 'checkbox'
+    ? el('label', { class: '_controlInput', 'data-testid': `option_${option.uuid}_label`, for: option.inputId },
+        el('input', { 'data-testid': `option_${option.uuid}_control`, type: 'checkbox', id: option.inputId, value: '', checked: state.checked, 'data-page': page, 'data-index': index }),
+        option.text)
+    : el('div', { class: 'MuiFormControlLabel-wrap' }, el('label', { class: 'MuiFormControlLabel-root', 'aria-disabled': 'false' },
+        el('div', {}, el('span', { class: 'MuiButtonBase-root MuiRadio-root', 'data-error': 'false', 'aria-disabled': 'false', 'data-testid': `option_${option.uuid}_input` },
+          el('input', { class: 'PrivateSwitchBase-input', id: option.inputId, type: 'radio', 'aria-disabled': 'false', value: '', checked: state.checked, 'data-page': page, 'data-index': index }),
+          el('span', { class: 'radioIcon' }))),
+        el('span', { class: 'MuiTypography-root' }, el('span', { tabindex: '0', 'aria-hidden': 'false', text: option.text }))));
+  return el('div', { class: '_root', 'data-testid': `option_${option.uuid}` },
+    el('div', { class: '_option' },
+      el('div', { class: '_control', tabindex: '0', 'data-testid': 'option-exclude-tooltip', 'aria-hidden': 'false' }, control),
+      optionHelp(page, index, option)),
+    ...evidenceBlocks(page, index, option));
+}
+
+function renderQuestionPage(page) {
+  const question = QUESTIONS[page];
+  const titleWrapper = el('h3', { class: '_titleWrapper', 'data-testid': `question_title_wrapper_${question.uuid}` },
+    el('span', { class: '_title', 'data-testid': 'question_title_translated', text: question.title }));
+  if (question.help) {
+    titleWrapper.append(el('span', { tabindex: '0', title: 'How should I answer this question?', 'aria-hidden': 'false' },
+      el('button', { 'data-testid': 'help_context_need_help', type: 'button', id: 'help_context_need_help', 'data-action': 'need-help', 'data-page': page, text: '?' })));
+  }
+  const top = el('div', { class: 'qtop' },
+    el('div', {},
+      el('span', { class: 'badge', 'data-testid': 'question_label_badge_question_required', text: question.badge }),
+      el('span', { class: 'badge', 'data-testid': 'question_label_badge_question_code', text: question.code }),
+      question.impact ? el('div', { 'data-testid': `${question.uuid}_topSection_impactOnScore_${question.impact}`, style: 'display:inline-block' }, impactTag(question.impactFilled)) : null),
+    el('div', {}, question.textfield ? null : el('a', { 'data-testid': 'questionnaire-discover-how-we-score', href: '#', text: 'Discover how we score ⓘ' })));
+  let body;
+  if (question.textfield) {
+    const area = el('textarea', { 'data-testid': question.textfield.testid, rows: '4', title: 'Please specify', class: '_control', type: 'multiline', id: question.textfield.id, placeholder: '', autocomplete: 'off', 'data-page': page, 'data-field': 'text' });
+    area.value = texts[page] || '';
+    body = el('div', { class: '_root _textfield' }, el('label', { class: '_label', title: 'Please specify', for: question.textfield.id, text: 'Please specify' }), area);
+  } else {
+    body = question.options.map((option, index) => renderOption(page, index, option));
+  }
+  const nextTestid = question.nextTestid;
+  return [aiBanner(),
+    el('div', { 'data-testid': 'vadis_root' },
+      el('section', { 'data-item': 'question', 'data-testid': `question_${question.uuid}` },
+        top,
+        el('div', {}, titleWrapper,
+          ui.helpOpen[page] ? el('div', { role: 'tooltip', 'data-fixture-reconstructed': 'true', text: 'Help for this question (fixture placeholder).' }) : null),
+        el('div', { class: '_groupLevel' }),
+        el('div', { class: '_optionsWrapper' }, body)),
+      el('div', { class: 'bottomBar' },
+        el('button', { 'data-testid': 'questionnaire_previous_page', type: 'button', class: 'linkBtn', id: '', 'data-action': 'save-previous' }, '‹ ', 'Save & previous'),
+        el('div', { class: 'right' },
+          el('button', { 'data-testid': 'questionaire_intro_button', type: 'button', class: 'pill', id: '', 'data-action': 'save' }, 'Save'),
+          el('button', { 'data-testid': nextTestid, type: 'button', class: 'pill primary', id: '', 'data-action': 'save-next' }, 'Save & next', ' ›'))))];
+}
+
+function renderIntroduction() {
+  const card = (testid, title) => el('div', { 'data-testid': testid }, el('p', { text: title }));
+  return [el('div', { 'data-testid': 'introduction_page' },
+    el('div', { 'data-testid': 'welcome_header' },
+      el('h1', { 'data-testid': 'welcome_header_title', text: 'Welcome to the EcoVadis assessment' }),
+      el('p', { 'data-testid': 'welcome_header_intro', text: 'Answer questions about your policies and practices, back them up with documents, and get your scorecard.' })),
+    el('div', { 'data-testid': 'company_profile_card', class: 'card' },
+      el('div', {}, el('h1', { 'data-testid': 'company_profile_card_title', text: 'Your company profile' }),
+        el('button', { tabindex: '0', type: 'button', 'aria-label': 'Collapse company profile', 'data-testid': 'company_profile_toggle_collapse', text: '⌃' })),
+      el('p', { 'data-testid': 'company_profile_card_subtitle', text: 'The questionnaire is tailored to this profile.' }),
+      ...[['legal_entity_name', 'Legal entity', 'Fixture Supplier Ltd'], ['assessment_scope', 'Scope', 'Entity'], ['company_size', 'Company size', 'XS (up to 25 employees)'], ['industry', 'Industry', 'Information technology services']].map(([key, label, value]) =>
+        el('div', { 'data-testid': `company_profile_${key}_field` }, el('p', { text: label }), el('p', { 'data-testid': `company_profile_${key}`, text: value }))),
+      el('div', { 'data-testid': 'company_profile_deadline_field' }, el('p', { text: 'Deadline' }), el('p', { 'data-testid': 'company_profile_deadline', text: DEADLINE }),
+        el('button', { tabindex: '0', type: 'button', 'data-testid': 'company_profile_add_to_calendar', text: 'Add to calendar' }),
+        el('span', { 'data-testid': 'extend-deadline-modal' }, el('span', { id: 'extend-deadline-modal-extend-link', 'data-testid': 'extend-deadline-modal-extend-link', text: 'Extend' }))),
+      el('div', { role: 'alert', 'aria-live': 'assertive', 'data-testid': 'company_profile_notice' }, 'If anything looks wrong, ', el('a', { href: '#', text: 'visit the Help Center' }), ' or ', el('a', { href: '#', id: 'questionnaire-contact-customer-care', text: 'contact our Customer Care Team' }), '.')),
+    el('div', { 'data-testid': 'benefits_section' },
+      el('h1', { 'data-testid': 'benefits_section_title', text: 'Benefits for your business' }),
+      el('p', { 'data-testid': 'benefits_section_buyer_sentence', text: 'A buyer has invited you to complete an EcoVadis assessment.' }),
+      el('div', { 'data-testid': 'benefits_section_cards' }, card('benefits_section_scorecards_card', 'Get two scorecards in one assessment'), card('benefits_section_network_card', 'Unlock a wider network of trading partners'), card('benefits_section_medals_card', 'Earn medals and recognition you can share'))),
+    el('div', { 'data-testid': 'what_your_assessment_covers' },
+      el('h1', { 'data-testid': 'what_your_assessment_covers_title', text: 'What your assessment covers' }),
+      el('p', { 'data-testid': 'what_your_assessment_covers_intro', text: '12 questions in total, grouped into the following themes:' }),
+      el('div', { 'data-testid': 'what_your_assessment_covers_theme_cards' },
+        ...[['lab', 'LAB', 'Labor & Human Rights', '3 questions', ['Working Conditions', 'Employee Health & Safety', 'Career Management & Training']], ['env', 'ENV', 'Environment', '5 questions', ['Energy consumption & GHGs', 'Materials, Chemicals & Waste']], ['fbp', 'FBP', 'Ethics', '2 questions', ['Corruption', 'Responsible Information Management']]].map(([lower, upper, name, count, tags]) =>
+          el('div', { 'data-testid': `introduction-theme-card-${lower}`, class: 'card' }, el('div', {}, el('p', { text: name }), el('p', { text: count })),
+            el('div', {}, el('ul', { 'data-testid': `what_your_assessment_covers_theme_card_${upper}_tags` }, ...tags.map((tag) => el('li', { 'data-testid': `what_your_assessment_covers_theme_card_${upper}_tag`, text: tag })))),
+            el('button', { id: `introduction-see-whats-assessed-${lower}`, type: 'button', 'aria-expanded': 'false', 'data-testid': 'see-whats-assessed-trigger', text: 'See what’s assessed' }))))),
+    el('div', { 'data-testid': 'score_impact_notice' }, el('p', { text: 'Each question shows its impact on your score.' })),
+    el('div', { 'data-testid': 'process_section' },
+      el('h1', { 'data-testid': 'process_section_title', text: 'How we help you through it' }),
+      el('p', { 'data-testid': 'process_section_supporting', text: 'A process to take the manual work off your hands.' }),
+      ...['Set up your team', 'Collect documents', 'Match with AI', 'Review and submit'].map((title, i) => el('div', { 'data-testid': `process_section_step_${i + 1}` }, el('p', { text: `Step ${i + 1}` }), el('p', { 'data-testid': `process_section_step_${i + 1}_title`, text: title })))),
+    el('div', { class: 'bottomBar' }, el('span'), el('button', { id: 'introduction-next-button', 'data-testid': 'introduction_next_button', type: 'button', class: 'pill primary', 'data-action': 'goto', 'data-href': '#/useful-resources', 'data-fixture-reconstructed': 'true', text: 'Next' })))];
+}
+
+function renderPrepareEvidence() {
+  const groups = [['poli', 'Policies', '8 years', true], ['mesu', 'Measures', '8 years', false], ['cert', 'Certifications', 'Varies (based on certificate expiry date)', false], ['repo', 'Reporting', '2 years', false]];
+  return [el('section', { 'data-testid': 'prepare_evidence' },
+    el('h1', { text: 'Prepare evidence and upload it to Document Library' }),
+    el('div', { 'data-testid': 'evidence-ai-matching-steps' },
+      ...[['STEP 1', 'Gather your documents to use as supporting evidence'], ['STEP 2', 'Add the documents to the Document Library'], ['STEP 3', 'Match your documents to questions with AI']].map(([step, title]) => el('div', { class: 'card' }, el('p', { text: step }), el('p', { text: title })))),
+    el('div', {}, el('p', { text: 'EXAMPLES OF DOCUMENTS TO GATHER' }), el('button', { tabindex: '0', type: 'button', id: 'evidence-download-examples-button', 'data-action': 'download', text: 'Download examples' })),
+    ...groups.map(([key, title, within, open], i) => el('div', { 'data-testid': `evidence-documents-accordion-${i === 0 ? 0 : i + 1}`, class: 'card' },
+      el('div', { tabindex: '0', role: 'button', 'aria-expanded': String(open), 'data-testid': `evidence-documents-accordion-summary-questionnaire_hws_${key}_plain` },
+        el('div', { 'data-testid': `evidence-documents-accordion-questionnaire_hws_${key}_plain` }, el('p', { text: title }), el('p', { text: `Issued within: ${within}` }),
+          el('div', { 'data-testid': 'evidence-documents-accordion-mustContain', text: 'Must contain: Company name' }))))),
+    el('a', { href: '#', 'data-testid': 'prepare_evidence-findOutMore-link', text: 'EcoVadis Complete Guide for Document Submission' }),
+    el('div', { class: 'bottomBar' },
+      el('button', { tabindex: '0', type: 'button', class: 'linkBtn', 'data-testid': 'questionnaire_prepare_evidence_previous_page', 'data-action': 'goto', 'data-href': '#/documents-library', text: 'Previous' }),
+      el('div', { class: 'right' },
+        el('button', { tabindex: '0', type: 'button', class: 'pill', id: 'prepare_evidence-documentLibrary-link', 'data-action': 'goto', 'data-href': '#/documents-library', text: 'Add in Document Library' }),
+        el('a', { 'data-testid': 'nextButton-link', href: '#/questionnaire' }, el('button', { tabindex: '0', type: 'button', class: 'pill primary', text: 'Next' })))))];
+}
+
+function renderDocumentLibrary() {
+  const uploaded = Object.values(answers).flatMap((state) => state.documents.map((document) => document.name));
+  return [el('div', {},
+    el('div', {}, el('h1', { text: 'Document Library' }),
+      el('div', { 'data-testid': 'document_limit_counter_green', text: 'You can upload 55 more documents' }),
+      el('div', { tabindex: '0', 'aria-hidden': 'false' }, el('button', { 'data-testid': 'need-support-button', text: 'Need support?' })),
+      el('a', { 'data-testid': 'how-protect-documents-button', href: '#', text: 'How do we protect your documents?' })),
+    uploaded.length ? el('ul', { 'data-fixture-reconstructed': 'true' }, ...uploaded.map((name) => el('li', { text: name }))) : null,
+    el('div', { 'data-testid': 'document-library-v3-empty-state' },
+      el('div', { class: 'card' }, el('p', { text: '1' }), el('p', { 'data-testid': 'document-library-v3-empty-state-step1-title', text: 'Add your first documents' }),
+        el('p', { 'data-testid': 'document-library-v3-empty-state-step1-body', text: 'Upload policies, reports, and certifications that reflect your actual practices.' }),
+        el('button', { tabindex: '0', type: 'button', 'data-testid': 'document-library-v3-empty-state-upload-from-computer', text: 'Upload from computer' }),
+        el('button', { tabindex: '0', type: 'button', 'data-testid': 'document-library-v3-empty-state-import-via-url', text: 'Import via URL' })),
+      el('div', { class: 'card' }, el('p', { text: '2' }), el('p', { 'data-testid': 'document-library-v3-empty-state-step2-title', text: 'Start AI matching to speed up your work' }),
+        el('p', { 'data-testid': 'document-library-v3-empty-state-step2-body', text: 'AI suggests which questions each document answers; you review every suggestion.' }),
+        el('button', { tabindex: '0', type: 'button', 'data-testid': 'document-library-v3-empty-state-how-it-works', text: 'See how AI matching works' }))),
+    el('button', { tabindex: '0', type: 'button', class: 'pill primary', 'data-testid': 'document-library-v3-go-to-questionnaire', 'data-action': 'goto', 'data-href': '#/questionnaire/0/GEN', text: 'Go to questionnaire' }))];
+}
+
+function renderSubscription() {
+  const radio = (id, name, label, checked, action) => el('label', {},
+    el('span', {}, el('span', { 'data-error': 'false', 'data-testid': `${id}_input` },
+      el('input', { id, name: name || false, type: 'radio', value: name ? '' : id, checked, 'data-action': action, 'data-value': id }))),
+    el('span', { tabindex: '0', 'aria-hidden': 'false', text: label }));
+  const plans = [['Basic', 'basic', 'Get an initial assessment of your sustainability efforts.', '449'], ['Premium', 'premium', 'Understand and showcase your sustainability program.', '889'], ['Select', 'select', 'Fast track your sustainability leadership status.', '2859'], ['Corporate', 'corporate', 'For large organizations managing performance across entities.', '6189']];
+  return [el('div', { 'data-testid': 'available_subscription_new' },
+    el('div', {},
+      el('h2', { 'data-testid': 'account_information_page_header', text: 'Subscription' }),
+      el('span', { 'data-testid': 'account_information_choose_plan', text: 'Before submitting the questionnaire, select your subscription and provide billing information.' })),
+    el('div', {}, radio('EUR', null, 'Show prices in EUR', ui.currency === 'EUR', 'currency'), radio('USD', null, 'Show prices in USD', ui.currency === 'USD', 'currency'),
+      el('a', { 'data-testid': 'account_information_other_currencies', href: '#', text: 'More currencies' })),
+    el('div', { class: 'plans' }, ...plans.map(([name, lower, blurb, price]) => el('div', { 'data-testid': `subscription_plan_${lower}`, class: 'card' },
+      el('p', { text: name }), el('p', { text: blurb }),
+      el('p', {}, 'As low as ', el('span', { dir: 'ltr', text: ui.currency === 'EUR' ? `${price} €` : `$${price}` })),
+      el('span', { 'data-testid': `subscription_button_${name}`, id: `subscription_button_${name}` }, el('div', {}, radio(name, `selected_plan_${name}`, `Choose ${name}`, ui.plan === name, 'plan')))))),
+    el('a', { 'data-testid': 'account_information_compare_plans', href: '#/account-information/compare-plans', text: 'Compare Plans and Features' }),
+    el('div', { class: 'bottomBar' }, el('span'),
+      el('button', { 'data-testid': 'saveBillingInformations', type: 'button', class: 'pill primary', disabled: ui.plan === null, id: 'saveBillingInformations', 'data-action': 'save-billing', text: 'Next' })))];
+}
+
+function renderReview() {
+  const { done, total } = progress();
+  const pct = percent();
+  const unanswered = mandatoryPages().filter((page) => !isAnswered(page));
+  const missingDocs = questionPages().filter((page) => isAnswered(page) && needsDocs(page));
+  const canSubmit = (ui.plan !== null && unanswered.length === 0) || document.getElementById('fixture_unlock_submit').checked;
+  const row = (page) => el('div', { class: 'tableRow' },
+    el('div', {}, el('span', { 'data-testid': 'unanswered-question-title', text: QUESTIONS[page].title })),
+    el('div', { text: themeOf(page).name }),
+    el('div', {}, el('a', { 'data-testid': 'unanswered-question-link', href: `#/questionnaire/${page}/${QUESTIONS[page].code}`, text: 'Go to question' })));
+  const sectionPct = (theme) => {
+    const pages = theme.indicators.flatMap(([, , list]) => list).filter((page) => QUESTIONS[page].badge === 'Mandatory');
+    return Math.round((pages.filter(isAnswered).length / pages.length) * 100);
+  };
+  const disclosure = (testid, idBase, title, pages) => el('div', { 'data-testid': testid, class: 'card' },
+    el('div', {}, el('div', { id: `:${idBase}l:`, text: title }),
+      el('button', { tabindex: '0', type: 'button', 'aria-expanded': 'false', 'aria-controls': `:${idBase}m:`, 'aria-labelledby': `:${idBase}l:`, 'data-action': 'disclose', text: '⌄' })),
+    el('div', { id: `:${idBase}m:` }, el('div', { class: 'tableRow' }, el('div', { text: 'Question' }), el('div', { text: 'Theme' })), ...pages.map(row)));
+  return [el('div', { 'data-testid': 'page_progress_report' },
+    el('div', {}, el('h2', { 'data-testid': 'reviewAndSubmitHeader', text: 'Review & Submit' }),
+      el('div', { 'data-testid': 'page_progress_report_general_stats' },
+        el('div', { 'data-testid': 'page_progress_report_general_stats_title', text: 'Total progress' }),
+        el('div', { 'data-testid': 'page_progress_report_general_stats_progress' }, el('div', { 'data-testid': 'progress_bar' }, el('span', { text: `${pct}%` }))),
+        el('div', { 'data-testid': 'page_progress_report_general_stats_value', text: `${done} out of ${total} answered` })),
+      ...THEMES.map((theme) => el('div', { 'data-testid': `page_progress_report_section_${theme.review}` },
+        el('div', { 'data-testid': `page_progress_report_section_${theme.review}_indicator`, 'data-version': 'uikit' },
+          el('div', { tabindex: '0' }, el('span', { role: 'progressbar', 'aria-valuenow': String(sectionPct(theme)), 'aria-hidden': 'true', text: `${sectionPct(theme)}%` }))),
+        el('div', { 'data-testid': `page_progress_report_section_${theme.review}_title`, text: theme.name })))),
+    el('div', { 'data-testid': 'report-alerts' }, ui.plan === null ? el('div', { 'data-testid': 'report-alerts-subscription-banner', class: 'card' },
+      el('p', { text: 'Please choose a subscription plan and enter your billing information before submitting your questionnaire.' }),
+      el('button', { type: 'button', 'data-testid': 'report-alerts-choose-subscription', 'data-action': 'goto', 'data-href': '#/account-information', text: 'Choose a subscription' })) : null),
+    unanswered.length ? disclosure('page_progress_report_unanswered_questions', 'rg', `${unanswered.length} out of ${total} questions still need your attention`, unanswered) : null,
+    missingDocs.length ? disclosure('page_progress_report_missing_attachments', 'rh', `${missingDocs.length} of your answers do not have any supporting documents attached`, missingDocs) : null,
+    el('form', { action: '#', 'data-action-form': 'review' },
+      el('div', { 'data-testid': 'metrics_visibility_container' },
+        el('div', { 'aria-hidden': 'true' }, el('h3', { text: 'Metrics visibility' }), el('p', { id: ':rgp:', text: 'Share your questionnaire data with your trading partners.' })),
+        el('div', { 'data-testid': 'metrics_visibility_switch' }, el('label', {},
+          el('span', {}, el('input', { type: 'checkbox', 'aria-describedby': ':rgp:', 'data-testid': 'metrics_visibility_switch_input', 'aria-label': '', checked: true })),
+          el('span', { tabindex: '0', 'aria-hidden': 'false', text: 'Yes, share my metrics' })))),
+      el('div', { class: 'bottomBar' },
+        el('button', { 'data-testid': 'report-step-form-back-underlined', type: 'button', class: 'linkBtn', id: '', 'data-action': 'goto', 'data-href': '#/questionnaire/0/GEN', text: 'Back to questionnaire' }),
+        el('span', { 'data-testid': 'submit-button-wrapper', tabindex: '0', 'aria-hidden': 'false' },
+          el('button', { 'data-testid': 'page_progress_report_cta_submit_questionnaire', type: 'submit', class: 'pill primary', disabled: !canSubmit, id: '', text: 'Submit questionnaire' })))))];
+}
+
+function renderStub(title, note) {
+  return [el('div', { 'data-fixture-reconstructed': 'true' }, el('h1', { text: title }), el('p', { text: note }))];
+}
+
+function currentPage() {
+  const match = /^#\/questionnaire\/(\d+)(?:\/|$)/.exec(location.hash);
+  return match ? Number(match[1]) : null;
+}
+function route() {
+  const hash = location.hash;
+  if (!hash || hash === '#/' || hash === '#') { location.replace('#/introduction'); return; }
+  if (hash === '#/questionnaire') { location.replace('#/questionnaire/0/GEN'); return; }
+  if (hash === '#/account-information') { location.replace('#/account-information/subscription-plans'); return; }
+  const page = currentPage();
+  const slot = document.getElementById('upperbarSlot');
+  let sidebarKey = hash;
+  let content;
+  slot.replaceChildren();
+  if (page !== null && page < PAGE_COUNT) {
+    slot.replaceChildren(upperbar());
+    content = QUESTIONS[page] ? renderQuestionPage(page) : renderIntroPage(page);
+  } else if (hash === '#/introduction') content = renderIntroduction();
+  else if (hash === '#/prepare-evidence') { slot.replaceChildren(upperbar()); content = renderPrepareEvidence(); }
+  else if (hash === '#/documents-library') content = renderDocumentLibrary();
+  else if (hash.startsWith('#/account-information/subscription-plans')) { sidebarKey = '#/account-information'; content = renderSubscription(); }
+  else if (hash === '#/account-information/compare-plans') { sidebarKey = '#/account-information'; content = renderStub('Compare Plans and Features', 'Not captured — fixture stub.'); }
+  else if (hash === '#/progress-report') { slot.replaceChildren(upperbar()); content = renderReview(); }
+  else if (hash === '#/useful-resources') content = renderStub('Useful resources', 'Not captured — fixture stub.');
+  else if (hash === '#/collaboration') content = renderStub('My team', 'Not captured — fixture stub.');
+  else if (hash === '#/logged-out') content = renderStub('Logged out', 'Fixture view: the session ended. Nothing was sent.');
+  else content = renderStub('Page not found', `No fixture page for ${hash}.`);
+  renderSidebar(sidebarKey);
+  document.getElementById('page').replaceChildren(...content);
+}
+
+// Reconstructed dialogs (the live upload / library dialogs were not opened during the capture).
+function openDialog(title, body, onConfirm, confirmLabel) {
+  const dialog = el('div', { role: 'dialog', 'aria-modal': 'true', 'aria-label': title, 'data-fixture-reconstructed': 'true' }, el('h3', { text: title }), body,
+    el('div', {}, el('button', { type: 'button', 'data-testid': 'dialog_cancel', text: 'Cancel' }),
+      onConfirm ? el('button', { type: 'button', 'data-testid': 'dialog_confirm', text: confirmLabel }) : null));
+  dialog.querySelector('[data-testid=dialog_cancel]').addEventListener('click', () => dialog.remove());
+  if (onConfirm) dialog.querySelector('[data-testid=dialog_confirm]').addEventListener('click', () => { if (onConfirm(dialog) !== false) { dialog.remove(); route(); } });
+  document.body.append(dialog);
+}
+
+function navigate(hash) { if (location.hash === hash) route(); else location.hash = hash; }
+
+document.addEventListener('change', (event) => {
+  const input = event.target;
+  if (input.id === 'fixture_unlock_submit') { if (location.hash === '#/progress-report') route(); return; }
+  if (input.dataset.action === 'currency') { ui.currency = input.dataset.value; route(); return; }
+  if (input.dataset.action === 'plan') { ui.plan = input.dataset.value; route(); return; }
+  if (input.dataset.page === undefined) return;
+  const page = Number(input.dataset.page);
+  const index = Number(input.dataset.index);
+  if (input.dataset.field === 'metric-unit') { ans(page, index).metric.unit = input.value; return; }
+  if (input.dataset.field) return;
+  if (input.type === 'radio') QUESTIONS[page].options.forEach((_, other) => { ans(page, other).checked = other === index; });
+  else ans(page, index).checked = input.checked;
+  route();
+});
+document.addEventListener('input', (event) => {
+  const input = event.target;
+  if (input.dataset.page === undefined) return;
+  const page = Number(input.dataset.page);
+  if (input.dataset.field === 'text') { const before = isAnswered(page); texts[page] = input.value; if (before !== isAnswered(page)) renderSidebar(location.hash); }
+  if (input.dataset.field === 'extra') ans(page, Number(input.dataset.index)).extra = input.value;
+  if (input.dataset.field === 'metric-value') ans(page, Number(input.dataset.index)).metric.value = input.value;
+});
+document.addEventListener('submit', (event) => {
+  event.preventDefault();
+  if (event.target.dataset.actionForm === 'review') {
+    bump('submit');
+    notice('Submit intercepted by the fixture — nothing was sent.');
+  }
+});
+document.addEventListener('click', (event) => {
+  if (event.target.id === 'topMenu_logoutLink') { navigate('#/logged-out'); return; }
+  const button = event.target.closest('[data-action]');
+  if (!button || button.matches('input')) return;
+  const action = button.dataset.action;
+  const page = currentPage();
+  if (action === 'disclose') { const open = button.getAttribute('aria-expanded') !== 'true'; button.setAttribute('aria-expanded', String(open)); return; }
+  event.preventDefault();
+  if (action === 'toggle-theme') { ui.expanded[button.dataset.theme] = !ui.expanded[button.dataset.theme]; renderSidebar(location.hash); return; }
+  if (action === 'show-more') { ui.showMore[button.dataset.key] = !ui.showMore[button.dataset.key]; route(); return; }
+  if (action === 'need-help') { ui.helpOpen[button.dataset.page] = !ui.helpOpen[button.dataset.page]; route(); return; }
+  if (action === 'goto') { navigate(button.dataset.href); return; }
+  if (action === 'download') { notice('Download intercepted by the fixture — no file.'); return; }
+  if (action === 'match-ai') { bump('ai'); notice('Match with AI intercepted by the fixture.'); return; }
+  if (action === 'next') { navigate(hashFor(page + 1)); return; }
+  if (action === 'previous') { navigate(hashFor(page - 1)); return; }
+  if (action === 'save') { bump('save', `Save on ${location.hash}`); notice('Saved (fixture counter only).'); return; }
+  if (action === 'save-previous') { bump('save', `Save & previous on ${location.hash}`); navigate(hashFor(page - 1)); return; }
+  if (action === 'save-next') { bump('save', `Save & next on ${location.hash}`); navigate(page + 1 < PAGE_COUNT ? hashFor(page + 1) : '#/account-information'); return; }
+  if (action === 'save-billing') { bump('save', 'Subscription Next (saveBillingInformations)'); navigate('#/progress-report'); return; }
+  if (action === 'detach') { const [p, i, d] = button.dataset.key.split(':').map(Number); ans(p, i).documents.splice(d, 1); route(); return; }
+  if (action === 'upload') {
+    const [p, i] = button.dataset.key.split(':').map(Number);
+    openDialog('Upload new document', el('div', {},
+      el('label', { for: 'upload_file', text: 'File' }), el('input', { type: 'file', id: 'upload_file', 'data-testid': 'upload_document_file' })), (dialog) => {
+        const file = dialog.querySelector('#upload_file').files[0];
+        if (!file) { notice('Choose a file to upload'); return false; }
+        ans(p, i).documents.push({ name: file.name });
+        bump('upload');
+      }, 'Attach document');
+    return;
+  }
+  if (action === 'browse') {
+    openDialog('Select document from library', el('p', { text: 'Your Document Library is empty.' }), null, null);
+  }
+});
+window.addEventListener('hashchange', route);
+renderLanguages();
+route();
+</script>
+</body>
+</html>
