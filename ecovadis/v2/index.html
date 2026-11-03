@@ -322,7 +322,7 @@ function renderIntroPage(page) {
       el('a', { 'data-testid': 'indicator-popup-link', text: 'How are management indicators scored?' }))];
   }
   const bar = el('div', { class: 'bottomBar' },
-    page > 0 ? el('button', { 'data-testid': 'questionnaire_previous_page', type: 'button', class: 'linkBtn', id: '', 'data-action': 'previous' }, '‹ Previous') : el('span'),
+    page > 0 ? el('button', { 'data-testid': 'questionnaire_previous_page', type: 'button', class: 'linkBtn', id: '', 'data-action': 'previous' }, el('span', { 'aria-hidden': 'true', text: '‹ ' }), 'Previous') : el('span'),
     el('div', { class: 'right' }, el('button', { 'data-testid': 'questionnaire_next_page', type: 'button', class: 'pill primary', id: '', 'data-action': 'next' }, 'Next')));
   return [el('div', { 'data-testid': 'vadis_root' }, ...content, bar)];
 }
@@ -363,8 +363,8 @@ function evidenceBlocks(page, index, option) {
       el('label', { for: `metric-unit-${option.uuid}`, text: 'Unit' }), unit));
   }
   blocks.push(el('div', { class: '_attachments' }, el('div', { 'data-testid': 'attachment_picker' }, el('div', {},
-    el('button', { 'data-testid': 'document-buttons-browse', type: 'button', id: '', 'data-action': 'browse', 'data-key': `${page}:${index}` }, '🔍 ', 'Select document from library'),
-    el('button', { 'data-testid': 'document-buttons-upload', type: 'button', id: '', 'data-action': 'upload', 'data-key': `${page}:${index}` }, '⇪ ', 'Upload new document')))));
+    el('button', { 'data-testid': 'document-buttons-browse', type: 'button', id: '', 'data-action': 'browse', 'data-key': `${page}:${index}` }, el('span', { 'aria-hidden': 'true', text: '🔍 ' }), 'Select document from library'),
+    el('button', { 'data-testid': 'document-buttons-upload', type: 'button', id: '', 'data-action': 'upload', 'data-key': `${page}:${index}` }, el('span', { 'aria-hidden': 'true', text: '⇪ ' }), 'Upload new document')))));
   state.documents.forEach((document, docIndex) => blocks.push(attachmentDetails(page, index, document, docIndex)));
   return blocks;
 }
@@ -430,10 +430,10 @@ function renderQuestionPage(page) {
         el('div', { class: '_groupLevel' }),
         el('div', { class: '_optionsWrapper' }, body)),
       el('div', { class: 'bottomBar' },
-        el('button', { 'data-testid': 'questionnaire_previous_page', type: 'button', class: 'linkBtn', id: '', 'data-action': 'save-previous' }, '‹ ', 'Save & previous'),
+        el('button', { 'data-testid': 'questionnaire_previous_page', type: 'button', class: 'linkBtn', id: '', 'data-action': 'save-previous' }, el('span', { 'aria-hidden': 'true', text: '‹ ' }), 'Save & previous'),
         el('div', { class: 'right' },
           el('button', { 'data-testid': 'questionaire_intro_button', type: 'button', class: 'pill', id: '', 'data-action': 'save' }, 'Save'),
-          el('button', { 'data-testid': nextTestid, type: 'button', class: 'pill primary', id: '', 'data-action': 'save-next' }, 'Save & next', ' ›'))))];
+          el('button', { 'data-testid': nextTestid, type: 'button', class: 'pill primary', id: '', 'data-action': 'save-next' }, 'Save & next', el('span', { 'aria-hidden': 'true', text: ' ›' })))))];
 }
 
 function renderIntroduction() {
