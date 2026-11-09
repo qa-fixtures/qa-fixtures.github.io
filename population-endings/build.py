@@ -66,8 +66,15 @@ def site(slug: str, name: str, about: str, reports: list[tuple[str, str, bytes]]
     folder = ROOT / slug
     (folder / "reports").mkdir(parents=True, exist_ok=True)
     (folder / "sustainability").mkdir(parents=True, exist_ok=True)
+    # The reports are linked from the homepage as well: the scraper agent reads the
+    # homepage first and does not reliably follow a second hop on a one-page site.
+    home_links = "\n".join(f'<li><a href="reports/{file}">{label} (PDF)</a></li>' for file, label, _ in reports)
     (folder / "index.html").write_text(
-        page(name, f"<h1>{name}</h1>\n<p>{about}</p>\n<p><a href=\"sustainability/\">Sustainability</a></p>")
+        page(
+            name,
+            f"<h1>{name}</h1>\n<p>{about}</p>\n<h2>Sustainability reports</h2>\n<ul>\n{home_links}\n</ul>\n"
+            "<p><a href=\"sustainability/\">Sustainability</a></p>",
+        )
     )
     links = "\n".join(f'<li><a href="../reports/{file}">{label} (PDF)</a></li>' for file, label, _ in reports)
     (folder / "sustainability" / "index.html").write_text(
