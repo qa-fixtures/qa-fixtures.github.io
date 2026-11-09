@@ -71,7 +71,8 @@ def site(slug: str, name: str, about: str, reports: list[tuple[str, str, bytes]]
     # It also collects only the reports it judges relevant to the assessment's
     # criteria, so Brattli's two files are labelled as the two halves of one
     # report, both covering governance and policies: a criterion the scraper takes
-    # one of them for, it takes the other for too.
+    # one of them for, it takes the other for too. Stenvik's single report names
+    # the same topics so that a criteria-aimed collection does not skip it.
     home_links = "\n".join(f'<li><a href="reports/{file}">{label} (PDF)</a></li>' for file, label, _ in reports)
     (folder / "index.html").write_text(
         page(
@@ -128,7 +129,7 @@ site(
     [
         (
             "stenvik-minerals-sustainability-report-2025.pdf",
-            "Sustainability Report 2025",
+            "Sustainability Report 2025: environment, social, governance and policies",
             unreadable_pdf(13179),
         ),
     ],
