@@ -68,6 +68,10 @@ def site(slug: str, name: str, about: str, reports: list[tuple[str, str, bytes]]
     (folder / "sustainability").mkdir(parents=True, exist_ok=True)
     # The reports are linked from the homepage as well: the scraper agent reads the
     # homepage first and does not reliably follow a second hop on a one-page site.
+    # It also collects only the reports it judges relevant to the assessment's
+    # criteria, so Brattli's two files are labelled as the two halves of one
+    # report, both covering governance and policies: a criterion the scraper takes
+    # one of them for, it takes the other for too.
     home_links = "\n".join(f'<li><a href="reports/{file}">{label} (PDF)</a></li>' for file, label, _ in reports)
     (folder / "index.html").write_text(
         page(
@@ -95,7 +99,7 @@ site(
     [
         (
             "brattli-ceramics-sustainability-report-2025.pdf",
-            "Sustainability Report 2025",
+            "Sustainability Report 2025, part 1 of 2: environment, governance and policies",
             readable_pdf(
                 "Brattli Ceramics AS - Sustainability Report 2025",
                 [
@@ -110,8 +114,8 @@ site(
             ),
         ),
         (
-            "brattli-ceramics-climate-and-energy-report-2025.pdf",
-            "Climate and Energy Report 2025",
+            "brattli-ceramics-sustainability-report-2025-part-2.pdf",
+            "Sustainability Report 2025, part 2 of 2: social, governance and policies",
             unreadable_pdf(13178),
         ),
     ],
